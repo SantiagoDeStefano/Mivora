@@ -1,13 +1,13 @@
 import { envConfig } from '~/constants/config'
 import { TokenType } from '~/constants/enums'
 import { RegisterRequestBody } from '~/models/requests/users.requests'
-import RefreshToken, { RefreshTokenType } from '~/models/schemas/RefreshToken.schema'
+import { RefreshTokenType } from '~/models/schemas/RefreshToken.schema'
 import User, { UserType } from '~/models/schemas/User.schema'
 import { UserRoles } from '~/models/schemas/UserRoles.schema'
-import databaseService from '~/services/database.services'
 import { UUIDv4 } from '~/types/common'
 import { hashPassword } from '~/utils/crypto'
 import { signToken, verifyToken } from '~/utils/jwt'
+import databaseService from '~/services/database.services'
 
 class UserService {
   private signAccessToken({ user_id }: { user_id: UUIDv4 }): Promise<string> {
@@ -71,12 +71,14 @@ class UserService {
       password_hash
     })
 
-    Promise.all([
-      await databaseService.users<UserType>(
-        `INSERT INTO users(id, name, email, password_hash) VALUES($1, $2, $3, $4)`,
-        [new_user.id, new_user.name, new_user.email, new_user.password_hash]
-      ),
-      await databaseService.user_roles<UserRoles>(`INSERT INTO user_roles (user_id, role) VALUES ($1, $2)`, [
+    await Promise.all([
+      databaseService.users<UserType>(`INSERT INTO users(id, name, email, password_hash) VALUES($1, $2, $3, $4)`, [
+        new_user.id,
+        new_user.name,
+        new_user.email,
+        new_user.password_hash
+      ]),
+      databaseService.user_roles<UserRoles>(`INSERT INTO user_roles (user_id, role) VALUES ($1, $2)`, [
         new_user.id,
         role || 'attendee'
       ])
