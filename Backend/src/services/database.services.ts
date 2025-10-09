@@ -25,7 +25,8 @@ class DatabaseService {
       throw error
     }
   }
+
+
 }
 
-// export one shared instance
 export const databaseService = new DatabaseService()
