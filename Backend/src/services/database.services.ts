@@ -27,6 +27,7 @@ class DatabaseService {
     }
   }
   users = <T extends RowBase>(sqlQuery: string, params?: string[]) => this.pool.query<T>(sqlQuery, params)
+  user_roles = <T extends RowBase>(sqlQuery: string, params?: string[]) => this.pool.query<T>(sqlQuery, params)
 }
 
 const databaseService = new DatabaseService()

@@ -6,5 +6,5 @@ export interface RegisterRequestBody {
   email: string
   password: string
   confirm_password: string
-  role: UserRole[]
+  role: UserRole
 }

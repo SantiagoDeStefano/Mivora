@@ -14,8 +14,8 @@ const passwordSchema: ParamSchema = {
     errorMessage: USERS_MESSAGES.PASSWORD_MUST_BE_A_STRING
   },
   isLength: {
-    options: { min: 8, max: 16 },
-    errorMessage: USERS_MESSAGES.PASSWORD_MUST_BE_FROM_8_TO_16
+    options: { min: 8, max: 24 },
+    errorMessage: USERS_MESSAGES.PASSWORD_MUST_BE_FROM_8_TO_24
   },
   isStrongPassword: {
     options: {
@@ -37,8 +37,8 @@ const confirmPasswordSchema = (customField: string): ParamSchema => ({
     errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_A_STRING
   },
   isLength: {
-    options: { min: 8, max: 16 },
-    errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_FROM_8_TO_16
+    options: { min: 8, max: 24 },
+    errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_FROM_8_TO_24
   },
   custom: {
     options: (value, { req }) => {

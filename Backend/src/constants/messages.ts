@@ -10,7 +10,7 @@ export const USERS_MESSAGES = {
   CONFIRM_PASSWORD_DOES_NOT_MATCH_PASSWORD: 'Password confirmation does not match password',
   CONFIRM_PASSWORD_IS_REQUIRED: 'Password confirmation is required',
   CONFIRM_PASSWORD_MUST_BE_A_STRING: 'Password confirmation must be a string',
-  CONFIRM_PASSWORD_MUST_BE_FROM_8_TO_16: 'Password confirmation must be between 8 and 16',
+  CONFIRM_PASSWORD_MUST_BE_FROM_8_TO_24: 'Password confirmation must be between 8 and 24',
   CHANGE_PASSWORD_SUCCESS: 'Change password successfully',
 
   DATE_OF_BIRTH_IS_REQUIRED: 'Date of birth is required',
@@ -52,7 +52,7 @@ export const USERS_MESSAGES = {
 
   PASSWORD_IS_REQUIRED: 'Password is required',
   PASSWORD_MUST_BE_A_STRING: 'Password must be a string',
-  PASSWORD_MUST_BE_FROM_8_TO_16: 'Password must be between 8 and 16',
+  PASSWORD_MUST_BE_FROM_8_TO_24: 'Password must be between 8 and 24',
   PASSWORD_MUST_BE_STRONG: 'Password must be strong',
 
   REFRESH_TOKEN_IS_INVALID: 'Refresh token is invalid',
