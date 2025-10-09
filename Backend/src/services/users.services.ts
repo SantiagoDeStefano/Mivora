@@ -1,6 +1,7 @@
 import { envConfig } from '~/constants/config'
 import { TokenType } from '~/constants/enums'
 import { RegisterRequestBody } from '~/models/requests/users.requests'
+import RefreshToken, { RefreshTokenType } from '~/models/schemas/RefreshToken.schema'
 import User, { UserType } from '~/models/schemas/User.schema'
 import { UserRoles } from '~/models/schemas/UserRoles.schema'
 import databaseService from '~/services/database.services'
@@ -17,6 +18,7 @@ class UserService {
       },
       privateKey: envConfig.jwtSecretAccessToken as string,
       options: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expiresIn: envConfig.accessTokenExpiresIn as any
       }
     }) as Promise<string>
@@ -40,6 +42,7 @@ class UserService {
       },
       privateKey: envConfig.jwtSecretRefreshToken as string,
       options: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expiresIn: envConfig.refreshTokenExpiresIn as any
       }
     }) as Promise<string>
@@ -61,12 +64,14 @@ class UserService {
   async register(payload: RegisterRequestBody) {
     const { name, email, password, role } = payload
     const password_hash = hashPassword(password)
+
     const new_user = new User({
       name,
       email,
       password_hash
     })
-    const result = Promise.all([
+
+    Promise.all([
       await databaseService.users<UserType>(
         `INSERT INTO users(id, name, email, password_hash) VALUES($1, $2, $3, $4)`,
         [new_user.id, new_user.name, new_user.email, new_user.password_hash]
@@ -76,16 +81,24 @@ class UserService {
         role || 'attendee'
       ])
     ])
+
     const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
       user_id: new_user.id
     })
+    const { iat, exp } = await this.decodeRefreshToken(refresh_token)
+
+    await databaseService.refresh_tokens<RefreshTokenType>(
+      `INSERT INTO refresh_tokens (user_id, token_hash, iat, exp) VALUES ($1, $2, to_timestamp($3), to_timestamp($4))`,
+      [new_user.id, refresh_token, iat, exp]
+    )
+
     return {
       access_token,
       refresh_token
     }
   }
   async checkEmailExist(email: string) {
-    const result = await databaseService.users<UserType>(`SELECT id FROM users WHERE users.email=$1`, [email])
+    const result = await databaseService.users<UserType>(`SELECT id FROM users WHERE email=$1`, [email])
     return result.rows.length > 0
   }
 }
