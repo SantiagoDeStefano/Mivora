@@ -1,8 +1,9 @@
 import { envConfig } from '~/constants/config'
-
 import pg from 'pg'
 
 const { Pool } = pg
+
+type RowBase = pg.QueryResultRow
 
 class DatabaseService {
   private pool: pg.Pool
@@ -25,8 +26,8 @@ class DatabaseService {
       throw error
     }
   }
-
-
+  users = <T extends RowBase>(sqlQuery: string, params?: string[]) => this.pool.query<T>(sqlQuery, params)
 }
 
-export const databaseService = new DatabaseService()
+const databaseService = new DatabaseService()
+export default databaseService
