@@ -9,6 +9,7 @@ export interface RefreshTokenType extends pg.QueryResultRow {
   created_at?: Date
   iat: number
   exp: number
+  revoked?: boolean
 }
 
 export default class RefreshToken {
@@ -18,6 +19,7 @@ export default class RefreshToken {
   created_at?: Date
   iat: number
   exp: number
+  revoked: boolean
 
   constructor(refreshToken: RefreshTokenType) {
     this.id = refreshToken.id || newUUIDv4()
@@ -26,5 +28,6 @@ export default class RefreshToken {
     this.created_at = new Date()
     this.iat = refreshToken.iat
     this.exp = refreshToken.exp
+    this.revoked = refreshToken.revoked || false
   }
 }

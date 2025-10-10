@@ -1,7 +1,7 @@
 import { envConfig } from '~/constants/config'
 import { TokenType } from '~/constants/enums'
 import { RegisterRequestBody } from '~/models/requests/users.requests'
-import { RefreshTokenType } from '~/models/schemas/RefreshToken.schema'
+import RefreshToken, { RefreshTokenType } from '~/models/schemas/RefreshToken.schema'
 import User, { UserType } from '~/models/schemas/User.schema'
 import { UserRoles } from '~/models/schemas/UserRoles.schema'
 import { UUIDv4 } from '~/types/common'
@@ -99,9 +99,32 @@ class UserService {
       refresh_token
     }
   }
+
+  async login(user_id: UUIDv4) {
+    const [access_token, refresh_token] = await this.signAccessAndRefreshToken({ user_id })
+    const { iat, exp } = await this.decodeRefreshToken(refresh_token)
+
+    const refreshToken = new RefreshToken({
+      user_id: user_id,
+      token_hash: refresh_token,
+      iat,
+      exp
+    })
+
+    await databaseService.refresh_tokens<RefreshTokenType>(
+      `INSERT INTO refresh_tokens (id, user_id, token_hash, iat, exp) VALUES ($1, $2, $3, to_timestamp($4), to_timestamp($5))`,
+      [refreshToken.id, refreshToken.user_id, refreshToken.token_hash, refreshToken.iat, refreshToken.exp]
+    )
+
+    return {
+      access_token,
+      refresh_token
+    }
+  }
+
   async checkEmailExist(email: string) {
-    const result = await databaseService.users<UserType>(`SELECT id FROM users WHERE email=$1`, [email])
-    return result.rows.length > 0
+    const userRow = await databaseService.users<UserType>(`SELECT id FROM users WHERE email=$1`, [email])
+    return userRow.rows.length > 0
   }
 }
 

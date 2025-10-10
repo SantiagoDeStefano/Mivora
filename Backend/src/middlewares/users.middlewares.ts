@@ -2,7 +2,10 @@ import { checkSchema, ParamSchema } from 'express-validator'
 import { USERS_MESSAGES } from '~/constants/messages'
 import { validate } from '~/utils/validation'
 import { UserRole } from '~/types/domain'
+import { hashPassword } from '~/utils/crypto'
 import userService from '~/services/users.services'
+import databaseService from '~/services/database.services'
+import User from '~/models/schemas/User.schema'
 
 const user_roles: UserRole[] = ['attendee', 'organizer']
 
@@ -114,6 +117,41 @@ export const registerValidator = validate(
         }
       },
       avatar_url: imageSchema
+    },
+    ['body']
+  )
+)
+
+export const loginValidator = validate(
+  checkSchema(
+    {
+      email: {
+        isEmail: {
+          errorMessage: USERS_MESSAGES.EMAIL_IS_INVALID
+        },
+        trim: true,
+        custom: {
+          options: async (value, { req }) => {
+            const userRow = await databaseService.users<User>(
+              `SELECT id FROM users WHERE email=$1 AND password_hash=$2`,
+              [value, hashPassword(req.body.password)]
+            )
+            if (userRow.rows.length <= 0) {
+              throw new Error(USERS_MESSAGES.EMAIL_OR_PASSWORD_IS_INCORRECT)
+            }
+            req.user_id = userRow.rows[0].id
+            return true
+          }
+        }
+      },
+      password: {
+        notEmpty: {
+          errorMessage: USERS_MESSAGES.PASSWORD_IS_REQUIRED
+        },
+        isString: {
+          errorMessage: USERS_MESSAGES.PASSWORD_MUST_BE_A_STRING
+        }
+      }
     },
     ['body']
   )
