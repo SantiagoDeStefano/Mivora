@@ -3,9 +3,19 @@ import { USERS_MESSAGES } from '~/constants/messages'
 import { validate } from '~/utils/validation'
 import { UserRole } from '~/types/domain'
 import { hashPassword } from '~/utils/crypto'
+import { verifyAccessToken } from '~/utils/common'
+import { Request } from 'express'
+
 import userService from '~/services/users.services'
 import databaseService from '~/services/database.services'
 import User from '~/models/schemas/User.schema'
+import ErrorWithStatus from '~/models/Errors'
+import HTTP_STATUS from '~/constants/httpStatus'
+import { verifyToken } from '~/utils/jwt'
+import { envConfig } from '~/constants/config'
+import { JsonWebTokenError } from 'jsonwebtoken'
+import { capitalize } from 'lodash'
+import { RefreshTokenType } from '~/models/schemas/RefreshToken.schema'
 
 const user_roles: UserRole[] = ['attendee', 'organizer']
 
@@ -150,6 +160,71 @@ export const loginValidator = validate(
         },
         isString: {
           errorMessage: USERS_MESSAGES.PASSWORD_MUST_BE_A_STRING
+        }
+      }
+    },
+    ['body']
+  )
+)
+
+export const accessTokenValidator = validate(
+  checkSchema(
+    {
+      Authorization: {
+        custom: {
+          options: async (value: string, { req }) => {
+            const access_token = (value || '').split(' ')[1]
+            return await verifyAccessToken(access_token, req as Request)
+          }
+        }
+      }
+    },
+    ['headers']
+  )
+)
+
+export const refreshTokenValidator = validate(
+  checkSchema(
+    {
+      refresh_token: {
+        trim: true,
+        custom: {
+          options: async (value: string, { req }) => {
+            if (!value) {
+              throw new ErrorWithStatus({
+                message: USERS_MESSAGES.ACCESS_TOKEN_REQUIRED,
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
+            try {
+              const [decoded_refresh_token, refresh_token_row] = await Promise.all([
+                verifyToken({
+                  token: value,
+                  secretOrPublicKey: envConfig.jwtSecretRefreshToken as string
+                }),
+                databaseService.refresh_tokens<RefreshTokenType>(
+                  `SELECT token_hash FROM refresh_tokens WHERE token_hash=$1`,
+                  [value]
+                )
+              ])
+              if (refresh_token_row.rows.length <= 0) {
+                throw new ErrorWithStatus({
+                  message: USERS_MESSAGES.USED_REFRESH_TOKEN_OR_NOT_EXIST,
+                  status: HTTP_STATUS.UNAUTHORIZED
+                })
+              }
+              req.decoded_refresh_token = decoded_refresh_token
+            } catch (error) {
+              if (error instanceof JsonWebTokenError) {
+                throw new ErrorWithStatus({
+                  message: capitalize((error as JsonWebTokenError).message),
+                  status: HTTP_STATUS.UNAUTHORIZED
+                })
+              }
+              throw error
+            }
+            return true
+          }
         }
       }
     },

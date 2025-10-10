@@ -8,6 +8,7 @@ import { UUIDv4 } from '~/types/common'
 import { hashPassword } from '~/utils/crypto'
 import { signToken, verifyToken } from '~/utils/jwt'
 import databaseService from '~/services/database.services'
+import { USERS_MESSAGES } from '~/constants/messages'
 
 class UserService {
   private signAccessToken({ user_id }: { user_id: UUIDv4 }): Promise<string> {
@@ -119,6 +120,13 @@ class UserService {
     return {
       access_token,
       refresh_token
+    }
+  }
+
+  async logout(refresh_token: string) {
+    await databaseService.refresh_tokens<RefreshTokenType>(`DELETE FROM refresh_tokens WHERE token_hash=$1`, [refresh_token])
+    return {
+      message: USERS_MESSAGES.LOGOUT_SUCCESS
     }
   }
 
