@@ -1,13 +1,14 @@
 import { envConfig } from '~/constants/config'
 import { TokenType } from '~/constants/enums'
 import { RegisterRequestBody } from '~/models/requests/users.requests'
-import RefreshToken from '~/models/schemas/RefreshToken.schema'
-import User from '~/models/schemas/User.schema'
 import { UUIDv4 } from '~/types/common'
 import { hashPassword } from '~/utils/crypto'
 import { signToken, verifyToken } from '~/utils/jwt'
-import databaseService from '~/services/database.services'
 import { USERS_MESSAGES } from '~/constants/messages'
+
+import RefreshToken from '~/models/schemas/RefreshToken.schema'
+import User from '~/models/schemas/User.schema'
+import databaseService from '~/services/database.services'
 
 class UserService {
   // Signs a short-lived Access Token (used on every API call). Lifetime comes from envConfig.accessTokenExpiresIn.

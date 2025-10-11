@@ -1,6 +1,7 @@
 import { defaultErrorHandler } from './middlewares/errors.middlewares'
 import { envConfig } from './constants/config'
 
+
 import databaseService from './services/database.services'
 import express from 'express'
 import usersRouter from './routes/users.routes'
@@ -11,6 +12,7 @@ const app = express()
 
 app.use(express.json())
 app.use('/users', usersRouter)
+// app.use('/events', eventsRouter)
 
 databaseService.verifyConnection()
 

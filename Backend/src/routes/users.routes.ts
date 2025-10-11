@@ -1,5 +1,10 @@
 import { Router } from 'express'
-import { loginController, logoutController, refreshTokenController, registerController } from '~/controllers/users.controllers'
+import {
+  loginController,
+  logoutController,
+  refreshTokenController,
+  registerController
+} from '~/controllers/users.controllers'
 import {
   accessTokenValidator,
   loginValidator,
