@@ -5,17 +5,15 @@ import { UserRole } from '~/types/domain'
 import { hashPassword } from '~/utils/crypto'
 import { verifyAccessToken } from '~/utils/common'
 import { Request } from 'express'
-
-import userService from '~/services/users.services'
-import databaseService from '~/services/database.services'
-import User from '~/models/schemas/User.schema'
-import ErrorWithStatus from '~/models/Errors'
-import HTTP_STATUS from '~/constants/httpStatus'
 import { verifyToken } from '~/utils/jwt'
 import { envConfig } from '~/constants/config'
 import { JsonWebTokenError } from 'jsonwebtoken'
 import { capitalize } from 'lodash'
-import { RefreshTokenType } from '~/models/schemas/RefreshToken.schema'
+
+import userService from '~/services/users.services'
+import databaseService from '~/services/database.services'
+import ErrorWithStatus from '~/models/Errors'
+import HTTP_STATUS from '~/constants/httpStatus'
 
 const user_roles: UserRole[] = ['attendee', 'organizer']
 
@@ -41,27 +39,6 @@ const passwordSchema: ParamSchema = {
     errorMessage: USERS_MESSAGES.STRONG_PASSWORD
   }
 }
-
-const confirmPasswordSchema = (customField: string): ParamSchema => ({
-  notEmpty: {
-    errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_IS_REQUIRED
-  },
-  isString: {
-    errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_A_STRING
-  },
-  isLength: {
-    options: { min: 8, max: 24 },
-    errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_FROM_8_TO_24
-  },
-  custom: {
-    options: (value, { req }) => {
-      if (value !== req.body[customField]) {
-        throw new Error(USERS_MESSAGES.CONFIRM_PASSWORD_DOES_NOT_MATCH_PASSWORD)
-      }
-      return true
-    }
-  }
-})
 
 const nameSchema: ParamSchema = {
   notEmpty: {
@@ -94,6 +71,27 @@ const imageSchema: ParamSchema = {
     errorMessage: USERS_MESSAGES.IMAGE_URL_MUST_BE_BETWEEN_1_AND_400
   }
 }
+
+const confirmPasswordSchema = (customField: string): ParamSchema => ({
+  notEmpty: {
+    errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_IS_REQUIRED
+  },
+  isString: {
+    errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_A_STRING
+  },
+  isLength: {
+    options: { min: 8, max: 24 },
+    errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_FROM_8_TO_24
+  },
+  custom: {
+    options: (value, { req }) => {
+      if (value !== req.body[customField]) {
+        throw new Error(USERS_MESSAGES.CONFIRM_PASSWORD_DOES_NOT_MATCH_PASSWORD)
+      }
+      return true
+    }
+  }
+})
 
 export const registerValidator = validate(
   checkSchema(
@@ -142,7 +140,7 @@ export const loginValidator = validate(
         trim: true,
         custom: {
           options: async (value, { req }) => {
-            const userRow = await databaseService.users<User>(
+            const userRow = await databaseService.users(
               `SELECT id FROM users WHERE email=$1 AND password_hash=$2`,
               [value, hashPassword(req.body.password)]
             )
@@ -202,7 +200,7 @@ export const refreshTokenValidator = validate(
                   token: value,
                   secretOrPublicKey: envConfig.jwtSecretRefreshToken as string
                 }),
-                databaseService.refresh_tokens<RefreshTokenType>(
+                databaseService.refresh_tokens(
                   `SELECT token_hash FROM refresh_tokens WHERE token_hash=$1`,
                   [value]
                 )

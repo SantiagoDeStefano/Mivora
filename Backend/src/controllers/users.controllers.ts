@@ -1,7 +1,13 @@
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { USERS_MESSAGES } from '~/constants/messages'
-import { LoginRequestBody, LogoutRequestBody, RegisterRequestBody } from '~/models/requests/users.requests'
+import {
+  LoginRequestBody,
+  LogoutRequestBody,
+  RefreshTokenRequestBody,
+  RegisterRequestBody,
+  TokenPayload
+} from '~/models/requests/users.requests'
 import { UUIDv4 } from '~/types/common'
 import userService from '~/services/users.services'
 
@@ -37,6 +43,20 @@ export const logoutController = async (
   const { refresh_token } = req.body
   const result = await userService.logout(refresh_token)
   res.json({
+    result
+  })
+  return
+}
+
+export const refreshTokenController = async (
+  req: Request<ParamsDictionary, unknown, RefreshTokenRequestBody>,
+  res: Response
+): Promise<void> => {
+  const { refresh_token } = req.body
+  const { user_id, exp } = req.decoded_refresh_token as TokenPayload
+  const result = await userService.refreshToken({ user_id, refresh_token, exp })
+  res.json({
+    message: USERS_MESSAGES.LOGOUT_SUCCESS,
     result
   })
   return

@@ -3,8 +3,6 @@ import pg from 'pg'
 
 const { Pool } = pg
 
-type RowBase = pg.QueryResultRow
-
 class DatabaseService {
   private pool: pg.Pool
 
@@ -26,9 +24,9 @@ class DatabaseService {
       throw error
     }
   }
-  users = <T extends RowBase>(sqlQuery: string, params?: string[]) => this.pool.query<T>(sqlQuery, params)
-  user_roles = <T extends RowBase>(sqlQuery: string, params?: string[]) => this.pool.query<T>(sqlQuery, params)
-  refresh_tokens = <T extends RowBase>(sqlQuery: string, params?: any[]) => this.pool.query<T>(sqlQuery, params)
+  users = (sqlQuery: string, params?: string[]) => this.pool.query(sqlQuery, params)
+  user_roles = (sqlQuery: string, params?: string[]) => this.pool.query(sqlQuery, params)
+  refresh_tokens = (sqlQuery: string, params?: any[]) => this.pool.query(sqlQuery, params)
 }
 
 const databaseService = new DatabaseService()

@@ -1,10 +1,11 @@
 import { defaultErrorHandler } from './middlewares/errors.middlewares'
+import { envConfig } from './constants/config'
 
 import databaseService from './services/database.services'
 import express from 'express'
 import usersRouter from './routes/users.routes'
 
-const PORT = 4000
+const PORT = envConfig
 
 const app = express()
 
