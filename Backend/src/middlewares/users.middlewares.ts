@@ -16,6 +16,7 @@ import userService from '~/services/users.services'
 import databaseService from '~/services/database.services'
 import ErrorWithStatus from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpStatus'
+import LIMIT_MIN_MAX from '~/constants/limits'
 
 // Allowed user roles
 const user_roles: UserRole[] = ['attendee', 'organizer']
@@ -29,16 +30,16 @@ const passwordSchema: ParamSchema = {
     errorMessage: USERS_MESSAGES.PASSWORD_MUST_BE_A_STRING
   },
   isLength: {
-    options: { min: 8, max: 24 },
+    options: { min: LIMIT_MIN_MAX.PASSWORD_LENGTH_MIN, max: LIMIT_MIN_MAX.PASSWORD_LENGTH_MAX },
     errorMessage: USERS_MESSAGES.PASSWORD_MUST_BE_FROM_8_TO_24
   },
   isStrongPassword: {
     options: {
-      minLength: 8,
-      minLowercase: 1,
-      minUppercase: 1,
-      minNumbers: 1,
-      minSymbols: 1
+      minLength: LIMIT_MIN_MAX.STRONG_PASSWORD_MIN_LENGTH,
+      minLowercase: LIMIT_MIN_MAX.STRONG_PASSWORD_MIN_LOWERCASE,
+      minUppercase: LIMIT_MIN_MAX.STRONG_PASSWORD_MIN_UPPERCASE,
+      minNumbers: LIMIT_MIN_MAX.STRONG_PASSWORD_MIN_NUMBER,
+      minSymbols: LIMIT_MIN_MAX.STRONG_PASSWORD_MIN_SYMBOL
     },
     errorMessage: USERS_MESSAGES.STRONG_PASSWORD
   }
@@ -54,8 +55,8 @@ const nameSchema: ParamSchema = {
   },
   isLength: {
     options: {
-      min: 3,
-      max: 100
+      min: LIMIT_MIN_MAX.NAME_LENGTH_MIN,
+      max: LIMIT_MIN_MAX.NAME_LENGTH_MAX
     },
     errorMessage: USERS_MESSAGES.NAME_LENGTH_MUST_BE_FROM_3_TO_100
   },
@@ -71,8 +72,8 @@ const imageSchema: ParamSchema = {
   },
   isLength: {
     options: {
-      min: 1,
-      max: 400
+      min: LIMIT_MIN_MAX.IMAGE_LENGTH_MIN,
+      max: LIMIT_MIN_MAX.IMAGE_LENGTH_MAX
     },
     errorMessage: USERS_MESSAGES.IMAGE_URL_MUST_BE_BETWEEN_1_AND_400
   }
@@ -87,7 +88,7 @@ const confirmPasswordSchema = (customField: string): ParamSchema => ({
     errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_A_STRING
   },
   isLength: {
-    options: { min: 8, max: 24 },
+    options: { min: LIMIT_MIN_MAX.PASSWORD_LENGTH_MIN, max: LIMIT_MIN_MAX.PASSWORD_LENGTH_MAX },
     errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_FROM_8_TO_24
   },
   custom: {
