@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { ParamsDictionary } from 'express-serve-static-core'
+import { NextFunction, ParamsDictionary } from 'express-serve-static-core'
 import { USERS_MESSAGES } from '~/constants/messages'
 import {
   LoginRequestBody,
@@ -60,4 +60,13 @@ export const refreshTokenController = async (
     result
   })
   return
+}
+
+export const getMeController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const user = await userService.getMe(user_id)
+  res.json({
+    message: USERS_MESSAGES.GET_PROFILE_SUCCESS,
+    user
+  })
 }
