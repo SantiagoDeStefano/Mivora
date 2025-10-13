@@ -1,0 +1,442 @@
+openapi: 3.0.4
+info:
+  title: Twitter clone TypeScript - 2025
+  description: |-
+    This API provides the backend services for a social media platform similar to Twitter.  
+    It includes features for user authentication and profile management, media upload and streaming, 
+    tweet creation and interaction, search functionality, and real-time conversations.  
+    The system is built with scalability, security, and modern REST API design principles in mind.
+    Some useful links:
+    - [The Twitter's clone repository](https://github.com/SantiagoDeStefano/Twitter)
+    - [The source API definition for the Twitter's clone](https://github.com/SantiagoDeStefano/Twitter/blob/master/twitter-swagger.yaml)
+  contact:
+    email: ngpham.2807@gmail.com
+  version: 0.0.1
+servers:
+  - url: http://localhost:4000
+    description: Local server
+tags:
+  - name: users
+    description: Everything about Users's requests
+paths:
+  /users/login:
+    post:
+      tags:
+        - users
+      summary: Logs user into the system
+      operationId: loginUser
+      requestBody:
+        description: The user login credentials
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginBody'
+      responses:
+        '200':
+          description: Login successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Login successfully
+                  data:
+                    $ref: '#/components/schemas/AuthenticateSuccessfully'
+
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Validation error'
+                  errors:
+                    type: object
+                    properties:
+                      email:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                            example: 'field'
+                          value:
+                            type: string
+                            example: 'Non-existent-Email@gmail.com'
+                          msg:
+                            type: string
+                            example: 'Email or password is incorrect'
+                          path:
+                            type: string
+                            example: 'email'
+                          location:
+                            type: string
+                            example: 'body'
+      security: []
+  /users/register:
+    post:
+      tags:
+        - users
+      summary: Registers a new user
+      operationId: registerUser
+      requestBody:
+        description: The user registration credentials
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterBody'
+      responses:
+        '200':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User registered successfully
+                  result:
+                    type: object
+                    properties:
+                      access_token:
+                        type: string
+                        example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjg0NmE5MjJjOGQ2YzYwYzI5ZWM5MmQzIiwidG9rZW5fdHlwZSI6MCwidmVyaWZ5IjoxLCJpYXQiOjE3NTI1ODk5MzYsImV4cCI6MTc1MjU4OTk2Nn0.N0NpQZDcu-gMpXLApVimd0etDPJoz7cp6ksGsdbP1WA'
+                      refresh_token:
+                        type: string
+                        example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjg0NmE5MjJjOGQ2YzYwYzI5ZWM5MmQzIiwidG9rZW5fdHlwZSI6MSwidmVyaWZ5IjoxLCJpYXQiOjE3NTI1ODk5MzYsImV4cCI6MTc2MTIyOTkzNn0.C4W_Me1Di-owhrpj1VJ6j-ImoPtWMy6QMPT6R-uJ4a8'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Validation error'
+                  errors:
+                    type: object
+                    properties:
+                      email:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                            example: 'field'
+                          value:
+                            type: string
+                            example: 'TNTV@gmail.com'
+                          msg:
+                            type: string
+                            example: 'Email already exists'
+                          path:
+                            type: string
+                            example: 'email'
+                          location:
+                            type: string
+                            example: 'body'
+  /users/refresh-token:
+    post:
+      tags:
+        - users
+      summary: Refreshes the access token
+      operationId: refreshToken
+      requestBody:
+        description: The refresh token to be used for generating a new access token
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+                  example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjg0NmE5MjJjOGQ2YzYwYzI5ZWM5MmQzIiwidG9rZW5fdHlwZSI6MSwidmVyaWZ5IjoxLCJpYXQiOjE3NTI1ODk5MzYsImV4cCI6MTc2MTIyOTkzNn0.C4W_Me1Di-owhrpj1VJ6j-ImoPtWMy6QMPT6R-uJ4a8'
+      responses:
+        '200':
+          description: Get new access token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: New tokens returned successfully
+                  result:
+                    $ref: '#/components/schemas/AuthenticateSuccessfully'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Used refresh token or does not exist'
+  /users/logout:
+    post:
+      tags:
+        - users
+      summary: Logs out the current user
+      operationId: logoutUser
+      requestBody:
+        description: The logout request does not require a body
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+                  example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjg0Y2UzN2Q4MzY0MmNlM2ZlMmMxZWIzIiwidG9rZW5fdHlwZSI6MSwidmVyaWZ5IjoxLCJpYXQiOjE3NTMyODUwNDQsImV4cCI6MTc1NDU4MTA0NH0.8iQbK7lvM7_KqypTvRYFsiDTAx2UTtpxJG79p777XU4'
+              required:
+                - refresh_token
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User logged out successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Logout successfully'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Used refresh token or does not exist'
+
+components:
+  schemas:
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+          example: TNTV@gmail.com
+        password:
+          type: string
+          example: qiefhuasdsa@23irQ
+    RegisterBody:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'Lam Uyen Phuong'
+        email:
+          type: string
+          example: 'TNTV1@gmail.com@gmail.com'
+        password:
+          type: string
+          example: 'qiefhuasdsa@23irQ'
+        confirm_password:
+          type: string
+          example: 'qiefhuasdsa@23irQ'
+    AuthenticateSuccessfully:
+      type: object
+      properties:
+        result:
+          type: object
+          properties:
+            access_token:
+              type: string
+              example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjg0NmE5MjJjOGQ2YzYwYzI5ZWM5MmQzIiwidG9rZW5fdHlwZSI6MCwidmVyaWZ5IjoxLCJpYXQiOjE3NTI1ODk5MzYsImV4cCI6MTc1MjU4OTk2Nn0.N0NpQZDcu-gMpXLApVimd0etDPJoz7cp6ksGsdbP1WA'
+            refresh_token:
+              type: string
+              example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjg0NmE5MjJjOGQ2YzYwYzI5ZWM5MmQzIiwidG9rZW5fdHlwZSI6MSwidmVyaWZ5IjoxLCJpYXQiOjE3NTI1ODk5MzYsImV4cCI6MTc2MTIyOTkzNn0.C4W_Me1Di-owhrpj1VJ6j-ImoPtWMy6QMPT6R-uJ4a8'
+    User:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: 'Get my profile success'
+        result:
+          type: object
+          properties:
+            _id:
+              type: string
+              format: MongoDB ObjectId
+              example: '684ce37d83642ce3fe2c1eb3'
+            name:
+              type: string
+              example: 'Pham Lam Ha Vu'
+            email:
+              type: string
+              example: 'ngpham82@gmail.com'
+            date_of_birth:
+              type: string
+              format: ISO8601
+              example: '2020-06-06T08:26:33.781Z'
+            created_at:
+              type: string
+              format: ISO8601
+              example: '2025-06-14T02:50:37.452Z'
+            updated_at:
+              type: string
+              format: ISO8601
+              example: '2025-06-14T13:36:00.963Z'
+            forgot_password_token:
+              type: string
+              example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjg0Y2UzN2Q4MzY0MmNlM2ZlMmMxZWIzIiwidG9rZW5fdHlwZSI6MiwidmVyaWZ5IjowLCJpYXQiOjE3NDk4NzI4MjIsImV4cCI6MTc0OTk1OTIyMn0.SJeHCEqSNH12Ph1xYE7a1Q9zKyw-mWalw4v-4RdNIv4'
+            verify:
+              allOf:
+                - $ref: '#/components/schemas/UserVerifyStatus'
+              example: 1
+            twitter_circle:
+              type: array
+              items:
+                type: string
+                format: MongoDB ObjectId
+              example: ['67eea4b71938eb2f7eef13fc', '67eea4b71938eb2f7eef13fd']
+            bio:
+              type: string
+              example: 'This is my bio'
+            location:
+              type: string
+              example: ''
+            website:
+              type: string
+              example: ''
+            username:
+              type: string
+              example: 'user684ce37d83642ce3fe2c1eb3'
+            avatar:
+              type: string
+              example: 'http://localhost:4000/PLHV_avatar.jpg'
+            cover_photo:
+              type: string
+              example: 'http://localhost:4000/PLHV_cover_photo.jpg'
+    Tweet:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Unique identifier for the created tweet
+          format: MongoDB ObjectId
+          example: '688324677f7eef1aa5276cf3'
+        user_id:
+          type: string
+          description: ID of the user who created the tweet
+          format: MongoDB ObjectId
+          example: '687f573fb7350b9acf71039b'
+        type:
+          $ref: '#/components/schemas/TweetType'
+        audience:
+          $ref: '#/components/schemas/TweetAudience'
+        content:
+          type: string
+          description: The text content of the tweet/comment
+          example: 'This is child comment, created for retweet test'
+        parent_id:
+          type: string
+          nullable: true
+          description: ID of the parent tweet/comment. null when it's an original tweet
+          format: MongoDB ObjectId
+          example: '68240ccd292f934777bd5dfb'
+        hashtags:
+          type: array
+          items:
+            type: string
+          format: MongoDB ObjectId
+          description: Array of hashtag IDs used in the tweet
+          example: ['688324677f7eef1aa5276cf2']
+        mentions:
+          type: array
+          items:
+            type: string
+          description: Array of user IDs that are mentioned in the tweet
+          example: ['68205e19d3d79ee7d9fc10db']
+        medias:
+          type: array
+          items:
+            type: string
+          description: Array of media attachment IDs
+          example: []
+        guest_views:
+          type: integer
+          description: Number of views from guest users
+          example: 0
+        user_views:
+          type: integer
+          description: Number of views from registered users
+          example: 0
+        created_at:
+          type: string
+          format: ISO8601
+          description: Timestamp when the tweet was created
+          example: '2025-07-25T06:29:59.749Z'
+        updated_at:
+          type: string
+          format: ISO8601
+          description: Timestamp when the tweet was last updated
+          example: '2025-07-25T06:29:59.749Z'
+    UserVerifyStatus:
+      type: integer
+      description: |
+        User verification status:
+        - 0 = Unverified
+        - 1 = Verified
+        - 2 = Banned
+      enum: [0, 1, 2]
+    MediaType:
+      type: integer
+      description: |
+        Media type:
+        - 0 = Image
+        - 1 = Video
+        - 2 = HLS
+      enum: [0, 1, 2]
+    EncodingStatus:
+      type: integer
+      description: |
+        Video encoding status:
+        - 0 = Pending
+        - 1 = Processing
+        - 2 = Successfully
+        - 3 = Failed
+      enum: [0, 1, 2, 3]
+    TweetType:
+      type: integer
+      description: |
+        Tweet type:
+        - 0 = Tweet
+        - 1 = Retweet
+        - 2 = Comment
+        - 3 = QuoteTweet
+      enum: [0, 1, 2, 3]
+    TweetAudience:
+      type: integer
+      description: |
+        Audience visibility setting:
+        - 0 = Everyone
+        - 1 = TwitterCircle
+      enum: [0, 1]
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Use the `Bearer` scheme to authenticate requests. Include the token in the `Authorization` header as follows:
+        ```
+        Authorization: Bearer <your_token>
+        ```

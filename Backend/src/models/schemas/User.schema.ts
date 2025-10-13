@@ -2,7 +2,7 @@ import { UUIDv4 } from '~/types/common'
 import { newUUIDv4 } from '~/utils/uuid'
 import pg from 'pg'
 
-export interface UserType extends pg.QueryResultRow {
+interface UserType extends pg.QueryResultRow {
   id?: UUIDv4
   name: string
   email: string

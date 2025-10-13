@@ -27,6 +27,7 @@ export interface RefreshTokenRequestBody {
 
 export interface TokenPayload extends JwtPayload {
   user_id: UUIDv4
+  role: UserRole
   token_type: TokenType
   iat: number
   exp: number

@@ -4,19 +4,23 @@ import { validate } from '~/utils/validation'
 import { UserRole } from '~/types/domain'
 import { hashPassword } from '~/utils/crypto'
 import { verifyAccessToken } from '~/utils/common'
-import { Request } from 'express'
+import { Request, Response } from 'express'
 import { verifyToken } from '~/utils/jwt'
 import { envConfig } from '~/constants/config'
 import { JsonWebTokenError } from 'jsonwebtoken'
 import { capitalize } from 'lodash'
+import { NextFunction } from 'express-serve-static-core'
+import { TokenPayload } from '~/models/requests/users.requests'
 
 import userService from '~/services/users.services'
 import databaseService from '~/services/database.services'
 import ErrorWithStatus from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpStatus'
 
+// Allowed user roles
 const user_roles: UserRole[] = ['attendee', 'organizer']
 
+// Shared password rules
 const passwordSchema: ParamSchema = {
   notEmpty: {
     errorMessage: USERS_MESSAGES.PASSWORD_IS_REQUIRED
@@ -40,6 +44,7 @@ const passwordSchema: ParamSchema = {
   }
 }
 
+// Shared name rules
 const nameSchema: ParamSchema = {
   notEmpty: {
     errorMessage: USERS_MESSAGES.NAME_IS_REQUIRED
@@ -57,6 +62,7 @@ const nameSchema: ParamSchema = {
   trim: true
 }
 
+// Optional avatar URL rules
 const imageSchema: ParamSchema = {
   trim: true,
   optional: true,
@@ -72,6 +78,7 @@ const imageSchema: ParamSchema = {
   }
 }
 
+// Confirm-password must match another field
 const confirmPasswordSchema = (customField: string): ParamSchema => ({
   notEmpty: {
     errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_IS_REQUIRED
@@ -93,6 +100,7 @@ const confirmPasswordSchema = (customField: string): ParamSchema => ({
   }
 })
 
+// Register: validate body fields and unique email
 export const registerValidator = validate(
   checkSchema(
     {
@@ -130,6 +138,7 @@ export const registerValidator = validate(
   )
 )
 
+// Login: check email/password combo against DB and attach user_id
 export const loginValidator = validate(
   checkSchema(
     {
@@ -140,10 +149,10 @@ export const loginValidator = validate(
         trim: true,
         custom: {
           options: async (value, { req }) => {
-            const userRow = await databaseService.users(
-              `SELECT id FROM users WHERE email=$1 AND password_hash=$2`,
-              [value, hashPassword(req.body.password)]
-            )
+            const userRow = await databaseService.users(`SELECT id FROM users WHERE email=$1 AND password_hash=$2`, [
+              value,
+              hashPassword(req.body.password)
+            ])
             if (userRow.rows.length <= 0) {
               throw new Error(USERS_MESSAGES.EMAIL_OR_PASSWORD_IS_INCORRECT)
             }
@@ -165,6 +174,7 @@ export const loginValidator = validate(
   )
 )
 
+// Access token: verify "Authorization: Bearer <token>" header
 export const accessTokenValidator = validate(
   checkSchema(
     {
@@ -181,6 +191,7 @@ export const accessTokenValidator = validate(
   )
 )
 
+// Refresh token: verify JWT and ensure it exists in DB (not reused)
 export const refreshTokenValidator = validate(
   checkSchema(
     {
@@ -195,15 +206,13 @@ export const refreshTokenValidator = validate(
               })
             }
             try {
+              // Verify token and check presence in persistence
               const [decoded_refresh_token, refresh_token_row] = await Promise.all([
                 verifyToken({
                   token: value,
                   secretOrPublicKey: envConfig.jwtSecretRefreshToken as string
                 }),
-                databaseService.refresh_tokens(
-                  `SELECT token_hash FROM refresh_tokens WHERE token_hash=$1`,
-                  [value]
-                )
+                databaseService.refresh_tokens(`SELECT token_hash FROM refresh_tokens WHERE token_hash=$1`, [value])
               ])
               if (refresh_token_row.rows.length <= 0) {
                 throw new ErrorWithStatus({
@@ -211,14 +220,17 @@ export const refreshTokenValidator = validate(
                   status: HTTP_STATUS.UNAUTHORIZED
                 })
               }
+              // Attach decoded payload for downstream handlers
               req.decoded_refresh_token = decoded_refresh_token
             } catch (error) {
+              // Normalize JWT errors to 401 with capitalized message
               if (error instanceof JsonWebTokenError) {
                 throw new ErrorWithStatus({
                   message: capitalize((error as JsonWebTokenError).message),
                   status: HTTP_STATUS.UNAUTHORIZED
                 })
               }
+              // Re-throw non-JWT errors
               throw error
             }
             return true
@@ -229,3 +241,17 @@ export const refreshTokenValidator = validate(
     ['body']
   )
 )
+
+// User's role: verify event's creator role is 'organizer'
+export const organizerValidator = (req: Request, res: Response, next: NextFunction) => {
+  const { role } = req.decoded_authorization as TokenPayload
+  if (role != 'organizer') {
+    return next(
+      new ErrorWithStatus({
+        message: USERS_MESSAGES.EVENT_CREATOR_MUST_BE_ORGANIZER,
+        status: HTTP_STATUS.FORBIDDEN
+      })
+    )
+  }
+  next()
+}

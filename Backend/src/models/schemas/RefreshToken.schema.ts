@@ -2,7 +2,7 @@ import { UUIDv4 } from '~/types/common'
 import { newUUIDv4 } from '~/utils/uuid'
 import pg from 'pg'
 
-export interface RefreshTokenType extends pg.QueryResultRow {
+interface RefreshTokenType extends pg.QueryResultRow {
   id?: UUIDv4
   user_id: UUIDv4
   token_hash: string

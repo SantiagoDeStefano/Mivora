@@ -25,6 +25,7 @@ export const USERS_MESSAGES = {
   EMAIL_VERIFY_SUCCESS: 'Email verified successfully',
   EMAIL_VERIFY_TOKEN_IS_REQUIRED: 'Email verify token is required',
   EMAIL_OR_PASSWORD_IS_INCORRECT: 'Email or password is incorrect',
+  EVENT_CREATOR_MUST_BE_ORGANIZER: 'Event creator must be organizer',
 
   FORGOT_PASSWORD_TOKEN_REQUIRED: 'Forgot password token is required',
   FOLLOW_SUCCESS: 'Follow successfully',

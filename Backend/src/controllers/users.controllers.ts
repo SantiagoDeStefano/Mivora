@@ -56,7 +56,7 @@ export const refreshTokenController = async (
   const { user_id, exp } = req.decoded_refresh_token as TokenPayload
   const result = await userService.refreshToken({ user_id, refresh_token, exp })
   res.json({
-    message: USERS_MESSAGES.LOGOUT_SUCCESS,
+    message: USERS_MESSAGES.REFRESH_TOKEN_SUCCESS,
     result
   })
   return
