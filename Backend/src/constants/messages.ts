@@ -61,7 +61,7 @@ export const USERS_MESSAGES = {
   RESEND_VERIFY_EMAIL_SUCCESS: 'Resend verify email successfully',
   RESET_PASSWORD_SUCCESS: 'Reset password successfully',
   REFRESH_TOKEN_SUCCESS: 'New tokens returned successfully',
-  ROLE_MUST_BE_ATTENDEE_OR_ORGANIZER: 'Role must be Attendee or Organizer',
+  ROLE_MUST_BE_ATTENDEE_OR_ORGANIZER: 'Role must be Attendee or organizer',
   ROLE_MUST_BE_A_STRING: 'Role must be a string',
   ROLE_IS_REQUIRED: 'Role is required',
 
@@ -73,6 +73,8 @@ export const USERS_MESSAGES = {
   UPDATE_ME_SUCCESS: 'Update me successfully',
   UNFOLLOW_SUCCESS: 'Unfollowed successfully',
   USERNAME_ALREADY_EXISTS: 'Username already exists',
+  UPDATE_ROLE_MUST_BE_ORGANIZER: 'Update role must be organizer',
+  USER_ALREADY_HAVE_THIS_ROLE: 'User already have this role',
 
   VALIDATION_ERROR: 'Validation error',
   VERIFY_FORGOT_PASSWORD_SUCCESS: 'Verify forgot password successfully',

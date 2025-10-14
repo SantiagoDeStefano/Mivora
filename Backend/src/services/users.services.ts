@@ -1,6 +1,6 @@
 import { envConfig } from '~/constants/config'
 import { TokenType } from '~/constants/enums'
-import { RegisterRequestBody } from '~/models/requests/users.requests'
+import { RegisterRequestBody, UpdateMeRequestBody } from '~/models/requests/users.requests'
 import { UUIDv4 } from '~/types/common'
 import { hashPassword } from '~/utils/crypto'
 import { signToken, verifyToken } from '~/utils/jwt'
@@ -143,6 +143,14 @@ class UserService {
     return userRow.rows.length > 0
   }
 
+  async checkRoleExist(user_id: UUIDv4, role: string) {
+    const userRow = await databaseService.user_roles(`SELECT role FROM user_roles WHERE user_id=$1 AND role=$2`, [
+      user_id,
+      'organizer'
+    ])
+    return userRow.rows.length > 0
+  }
+
   // Refresh flow: issues new access + refresh tokens, deletes the old refresh token, and inserts the new one.
   // Keeps the same exp for the new refresh token if provided (rotation with preserved expiry).
   async refreshToken({ user_id, refresh_token, exp }: { user_id: UUIDv4; refresh_token: string; exp: number }) {
@@ -173,8 +181,27 @@ class UserService {
   }
 
   async getMe(user_id: UUIDv4) {
-    const user = await databaseService.users(`SELECT name, email, avatar_url FROM users WHERE id=$1`, [user_id])
+    const user = await databaseService.users(
+      `SELECT users.name, users.email, users.avatar_url, ARRAY_AGG(user_roles.role) AS role FROM users JOIN user_roles ON users.id = user_roles.user_id WHERE id=$1 GROUP BY users.id, users.name, users.email, users.avatar_url;`,
+      [user_id]
+    )
     return user.rows[0]
+  }
+
+  async updateMe(user_id: UUIDv4, body: UpdateMeRequestBody) {
+    const { name, avatar_url, role } = body
+    const newName = name ? name : ''
+    const newAvatarUrl = avatar_url ? avatar_url : ''
+
+    await databaseService.users(`UPDATE users SET name=$1, avatar_url=$2 WHERE id=$3`, [newName, newAvatarUrl, user_id])
+    if (role) {
+      await databaseService.user_roles(`INSERT INTO user_roles(user_id, role) VALUES($1, $2)`, [user_id, role])
+    }
+    const updatedUser = await databaseService.users(
+      `SELECT users.name, users.email, users.avatar_url, ARRAY_AGG(user_roles.role) AS role FROM users JOIN user_roles ON users.id = user_roles.user_id WHERE id=$1 GROUP BY users.id, users.name, users.email, users.avatar_url;`,
+      [user_id]
+    )
+    return updatedUser.rows[0]
   }
 }
 

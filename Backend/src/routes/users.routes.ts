@@ -4,13 +4,15 @@ import {
   loginController,
   logoutController,
   refreshTokenController,
-  registerController
+  registerController,
+  updateMeController
 } from '~/controllers/users.controllers'
 import {
   accessTokenValidator,
   loginValidator,
   refreshTokenValidator,
-  registerValidator
+  registerValidator,
+  updateMeValidator
 } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
 
@@ -56,6 +58,14 @@ usersRouter.post('/refresh-token', refreshTokenValidator, wrapRequestHandler(ref
  * Headers: { Authorization: Bearer <access_token> } * 
  */
 usersRouter.get('/me', accessTokenValidator, wrapRequestHandler(getMeController))
+
+/*
+ * Description: Update my profile
+ * Path: /me
+ * Method: PATCH
+ * Headers: { Authorization: Bearer <access_token> }
+*/
+usersRouter.patch('/me', accessTokenValidator, updateMeValidator, wrapRequestHandler(updateMeController))
 
 
 export default usersRouter

@@ -244,9 +244,13 @@ export const refreshTokenValidator = validate(
 )
 
 // User's role: verify event's creator role is 'organizer'
-export const organizerValidator = (req: Request, res: Response, next: NextFunction) => {
-  const { role } = req.decoded_authorization as TokenPayload
-  if (role != 'organizer') {
+export const organizerValidator = async (req: Request, res: Response, next: NextFunction) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const role = await databaseService.user_roles(`SELECT role FROM user_roles WHERE user_id=$1 AND role=$2`, [
+    user_id,
+    'organizer'
+  ])
+  if (role.rows.length <= 0) {
     return next(
       new ErrorWithStatus({
         message: USERS_MESSAGES.EVENT_CREATOR_MUST_BE_ORGANIZER,
@@ -256,3 +260,38 @@ export const organizerValidator = (req: Request, res: Response, next: NextFuncti
   }
   next()
 }
+
+export const updateMeValidator = validate(
+  checkSchema(
+    {
+      name: nameSchema,
+      avatar_url: imageSchema,
+      role: {
+        optional: { options: { nullable: true } },
+        isString: {
+          errorMessage: USERS_MESSAGES.ROLE_MUST_BE_A_STRING
+        },
+        isIn: {
+          options: [user_roles[1]],
+          errorMessage: USERS_MESSAGES.UPDATE_ROLE_MUST_BE_ORGANIZER
+        },
+        custom: {
+          options: async (value, { req }) => {
+            // Only allow changing to 'organizer'
+            if (value != 'organizer') {
+              throw new Error(USERS_MESSAGES.UPDATE_ROLE_MUST_BE_ORGANIZER)
+            }
+            // Prevent updating to the same role
+            const { user_id } = req.decoded_authorization
+            const isExistRole = await userService.checkRoleExist(user_id, value)
+            if (isExistRole) {
+              throw new Error(USERS_MESSAGES.USER_ALREADY_HAVE_THIS_ROLE)
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)

@@ -6,10 +6,12 @@ import {
   LogoutRequestBody,
   RefreshTokenRequestBody,
   RegisterRequestBody,
-  TokenPayload
+  TokenPayload,
+  UpdateMeRequestBody
 } from '~/models/requests/users.requests'
 import { UUIDv4 } from '~/types/common'
 import userService from '~/services/users.services'
+import { body } from 'express-validator'
 
 export const registerController = async (
   req: Request<ParamsDictionary, unknown, RegisterRequestBody>,
@@ -28,6 +30,7 @@ export const loginController = async (
   res: Response
 ): Promise<void> => {
   const user_id = req.user_id as UUIDv4
+  console.log(user_id)
   const result = await userService.login(user_id)
   res.json({
     message: USERS_MESSAGES.LOGIN_SUCCESS,
@@ -64,9 +67,24 @@ export const refreshTokenController = async (
 
 export const getMeController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { user_id } = req.decoded_authorization as TokenPayload
-  const user = await userService.getMe(user_id)
+  const result = await userService.getMe(user_id)
   res.json({
     message: USERS_MESSAGES.GET_PROFILE_SUCCESS,
-    user
+    result
   })
+  return
+}
+
+export const updateMeController = async (
+  req: Request<ParamsDictionary, unknown, UpdateMeRequestBody>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const result = await userService.updateMe(user_id, req.body)
+  res.json({
+    message: USERS_MESSAGES.UPDATE_ME_SUCCESS,
+    result
+  })
+  return
 }
