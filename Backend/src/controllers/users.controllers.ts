@@ -30,7 +30,6 @@ export const loginController = async (
   res: Response
 ): Promise<void> => {
   const user_id = req.user_id as UUIDv4
-  console.log(user_id)
   const result = await userService.login(user_id)
   res.json({
     message: USERS_MESSAGES.LOGIN_SUCCESS,

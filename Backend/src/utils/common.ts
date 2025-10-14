@@ -32,3 +32,12 @@ export const verifyAccessToken = async (access_token: string, req?: Request) => 
     })
   }
 }
+
+export function parsePgArray(pgArray: unknown): string[] {
+  if (!pgArray) return []
+  if (Array.isArray(pgArray)) return pgArray // already an array
+  if (typeof pgArray === 'string') {
+    return pgArray.replace(/[{}]/g, '').split(',').filter(Boolean)
+  }
+  return []
+}

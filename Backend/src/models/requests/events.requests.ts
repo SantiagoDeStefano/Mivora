@@ -11,6 +11,7 @@ export interface CreateEventRequestBody {
   start_at: Date
   end_at: Date
   price_cents: number
+  checked_in?: number
   capacity: number
   status?: EventStatus
 }

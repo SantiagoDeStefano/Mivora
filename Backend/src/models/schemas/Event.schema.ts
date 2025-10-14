@@ -13,6 +13,7 @@ export interface EventType extends pg.QueryResultRow {
   start_at: Date
   end_at: Date
   price_cents: number
+  checked_in?: number
   capacity: number
   status?: EventStatus
 }
@@ -27,6 +28,7 @@ export default class Event {
   start_at: Date
   end_at: Date
   price_cents: number
+  checked_in: number
   capacity: number
   status: EventStatus
 
@@ -40,6 +42,7 @@ export default class Event {
     this.start_at = event.start_at
     this.end_at = event.end_at
     this.price_cents = event.price_cents
+    this.checked_in = event.checked_in || 0
     this.capacity = event.capacity
     this.status = event.status || 'draft'
   }

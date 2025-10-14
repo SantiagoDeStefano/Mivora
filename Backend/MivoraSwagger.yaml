@@ -18,6 +18,8 @@ servers:
 tags:
   - name: users
     description: Everything about Users's requests
+  - name: events
+    description: Everything about Event's requests
 paths:
   /users/login:
     post:
@@ -224,7 +226,133 @@ paths:
                   message:
                     type: string
                     example: 'Used refresh token or does not exist'
+  /users/me:
+    get:
+      tags:
+        - users
+      summary: Get current user's information
+      operationId: getCurrentUser
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Current user information retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Get profile successfully
+                  result:
+                    $ref: '#/components/schemas/UserProfile'
+    patch:
+      tags:
+        - users
+      summary: Update current user's information
+      operationId: updateCurrentUser
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
 
+      responses:
+        '200':
+          description: Current user information retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Update me successfully
+                  result:
+                    $ref: '#/components/schemas/UserProfile'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Validation error
+                  errors:
+                    type: object
+                    properties:
+                      role:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                            example: field
+                          value:
+                            type: string
+                            example: organizer
+                          msg:
+                            type: string
+                            example: User already have this role
+                          path:
+                            type: string
+                            example: role
+                          location:
+                            type: string
+                            example: body
+
+  /events:
+    post:
+      tags:
+        - events
+      summary: Create a new event
+      operationId: createEvent
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+      responses:
+        '200':
+          description: Event created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Event created successfully
+                  result:
+                    $ref: '#/components/schemas/Event'
+        '403':
+          description: Event creator must be organizer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Event creator must be organizer'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Access token is required'
 components:
   schemas:
     LoginBody:
@@ -263,132 +391,89 @@ components:
             refresh_token:
               type: string
               example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjg0NmE5MjJjOGQ2YzYwYzI5ZWM5MmQzIiwidG9rZW5fdHlwZSI6MSwidmVyaWZ5IjoxLCJpYXQiOjE3NTI1ODk5MzYsImV4cCI6MTc2MTIyOTkzNn0.C4W_Me1Di-owhrpj1VJ6j-ImoPtWMy6QMPT6R-uJ4a8'
-    User:
+    UserProfile:
       type: object
       properties:
-        msg:
+        name:
           type: string
-          example: 'Get my profile success'
-        result:
-          type: object
-          properties:
-            _id:
-              type: string
-              format: MongoDB ObjectId
-              example: '684ce37d83642ce3fe2c1eb3'
-            name:
-              type: string
-              example: 'Pham Lam Ha Vu'
-            email:
-              type: string
-              example: 'ngpham82@gmail.com'
-            date_of_birth:
-              type: string
-              format: ISO8601
-              example: '2020-06-06T08:26:33.781Z'
-            created_at:
-              type: string
-              format: ISO8601
-              example: '2025-06-14T02:50:37.452Z'
-            updated_at:
-              type: string
-              format: ISO8601
-              example: '2025-06-14T13:36:00.963Z'
-            forgot_password_token:
-              type: string
-              example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjg0Y2UzN2Q4MzY0MmNlM2ZlMmMxZWIzIiwidG9rZW5fdHlwZSI6MiwidmVyaWZ5IjowLCJpYXQiOjE3NDk4NzI4MjIsImV4cCI6MTc0OTk1OTIyMn0.SJeHCEqSNH12Ph1xYE7a1Q9zKyw-mWalw4v-4RdNIv4'
-            verify:
-              allOf:
-                - $ref: '#/components/schemas/UserVerifyStatus'
-              example: 1
-            twitter_circle:
-              type: array
-              items:
-                type: string
-                format: MongoDB ObjectId
-              example: ['67eea4b71938eb2f7eef13fc', '67eea4b71938eb2f7eef13fd']
-            bio:
-              type: string
-              example: 'This is my bio'
-            location:
-              type: string
-              example: ''
-            website:
-              type: string
-              example: ''
-            username:
-              type: string
-              example: 'user684ce37d83642ce3fe2c1eb3'
-            avatar:
-              type: string
-              example: 'http://localhost:4000/PLHV_avatar.jpg'
-            cover_photo:
-              type: string
-              example: 'http://localhost:4000/PLHV_cover_photo.jpg'
-    Tweet:
+          example: Pham Khoi Nguyen
+        email:
+          type: string
+          format: email
+          example: TNTV_6@gmail.com
+        avatar_url:
+          type: string
+          example: example_avt_url
+        role:
+          type: array
+          items:
+            type: string
+            enum: [attendee, organizer]
+          example:
+            - attendee
+            - organizer
+    UpdateUserRequest:
       type: object
+      required: [name, avatar_url, role]
       properties:
-        _id:
+        name:
           type: string
-          description: Unique identifier for the created tweet
-          format: MongoDB ObjectId
-          example: '688324677f7eef1aa5276cf3'
-        user_id:
+          example: Pham Khoi Nguyen
+        avatar_url:
           type: string
-          description: ID of the user who created the tweet
-          format: MongoDB ObjectId
-          example: '687f573fb7350b9acf71039b'
-        type:
-          $ref: '#/components/schemas/TweetType'
-        audience:
-          $ref: '#/components/schemas/TweetAudience'
-        content:
+          example: example_avt_url
+        role:
           type: string
-          description: The text content of the tweet/comment
-          example: 'This is child comment, created for retweet test'
-        parent_id:
+          enum: [attendee, organizer]
+          example: organizer
+    Event:
+      type: object
+      required:
+        - title
+        - location_text
+        - start_at
+        - end_at
+        - price_cents
+        - capacity
+      properties:
+        organizer_id:
           type: string
-          nullable: true
-          description: ID of the parent tweet/comment. null when it's an original tweet
-          format: MongoDB ObjectId
-          example: '68240ccd292f934777bd5dfb'
-        hashtags:
-          type: array
-          items:
-            type: string
-          format: MongoDB ObjectId
-          description: Array of hashtag IDs used in the tweet
-          example: ['688324677f7eef1aa5276cf2']
-        mentions:
-          type: array
-          items:
-            type: string
-          description: Array of user IDs that are mentioned in the tweet
-          example: ['68205e19d3d79ee7d9fc10db']
-        medias:
-          type: array
-          items:
-            type: string
-          description: Array of media attachment IDs
-          example: []
-        guest_views:
+          format: uuid
+          example: 1a2b3c4d-5678-90ab-cdef-1234567890ab
+        title:
+          type: string
+          example: Tech Innovation Summit 2025
+        description:
+          type: string
+          example: A conference exploring emerging technologies and innovation trends.
+        poster_url:
+          type: string
+          format: uri
+          example: https://example.com/posters/tech-summit-2025.jpg
+        location_text:
+          type: string
+          example: 123 Main Street, San Francisco, CA
+        start_at:
+          type: string
+          format: date-time
+          example: 2025-11-20T09:00:00Z
+        end_at:
+          type: string
+          format: date-time
+          example: 2025-11-20T17:00:00Z
+        price_cents:
           type: integer
-          description: Number of views from guest users
-          example: 0
-        user_views:
+          example: 2500
+        checked_in:
           type: integer
-          description: Number of views from registered users
           example: 0
-        created_at:
+        capacity:
+          type: integer
+          example: 150
+        status:
           type: string
-          format: ISO8601
-          description: Timestamp when the tweet was created
-          example: '2025-07-25T06:29:59.749Z'
-        updated_at:
-          type: string
-          format: ISO8601
-          description: Timestamp when the tweet was last updated
-          example: '2025-07-25T06:29:59.749Z'
+          enum: [draft, published, canceled]
+          example: draft
     UserVerifyStatus:
       type: integer
       description: |

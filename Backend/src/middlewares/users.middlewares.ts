@@ -261,6 +261,7 @@ export const organizerValidator = async (req: Request, res: Response, next: Next
   next()
 }
 
+// Validator for updating user info, allowing only name, avatar, and role change to 'organizer' if not already assigned
 export const updateMeValidator = validate(
   checkSchema(
     {

@@ -6,6 +6,7 @@ import { EventStatus } from '~/types/domain'
 
 const event_statuts: EventStatus[] = ['draft', 'published', 'canceled']
 
+// Validator for creating an event with field type checks, length limits, and logical constraints
 export const createEventValidator = validate(
   checkSchema(
     {
@@ -26,28 +27,30 @@ export const createEventValidator = validate(
         trim: true
       },
       description: {
+        optional: { options: { nullable: true } },
         isString: {
           errorMessage: EVENTS_MESSAGES.EVENT_DESCRIPTION_MUST_BE_STRING
         },
         isLength: {
           options: {
-            min: LIMIT_MIN_MAX.EVENT_TITLE_MIN,
-            max: LIMIT_MIN_MAX.EVENT_TITLE_MAX
+            min: LIMIT_MIN_MAX.EVENT_DESCRIPTION_MIN,
+            max: LIMIT_MIN_MAX.EVENT_DESCRIPTION_MAX
           },
           errorMessage: EVENTS_MESSAGES.EVENT_DESCRIPTION_MUST_BE_BETWEEN_10_AND_100
         },
         trim: true
       },
       poster_url: {
+        optional: { options: { nullable: true } },
         isString: {
-          errorMessage: EVENTS_MESSAGES
+          errorMessage: EVENTS_MESSAGES.EVENT_POSTER_URL_MUST_BE_STRING
         },
         isLength: {
           options: {
             min: LIMIT_MIN_MAX.EVENT_POSTER_URL_MIN,
             max: LIMIT_MIN_MAX.EVENT_POSTER_URL_MAX
           },
-          errorMessage: EVENTS_MESSAGES
+          errorMessage: EVENTS_MESSAGES.EVENT_POSTER_URL_MUST_BE_BETWEEN_4_AND_400
         },
         trim: true
       },
@@ -113,6 +116,7 @@ export const createEventValidator = validate(
         }
       },
       status: {
+        optional: { options: { nullable: true } },
         isString: {
           errorMessage: EVENTS_MESSAGES.EVENT_STATUS_MUST_BE_STRING
         },

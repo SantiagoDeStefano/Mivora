@@ -13,6 +13,7 @@ class TweetService {
       start_at,
       end_at,
       price_cents,
+      checked_in,
       capacity,
       status
     } = body
@@ -25,6 +26,7 @@ class TweetService {
       start_at,
       end_at,
       price_cents,
+      checked_in,
       capacity,
       status
     })
@@ -39,10 +41,11 @@ class TweetService {
         start_at, 
         end_at, 
         price_cents, 
+        checked_in,
         capacity, 
         status
         ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
       [
         new_event.id,
         new_event.organizer_id,
@@ -53,11 +56,32 @@ class TweetService {
         new_event.start_at,
         new_event.end_at,
         new_event.price_cents,
+        new_event.checked_in,
         new_event.capacity,
         new_event.status
       ]
     )
-    return new_event.id
+    const newEvent = await databaseService.events(
+      `
+        SELECT
+          organizer_id, 
+          title, 
+          description, 
+          poster_url, 
+          location_text, 
+          start_at, 
+          end_at, 
+          price_cents,
+          checked_in, 
+          capacity, 
+          status
+        FROM
+          events
+        WHERE id=$1
+      `,
+      [new_event.id]
+    )
+    return newEvent.rows[0]
   }
 }
 

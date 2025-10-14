@@ -9,6 +9,7 @@ import { USERS_MESSAGES } from '~/constants/messages'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import User from '~/models/schemas/User.schema'
 import databaseService from '~/services/database.services'
+import { parsePgArray } from '~/utils/common'
 
 class UserService {
   // Signs a short-lived Access Token (used on every API call). Lifetime comes from envConfig.accessTokenExpiresIn.
@@ -185,6 +186,7 @@ class UserService {
       `SELECT users.name, users.email, users.avatar_url, ARRAY_AGG(user_roles.role) AS role FROM users JOIN user_roles ON users.id = user_roles.user_id WHERE id=$1 GROUP BY users.id, users.name, users.email, users.avatar_url;`,
       [user_id]
     )
+    user.rows[0].role = parsePgArray(user.rows[0].role)
     return user.rows[0]
   }
 
@@ -201,6 +203,7 @@ class UserService {
       `SELECT users.name, users.email, users.avatar_url, ARRAY_AGG(user_roles.role) AS role FROM users JOIN user_roles ON users.id = user_roles.user_id WHERE id=$1 GROUP BY users.id, users.name, users.email, users.avatar_url;`,
       [user_id]
     )
+    updatedUser.rows[0].role = parsePgArray(updatedUser.rows[0].role)
     return updatedUser.rows[0]
   }
 }
