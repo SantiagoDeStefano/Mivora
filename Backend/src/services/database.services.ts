@@ -12,7 +12,7 @@ class DatabaseService {
       port: Number(envConfig.dbPort),
       database: envConfig.dbDataBase,
       user: envConfig.dbUser,
-      password: envConfig.dbPassword
+      password: envConfig.dbPassword,
     })
   }
   async verifyConnection() {

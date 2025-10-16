@@ -8,7 +8,6 @@ interface RefreshTokenType extends pg.QueryResultRow {
   token_hash: string
   iat: number
   exp: number
-  revoked?: boolean
 }
 
 export default class RefreshToken {
@@ -17,7 +16,6 @@ export default class RefreshToken {
   token_hash: string
   iat: number
   exp: number
-  revoked: boolean
 
   constructor(refreshToken: RefreshTokenType) {
     this.id = refreshToken.id || newUUIDv4()
@@ -25,6 +23,5 @@ export default class RefreshToken {
     this.token_hash = refreshToken.token_hash
     this.iat = refreshToken.iat
     this.exp = refreshToken.exp
-    this.revoked = refreshToken.revoked || false
   }
 }
