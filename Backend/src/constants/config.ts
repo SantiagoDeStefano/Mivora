@@ -4,7 +4,7 @@ config()
 
 export const envConfig = {
   port: process.env.PORT,
-  
+
   dbHost: process.env.PGHOST,
   dbPort: process.env.PGPORT as string,
   dbDataBase: process.env.PGDATABASE,

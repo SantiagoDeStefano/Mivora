@@ -13,7 +13,7 @@ info:
     email: ngpham.2807@gmail.com
   version: 0.0.1
 servers:
-  - url: http://localhost:4000
+  - url: http://26.35.82.76:4000
     description: Local server
 tags:
   - name: users
