@@ -12,7 +12,7 @@ import swaggerUi from 'swagger-ui-express'
 const file = fs.readFileSync('MivoraSwagger.yaml', 'utf8')
 const swaggerDocument = YAML.parse(file)
 
-const PORT = envConfig
+const PORT = envConfig.port
 
 const app = express()
 

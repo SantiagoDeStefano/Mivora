@@ -3,6 +3,8 @@ import pg from 'pg'
 
 const { Pool } = pg
 
+console.log(envConfig)
+
 class DatabaseService {
   private pool: pg.Pool
 
@@ -12,7 +14,7 @@ class DatabaseService {
       port: Number(envConfig.dbPort),
       database: envConfig.dbDataBase,
       user: envConfig.dbUser,
-      password: envConfig.dbPassword
+      password: envConfig.dbPassword,
     })
   }
   async verifyConnection() {
