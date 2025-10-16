@@ -1,7 +1,8 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Nav from "./layouts/Nav";
-import { Container } from "./layouts/Container";
+import Header from "./layouts/Header";
+import Footer from "./layouts/Footer";
+import EventDetailsPage from "./pages/EventDetail";
 
 // --- Main Pages ---
 import ExplorePage from "./pages/Explore";
@@ -16,15 +17,16 @@ import CreateEventPage from "./pages/organizer/create-event";
 import ManageEventPage from "./pages/organizer/[eventId]";
 import QRScannerPage from "./pages/organizer/scanner";
 
-export default function App() {
+const App: React.FC<React.FC> = () => {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-white text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100">
-        <Nav />
-        <main>
+       <div className="flex min-h-screen flex-col">
+      <Header />
+      <main className="flex-1">
           <Routes>
             {/* --- Main Routes --- */}
             <Route path="/" element={<ExplorePage />} />
+            <Route path="/events/:id" element={<EventDetailsPage />} />
             <Route path="/tickets" element={<TicketsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -37,12 +39,12 @@ export default function App() {
             <Route path="/organizer/scanner" element={<QRScannerPage />} />
           </Routes>
         </main>
-        <footer className="border-t py-10 text-center text-sm text-gray-500 dark:border-gray-800">
-          <Container>
-            <p>© {new Date().getFullYear()} Mivora • Crafted with ♥︎</p>
-          </Container>
-        </footer>
+
+        <Footer />
       </div>
     </BrowserRouter>
   );
-}
+};
+
+export default App;
+

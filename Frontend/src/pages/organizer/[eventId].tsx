@@ -41,7 +41,7 @@ export default function ManageEventPage() {
     // 2. Your real-time listener setup would go here.
     // This part remains conceptually the same.
 
-  }, [eventId]);
+  }, [eventId]); 
 
   return (
     <section className="py-10 sm:py-14">

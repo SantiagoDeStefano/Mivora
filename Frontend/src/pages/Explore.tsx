@@ -3,6 +3,7 @@ import { Surface } from "../components/Card";
 import { Button } from "../components/Button";
 import { Badge } from "../components/Badge";
 import { Container } from "../layouts/Container";
+import { useNavigate } from "react-router-dom";
 import { EventsAPI, type EventCard } from "../apis";
 
 type Filter = { when: "any" | "today" | "this-weekend"; price: "any" | "lt300" | "300-700" | "gt700" };
@@ -10,6 +11,7 @@ type Filter = { when: "any" | "today" | "this-weekend"; price: "any" | "lt300" |
 export default function ExplorePage() {
   const [events, setEvents] = useState<EventCard[] | null>(null);
   const [filter, setFilter] = useState<Filter>({ when: "any", price: "any" });
+  const navigate = useNavigate();
 
   useEffect(() => {
     let mounted = true;
@@ -103,10 +105,20 @@ export default function ExplorePage() {
                   <div className="text-xs font-medium uppercase tracking-wide text-pink-400">{e.date}</div>
                   <h3 className="mt-1 text-base font-semibold">{e.title}</h3>
                   <p className="mt-1 text-sm text-gray-300">{e.meta}</p>
-                  <div className="mt-3 flex items-center justify-between">
+                 <div className="mt-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
                     <Button size="sm" aria-label={`Get tickets for ${e.title}`}>Get tickets</Button>
-                    {e.trending && <Badge tone="pink">Trending</Badge>}
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => navigate(`/events/${e.id}`)}
+                      aria-label={`View details for ${e.title}`}
+                    >
+                      View event
+                    </Button>
                   </div>
+                  {e.trending && <Badge tone="pink">Trending</Badge>}
+                </div>
                 </div>
               </Surface>
             ))}

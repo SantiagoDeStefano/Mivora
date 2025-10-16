@@ -3,6 +3,8 @@ import pg from 'pg'
 
 const { Pool } = pg
 
+console.log(envConfig)
+
 class DatabaseService {
   private pool: pg.Pool
 
