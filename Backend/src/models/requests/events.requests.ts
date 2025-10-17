@@ -1,5 +1,6 @@
 import { UUIDv4 } from '~/types/common'
 import { EventStatus } from '~/types/domain'
+import { Query } from 'express-serve-static-core'
 
 // Body
 export interface CreateEventRequestBody {
@@ -14,4 +15,10 @@ export interface CreateEventRequestBody {
   checked_in?: number
   capacity: number
   status?: EventStatus
+}
+
+// Query
+export interface Pagination extends Query {
+  limit: string
+  page: string
 }

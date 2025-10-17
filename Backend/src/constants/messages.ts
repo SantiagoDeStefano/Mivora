@@ -90,29 +90,26 @@ export const EVENTS_MESSAGES = {
   EVENT_TITLE_IS_REQUIRED: "Event's title is required",
   EVENT_TITLE_MUST_BE_STRING: "Event's title must be string",
   EVENT_TITLE_MUST_BE_BETWEEN_6_AND_50: "Event's title must be between 5 and 60",
-
   EVENT_DESCRIPTION_MUST_BE_STRING: "Event's description must be string",
   EVENT_DESCRIPTION_MUST_BE_BETWEEN_10_AND_100: "Event's description must be between 10 and 100",
-
   EVENT_POSTER_URL_MUST_BE_STRING: "Event's poster url must be string",
   EVENT_POSTER_URL_MUST_BE_BETWEEN_4_AND_400: "Event's poster url must be between 4 and 100",
-
   EVENT_LOCATION_TEXT_IS_REQUIRED: "Event's location text is required",
   EVENT_LOCATION_TEXT_MUST_BE_STRING: "Event's location text must be string",
   EVENT_LOCATION_TEXT_MUST_BE_BETWEEN_5_AND_100: "Event's location text must be between 5 and 100",
-
   EVENT_START_AT_MUST_BE_ISO8601: "Event's start at must be ISO8601",
   EVENT_END_AT_MUST_BE_ISO8601: "Event's end at must be ISO8601",
   EVENT_END_AT_MUST_BE_AFTER_START_AT: "Event's end at must be after start at",
-
   EVENT_PRICE_MUST_BE_NUMERIC: "Event's price must be numeric",
   EVENT_PRICE_MUST_BE_POSITIVE: "Event's price must be positive",
-
   EVENT_CAPACITY_MUST_BE_NUMBER: "Event's capacity must be numeric",
   EVENT_CAPACITY_MUST_BE_POSITIVE: "Event's capacity must be positive",
-
   EVENT_STATUS_MUST_BE_STRING: "Event's status must be string",
   EVENT_STATUS_MUST_BE_DRAFT_PUBLISHED_CANCELED: "Event's status must be draft, published, or canceled",
+  EVENT_CREATED_SUCCESSFULLY: 'Event created successfully',
 
-  EVENT_CREATED_SUCCESSFULLY: 'Event created successfully'
+  GET_EVENTS_SUCCESSFULLY: 'Get events successfully',
+
+  MAXIMUM_EVENTS_PER_PAGE_IS_BETWEEN_1_AND_50: 'Maximum events per page is between 1 and 50',
+  NUMBER_OF_PAGE_MUST_BE_GREATER_THAN_0: 'Number of page must be greater than 0'
 } as const

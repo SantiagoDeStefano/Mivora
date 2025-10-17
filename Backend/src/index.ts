@@ -1,6 +1,7 @@
 import { defaultErrorHandler } from './middlewares/errors.middlewares'
 import { envConfig } from './constants/config'
 
+// import '~/utils/fake'
 import databaseService from './services/database.services'
 import express from 'express'
 import usersRouter from './routes/users.routes'
@@ -13,11 +14,9 @@ import cors from 'cors'
 const file = fs.readFileSync('MivoraSwagger.yaml', 'utf8')
 const swaggerDocument = YAML.parse(file)
 
-// test commit issues thao vy
 const PORT = Number(envConfig.port)
 
 const app = express()
-// ✅ Must be at the very top, before routes
 app.use(
   cors({
     origin: ['http://localhost:4000', 'http://26.35.82.76:4000'],
