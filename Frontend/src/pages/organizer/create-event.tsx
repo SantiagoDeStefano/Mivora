@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Button } from "../../components/Button";
-import { Container } from "../../layouts/Container";
-import { Card } from '../../components/Card';
-import { useNavigate } from '../../hooks/useNavigate';
+import Button from "../../components/Button";
+import Container from "../../components/Container/Container";
+import Card from '../../components/Card/Card';
+import { useNavigate } from 'react-router-dom';
 
 export default function CreateEventPage() {
   const navigate = useNavigate();

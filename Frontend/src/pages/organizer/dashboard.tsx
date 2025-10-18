@@ -1,8 +1,8 @@
-import { Card } from "../../components/Card";
-import { Badge } from "../../components/Badge";
-import { Button } from "../../components/Button";
-import { Container } from "../../layouts/Container";
-import { useNavigate } from "../../hooks/useNavigate";
+import Card from "../../components/Card/Card";
+import Badge from "../../components/Badge/Badge";
+import Button from "../../components/Button";
+import Container from "../../components/Container/Container";
+import { useNavigate } from 'react-router-dom';
 
 export default function OrganizerDashboard() {
   // Initialize the navigate function from your hook
