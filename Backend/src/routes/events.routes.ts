@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import { createEventController } from '~/controllers/events.controllers'
+import { createEventController, getEventsInfiniteScrollController } from '~/controllers/events.controllers'
 import { accessTokenValidator, organizerValidator } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
-import { createEventValidator } from '~/middlewares/events.middlewares'
+import { createEventValidator, paginationValidator } from '~/middlewares/events.middlewares'
 
 const eventsRouter = Router()
 
@@ -18,6 +18,19 @@ eventsRouter.post(
   organizerValidator,
   createEventValidator,
   wrapRequestHandler(createEventController)
+)
+
+/**
+ * Description: Get event's list
+ * Path: /  
+ * Method: GET
+ * Header: { Authorization: Bearer <access_token> }
+ * Query: { limit: number, page: number }
+ */
+eventsRouter.get(
+  '/',
+  paginationValidator,
+  wrapRequestHandler(getEventsInfiniteScrollController)
 )
 
 export default eventsRouter

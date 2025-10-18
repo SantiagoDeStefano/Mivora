@@ -129,3 +129,30 @@ export const createEventValidator = validate(
     ['body']
   )
 )
+
+export const paginationValidator = validate(
+  checkSchema({
+    limit: {
+      isNumeric: true,
+      custom: {
+        options: async (value, { req }) => {
+          const num = Number(value)
+          if (num > LIMIT_MIN_MAX.EVENT_PER_PAGE_MAX || num < LIMIT_MIN_MAX.EVENT_PER_PAGE_MIN) {
+            throw new Error(EVENTS_MESSAGES.MAXIMUM_EVENTS_PER_PAGE_IS_BETWEEN_1_AND_50)
+          }
+        }
+      }
+    },
+    page: {
+      isNumeric: true,
+      custom: {
+        options: async (values, { req }) => {
+          const num = Number(values)
+          if (num < 1) {
+            throw new Error(EVENTS_MESSAGES.NUMBER_OF_PAGE_MUST_BE_GREATER_THAN_0)
+          }
+        }
+      }
+    }
+  })
+)

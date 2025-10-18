@@ -3,7 +3,7 @@ import databaseService from './database.services'
 import Event from '~/models/schemas/Event.schema'
 import { UUIDv4 } from '~/types/common'
 
-class TweetService {
+class EventService {
   async createEvent(organizer_id: UUIDv4, body: CreateEventRequestBody) {
     const {
       title,
@@ -83,7 +83,27 @@ class TweetService {
     )
     return newEvent.rows[0]
   }
+
+  async getEventsInfiniteScroll(limit: number, page: number) {
+    const [eventsResult, totalEventsResult] = await Promise.all([
+      databaseService.events(
+        `
+        SELECT organizer_id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events
+        ORDER BY created_at DESC, id DESC 
+        LIMIT $1 OFFSET $2
+        `,
+        [limit, limit * (page - 1)]
+      ),
+      databaseService.events(`SELECT COUNT(id) FROM events`)
+    ])
+    const events = eventsResult.rows
+    const totalEvents = totalEventsResult.rows[0].count
+    return {
+      events,
+      totalEvents
+    }
+  }
 }
 
-const tweetService = new TweetService()
-export default tweetService
+const eventService = new EventService()
+export default eventService
