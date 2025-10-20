@@ -107,8 +107,10 @@ export const EVENTS_MESSAGES = {
   EVENT_STATUS_MUST_BE_STRING: "Event's status must be string",
   EVENT_STATUS_MUST_BE_DRAFT_PUBLISHED_CANCELED: "Event's status must be draft, published, or canceled",
   EVENT_CREATED_SUCCESSFULLY: 'Event created successfully',
-
+  EVENT_NOT_FOUND: 'Event not found',
   GET_EVENTS_SUCCESSFULLY: 'Get events successfully',
+
+  INVALID_EVENT_ID: 'Invalid EventID',
 
   MAXIMUM_EVENTS_PER_PAGE_IS_BETWEEN_1_AND_50: 'Maximum events per page is between 1 and 50',
   NUMBER_OF_PAGE_MUST_BE_GREATER_THAN_0: 'Number of page must be greater than 0'

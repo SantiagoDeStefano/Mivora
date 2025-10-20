@@ -18,13 +18,13 @@ export const createEventController = async (
   })
 }
 
-export const getEventsInfiniteScrollController = async (
+export const getEventsController = async (
   req: Request<ParamsDictionary, unknown, unknown, Pagination>,
   res: Response
 ): Promise<void> => {
   const limit = Number(req.query.limit)
   const page = Number(req.query.page)
-  const result = await eventService.getEventsInfiniteScroll(limit, page)
+  const result = await eventService.getEvents(limit, page)
   res.json({
     message: EVENTS_MESSAGES.GET_EVENTS_SUCCESSFULLY,
     result: {
@@ -33,5 +33,15 @@ export const getEventsInfiniteScrollController = async (
       page,
       total_page: Math.ceil(result.totalEvents / limit)
     }
+  })
+}
+
+export const getEventDetailsController = async(
+  req: Request<ParamsDictionary, unknown, unknown, Pagination>,
+  res: Response
+): Promise<void> => {
+  const eventData = req.event?.[0]
+  res.json({
+    eventData
   })
 }
