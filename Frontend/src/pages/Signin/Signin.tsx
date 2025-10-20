@@ -1,0 +1,246 @@
+import { useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useMutation } from "@tanstack/react-query";
+import * as yup from 'yup';
+import Card from "../../components/Card/Card";
+import Label from "../../components/Label/Label";
+import Input from "../../components/Input/Input";
+import Select from "../../components/Select/Select";
+import Button from "../../components/Button";
+import Container from "../../components/Container/Container";
+import { useNavigate } from 'react-router-dom';
+import authApi, { type RegisterRequest } from "../../apis/auth.api";
+import { AppContext } from "../../contexts/app.context";
+import { useContext } from "react";
+
+type Role = "attendee" | "organizer";
+
+const registerSchema = yup.object({
+  name: yup.string().required('Name is required').min(2, 'Name must be at least 2 characters'),
+  email: yup.string().required('Email is required').email('Invalid email format'),
+  password: yup.string().required('Password is required').min(6, 'Password must be at least 6 characters'),
+  confirm_password: yup.string().required('Password confirmation is required').oneOf([yup.ref('password')], 'Passwords do not match')
+});
+
+type RegisterForm = yup.InferType<typeof registerSchema>;
+
+export default function SigninPage() {
+  const nav = useNavigate();
+  const { setIsAuthenticated } = useContext(AppContext);
+  const [role, setRole] = useState<Role>("attendee");
+  const [agreed, setAgreed] = useState(false);
+
+  // organizer-only fields
+  const [orgName, setOrgName] = useState("");
+  const [orgWebsite, setOrgWebsite] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors }
+  } = useForm({
+    resolver: yupResolver(registerSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      confirm_password: ''
+    }
+  });
+
+  const registerMutation = useMutation({
+    mutationFn: (body: RegisterRequest) => {
+      return authApi.registerAccount(body);
+    }
+  });
+
+  const valid = useMemo(() => {
+    const baseOk = agreed;
+    if (role === "attendee") return baseOk;
+    return baseOk && !!orgName; // organizer must provide org name
+  }, [agreed, role, orgName]);
+
+  return (
+    <section id="signin" className="py-10 sm:py-14">
+      <Container>
+        <div className="mx-auto max-w-md">
+          <Card>
+            <header>
+              <h2 className="text-2xl font-semibold">Create your account</h2>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                Choose how you’ll use Mivora
+              </p>
+            </header>
+
+            {/* Role selector */}
+            <div className="mt-4 inline-flex w-full justify-between rounded-xl border border-gray-200 p-1 text-sm dark:border-gray-800">
+              <button
+                type="button"
+                onClick={() => setRole("attendee")}
+                className={[
+                  "flex-1 rounded-lg px-3 py-2",
+                  role === "attendee"
+                    ? "bg-gray-100 dark:bg-gray-800"
+                    : "hover:bg-gray-50 dark:hover:bg-gray-900",
+                ].join(" ")}
+                aria-pressed={role === "attendee"}
+              >
+                Attendee
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole("organizer")}
+                className={[
+                  "flex-1 rounded-lg px-3 py-2",
+                  role === "organizer"
+                    ? "bg-gray-100 dark:bg-gray-800"
+                    : "hover:bg-gray-50 dark:hover:bg-gray-900",
+                ].join(" ")}
+                aria-pressed={role === "organizer"}
+              >
+                Organizer
+              </button>
+            </div>
+
+            <form
+              className="mt-4 grid gap-4"
+              onSubmit={handleSubmit((data: RegisterForm) => {
+                if (!valid) return;
+                console.log('Registration attempt with data:', data);
+                registerMutation.mutate(data as RegisterRequest, {
+                  onSuccess: (response) => {
+                    console.log('Registration success:', response.data);
+                    // Store tokens in localStorage
+                    localStorage.setItem('access_token', response.data.result.access_token);
+                    localStorage.setItem('refresh_token', response.data.result.refresh_token);
+                    setIsAuthenticated(true);
+                    // Redirect by role
+                    if (role === "organizer") nav("/organizer");
+                    else nav("/tickets");
+                  },
+                  onError: (error: unknown) => {
+                    console.log('Registration error:', error);
+                    if (error && typeof error === 'object' && 'response' in error) {
+                      const axiosError = error as { response?: { data?: { errors?: Record<string, { msg: string }> } } };
+                      if (axiosError.response?.data?.errors) {
+                        const formErrors = axiosError.response.data.errors;
+                        Object.keys(formErrors).forEach((key) => {
+                          setError(key as keyof RegisterForm, {
+                            message: formErrors[key].msg,
+                            type: 'Server'
+                          });
+                        });
+                      }
+                    }
+                  }
+                });
+              })}
+            >
+              <div>
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  register={register}
+                  placeHolder="Enter your full name"
+                  className="mt-1"
+                  errorMessages={errors.name?.message}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  register={register}
+                  placeHolder="you@email.com"
+                  className="mt-1"
+                  errorMessages={errors.email?.message}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  register={register}
+                  placeHolder="At least 6 characters"
+                  className="mt-1"
+                  errorMessages={errors.password?.message}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="confirm_password">Confirm Password</Label>
+                <Input
+                  id="confirm_password"
+                  name="confirm_password"
+                  type="password"
+                  register={register}
+                  placeHolder="Re-enter your password"
+                  className="mt-1"
+                  errorMessages={errors.confirm_password?.message}
+                />
+              </div>
+
+              {/* Organizer-only fields */}
+              {role === "organizer" && (
+                <>
+                  <div>
+                    <Label htmlFor="org-name">Organization name</Label>
+                    <Input id="org-name" placeholder="Your brand or company" value={orgName} onChange={(e) => setOrgName(e.target.value)} />
+                  </div>
+                  <div>
+                    <Label htmlFor="org-website">Website (optional)</Label>
+                    <Input id="org-website" placeholder="https://example.com" value={orgWebsite} onChange={(e) => setOrgWebsite(e.target.value)} />
+                  </div>
+                  <div>
+                    <Label htmlFor="su-locale">Primary language</Label>
+                    <Select id="su-locale" defaultValue="en">
+                      <option value="en">English</option>
+                      <option value="vi">Tiếng Việt</option>
+                      <option value="ar">العربية (RTL)</option>
+                    </Select>
+                  </div>
+                </>
+              )}
+
+              {/* Attendee language (optional) */}
+              {role === "attendee" && (
+                <div>
+                  <Label htmlFor="su-locale">Preferred language</Label>
+                  <Select id="su-locale" defaultValue="en">
+                    <option value="en">English</option>
+                    <option value="vi">Tiếng Việt</option>
+                    <option value="ar">العربية (RTL)</option>
+                  </Select>
+                </div>
+              )}
+
+              <label className="text-xs text-gray-600 dark:text-gray-400">
+                <input type="checkbox" className="mr-2" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
+                I agree to the <a href="#" className="text-pink-600 hover:underline">Terms</a> and{" "}
+                <a href="#" className="text-pink-600 hover:underline">Privacy Policy</a>.
+              </label>
+
+              <Button type="submit" disabled={!valid || registerMutation.isPending}>
+                {registerMutation.isPending ? "Creating account..." : (role === "organizer" ? "Create organizer account" : "Create account")}
+              </Button>
+            </form>
+
+            <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+              Already have an account?{" "}
+              <a href="/login" className="text-pink-600 hover:underline">Log in</a>
+            </p>
+          </Card>
+        </div>
+      </Container>
+    </section>
+  );
+}

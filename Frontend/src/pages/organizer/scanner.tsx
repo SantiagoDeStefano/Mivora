@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Html5QrcodeScanner, QrcodeSuccessCallback } from 'html5-qrcode';
-import { Container } from '../../layouts/Container';
-import { Card } from '../../components/Card';
+import Container from '../../components/Container/Container';
+import Card from '../../components/Card/Card';
 
 export default function QRScannerPage() {
   const [feedback, setFeedback] = useState({ message: 'Initializing scanner...', type: 'info' });

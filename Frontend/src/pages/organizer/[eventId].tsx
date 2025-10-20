@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 // 1. Import useParams from react-router-dom
 import { useParams } from 'react-router-dom';
-import { Container } from '../../layouts/Container';
-import { Badge } from '../../components/Badge';
+import Container from '../../components/Container/Container';
+import Badge from '../../components/Badge/Badge';
 
 // Dummy data structure
 interface Attendee {
