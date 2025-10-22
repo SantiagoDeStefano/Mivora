@@ -3,6 +3,11 @@ import { validate } from '~/utils/validation'
 import { EVENTS_MESSAGES } from '~/constants/messages'
 import LIMIT_MIN_MAX from '~/constants/limits'
 import { EventStatus } from '~/types/domain'
+import { isValidUUIDv4 } from '~/utils/uuid'
+import eventService from '~/services/events.services'
+import ErrorWithStatus from '~/models/Errors'
+import HTTP_STATUS from '~/constants/httpStatus'
+import databaseService from '~/services/database.services'
 
 const event_statuts: EventStatus[] = ['draft', 'published', 'canceled']
 
@@ -151,6 +156,35 @@ export const paginationValidator = validate(
           if (num < 1) {
             throw new Error(EVENTS_MESSAGES.NUMBER_OF_PAGE_MUST_BE_GREATER_THAN_0)
           }
+        }
+      }
+    }
+  })
+)
+
+export const eventIdValidator = validate(
+  checkSchema({
+    event_id: {
+      custom: {
+        options: async (values, { req }) => {
+          if (!isValidUUIDv4(values)) {
+            throw new ErrorWithStatus({
+              status: HTTP_STATUS.BAD_REQUEST,
+              message: EVENTS_MESSAGES.INVALID_EVENT_ID
+            })
+          }
+          const event = await databaseService.events(
+            `SELECT organizer_id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events WHERE id=$1`,
+            [values]
+          )
+          if(event.rows.length <= 0) {
+            throw new ErrorWithStatus({
+              status: HTTP_STATUS.NOT_FOUND,
+              message: EVENTS_MESSAGES.EVENT_NOT_FOUND
+            })
+          }
+          req.event = event.rows
+          return true;
         }
       }
     }

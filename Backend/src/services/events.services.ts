@@ -84,7 +84,7 @@ class EventService {
     return newEvent.rows[0]
   }
 
-  async getEventsInfiniteScroll(limit: number, page: number) {
+  async getEvents(limit: number, page: number) {
     const [eventsResult, totalEventsResult] = await Promise.all([
       databaseService.events(
         `
