@@ -30,8 +30,10 @@ export default class User {
     this.email = user.email
     this.password_hash = user.password_hash
     this.email_verify_token = user.email_verify_token || 'have_never_request_verification_email'
-    this.forgot_password_token = user.forgot_password_token || ''
+    this.forgot_password_token = user.forgot_password_token || 'have_never_request_forgot_password_token'
     this.avatar_url = user.avatar_url || ''
     this.verified = user.verified || 'unverified'
   }
 }
+
+

@@ -100,7 +100,13 @@ class UserService {
     }) as Promise<string>
   }
 
-  async signForgotPasswordToken({ user_id, verify }: { user_id: UUIDv4; verify: UserVerificationStatus }): Promise<string> {
+  async signForgotPasswordToken({
+    user_id,
+    verify
+  }: {
+    user_id: UUIDv4
+    verify: UserVerificationStatus
+  }): Promise<string> {
     return signToken({
       payload: {
         user_id,
@@ -284,7 +290,7 @@ class UserService {
 
   async sendEmailVerifyToken(user_id: UUIDv4, email: string) {
     const email_verify_token = await this.signEmailVerifyToken({ user_id, verify: 'unverified' })
-    console.log('email_verify_token: ', email_verify_token)
+    console.log('email_verify_token:', email_verify_token)
 
     await sendVerifyStatusEmail(email, email_verify_token)
     await databaseService.users(`UPDATE users SET email_verify_token=$1 WHERE id=$2`, [email_verify_token, user_id])
@@ -326,16 +332,27 @@ class UserService {
 
   async forgotPassword({ user_id, verify, email }: { user_id: UUIDv4; verify: UserVerificationStatus; email: string }) {
     const forgot_password_token = await this.signForgotPasswordToken({ user_id, verify })
-    console.log(forgot_password_token)
-    await databaseService.users(`UPDATE users SET forgot_password_token=$1 WHERE id=$2`, [forgot_password_token, user_id])
+    console.log("forgot_password_token:", forgot_password_token)
+    await databaseService.users(`UPDATE users SET forgot_password_token=$1 WHERE id=$2`, [
+      forgot_password_token,
+      user_id
+    ])
 
     // Sending email https://twitter.com/forgot-password?token=token
     await sendForgotPasswordEmail(email, forgot_password_token)
 
-    // For testing only, remove return this statement in production 
+    // For testing only, remove return this statement in production
     return {
       forgot_password_token
     }
+  }
+  async resetPassword(user_id: string, new_password: string) {
+    const password = hashPassword(new_password)
+    await databaseService.users(`UPDATE users SET password_hash=$1, forgot_password_token=$2 WHERE id=$3`, [
+      password,
+      '',
+      user_id
+    ])
   }
 }
 

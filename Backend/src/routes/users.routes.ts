@@ -6,9 +6,11 @@ import {
   logoutController,
   refreshTokenController,
   registerController,
+  resetPasswordController,
   sendEmailController,
   updateMeController,
-  verifyEmailController
+  verifyEmailController,
+  verifyForgotPasswordController
 } from '~/controllers/users.controllers'
 import {
   accessTokenValidator,
@@ -17,8 +19,10 @@ import {
   loginValidator,
   refreshTokenValidator,
   registerValidator,
+  resetPasswordValidator,
   sendEmailValidator,
-  updateMeValidator
+  updateMeValidator,
+  verifyForgotPasswordTokenValidator
 } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
 
@@ -78,7 +82,12 @@ usersRouter.patch('/me', accessTokenValidator, updateMeValidator, wrapRequestHan
  * Method: POST
  * Headers: { Authorization: Bearer <access_token> }
  */
-usersRouter.post('/me/email-verification', accessTokenValidator, sendEmailValidator, wrapRequestHandler(sendEmailController))
+usersRouter.post(
+  '/me/email-verification',
+  accessTokenValidator,
+  sendEmailValidator,
+  wrapRequestHandler(sendEmailController)
+)
 
 /**
  * Description: Verify email when user click on the link in the email
@@ -95,10 +104,26 @@ usersRouter.post('/verify-email', emailVerifyTokenValidator, wrapRequestHandler(
  * Method: POST
  * Body: { email: string }
  */
-  usersRouter.post(
-    '/forgot-password', 
-    forgotPasswordValidator,
-    wrapRequestHandler(forgotPasswordController)
-  ) 
+usersRouter.post('/forgot-password', forgotPasswordValidator, wrapRequestHandler(forgotPasswordController))
+
+/**
+ * Description: Verify link(token) in email to reset password
+ * Path: /verity-forgot-password
+ * Method: POST
+ * Body: { forgot_password_token: string }
+ */
+usersRouter.post(
+  '/verify-forgot-password',
+  verifyForgotPasswordTokenValidator,
+  wrapRequestHandler(verifyForgotPasswordController)
+)
+
+/**
+ * Description: Reset password after verify forgot password token
+ * Path: /reset-password
+ * Method: POST
+ * Body: { password: string, confirm_password: string, forgot_password_token: string }
+ */
+usersRouter.post('/reset-password', resetPasswordValidator, wrapRequestHandler(resetPasswordController))
 
 export default usersRouter

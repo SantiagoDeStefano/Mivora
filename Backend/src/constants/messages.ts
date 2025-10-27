@@ -79,7 +79,7 @@ export const USERS_MESSAGES = {
   USER_MUST_BE_VERIFIED_TO_BE_ORGANIZER: 'User must be verified to be organizer',
 
   VALIDATION_ERROR: 'Validation error',
-  VERIFY_FORGOT_PASSWORD_SUCCESS: 'Verify forgot password successfully',
+  VERIFY_FORGOT_PASSWORD_TOKEN_SUCCESS: 'Verify forgot password token successfully',
 
   WEBSITE_MUST_BE_A_STRING: 'Website must be a string',
   WEBSITE_LENGTH_MUST_BE_BETWEEN_1_AND_200: 'Website must be between 1 and 200',

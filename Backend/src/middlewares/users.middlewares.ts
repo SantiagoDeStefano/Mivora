@@ -79,6 +79,49 @@ const imageSchema: ParamSchema = {
   }
 }
 
+// Verify forgot_password_token
+const forgotPasswordTokenSchema: ParamSchema = {
+  custom: {
+    options: async (value: string, { req }) => {
+      if (!value) {
+        throw new ErrorWithStatus({
+          message: USERS_MESSAGES.FORGOT_PASSWORD_TOKEN_REQUIRED,
+          status: HTTP_STATUS.UNAUTHORIZED
+        })
+      }
+      try {
+        const decoded_forgot_password_token = await verifyToken({
+          token: value,
+          secretOrPublicKey: envConfig.jwtSecretForgotPasswordToken as string
+        })
+        const { user_id } = decoded_forgot_password_token
+        const user = await databaseService.users(`SELECT id, forgot_password_token FROM users WHERE id=$1`, [user_id])
+        if (user.rows.length <= 0) {
+          throw new ErrorWithStatus({
+            message: USERS_MESSAGES.USER_NOT_FOUND,
+            status: HTTP_STATUS.NOT_FOUND
+          })
+        }
+
+        // Prevent multiple forgot_password_token verification
+        if (user.rows[0].forgot_password_token != value) {
+          throw new ErrorWithStatus({
+            message: USERS_MESSAGES.INVALID_FORGOT_PASSWORD_TOKEN,
+            status: HTTP_STATUS.UNAUTHORIZED
+          })
+        }
+        req.decoded_forgot_password_token = decoded_forgot_password_token
+      } catch (error) {
+        throw new ErrorWithStatus({
+          message: capitalize((error as JsonWebTokenError).message),
+          status: HTTP_STATUS.UNAUTHORIZED
+        })
+      }
+      return true
+    }
+  }
+}
+
 // Confirm-password must match another field
 const confirmPasswordSchema = (customField: string): ParamSchema => ({
   notEmpty: {
@@ -389,6 +432,26 @@ export const forgotPasswordValidator = validate(
           }
         }
       }
+    },
+    ['body']
+  )
+)
+
+export const verifyForgotPasswordTokenValidator = validate(
+  checkSchema(
+    {
+      forgot_password_token: forgotPasswordTokenSchema
+    },
+    ['body']
+  )
+)
+
+export const resetPasswordValidator = validate(
+  checkSchema(
+    {
+      password: passwordSchema,
+      confirm_password: confirmPasswordSchema('password'),
+      forgot_password_token: forgotPasswordTokenSchema
     },
     ['body']
   )
