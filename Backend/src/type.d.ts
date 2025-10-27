@@ -2,13 +2,15 @@ import {} from 'express'
 import { TokenPayload } from './models/requests/users.requests'
 import { UUIDv4 } from './types/common'
 import Event from './models/schemas/Event.schema'
+import User from './models/schemas/User.schema'
 
 declare module 'express' {
   interface Request {
-    user_id?: UUIDv4 // User.id
+    user?: User // User.id
     decoded_authorization?: TokenPayload
     decoded_refresh_token?: TokenPayload
     decoded_forgot_password_token?: TokenPayload
+    decoded_email_verify_token?: TokenPayload
     event?: Event[]
   }
 }

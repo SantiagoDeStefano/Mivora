@@ -5,13 +5,17 @@ import {
   logoutController,
   refreshTokenController,
   registerController,
-  updateMeController
+  sendEmailController,
+  updateMeController,
+  verifyEmailController
 } from '~/controllers/users.controllers'
 import {
   accessTokenValidator,
+  emailVerifyTokenValidator,
   loginValidator,
   refreshTokenValidator,
   registerValidator,
+  sendEmailValidator,
   updateMeValidator
 } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
@@ -27,7 +31,7 @@ const usersRouter = Router()
 usersRouter.post('/register', registerValidator, wrapRequestHandler(registerController))
 
 /**
- * Description: Register a new user
+ * Description: Login to an exsisting user
  * Path: /login
  * Method: POST
  * Body: { email: string, password: string }
@@ -35,7 +39,7 @@ usersRouter.post('/register', registerValidator, wrapRequestHandler(registerCont
 usersRouter.post('/login', loginValidator, wrapRequestHandler(loginController))
 
 /**
- * Description: Register a new user
+ * Description: Remove refreshtoken of a user
  * Path: /logout
  * Method: POST
  * Headers: { Authorization: Bearer <refresh_token> }
@@ -55,17 +59,32 @@ usersRouter.post('/refresh-token', refreshTokenValidator, wrapRequestHandler(ref
  * Description: Get me
  * Path: /me
  * Method: POST
- * Headers: { Authorization: Bearer <access_token> } * 
  */
 usersRouter.get('/me', accessTokenValidator, wrapRequestHandler(getMeController))
+
+/**
+ * Description: Send email verification token to current user's email
+ * Path: /me/email-verification
+ * Method: POST
+ * Headers: { Authorization: Bearer <access_token> }
+ */
+usersRouter.post('/me/email-verification', accessTokenValidator, sendEmailValidator, wrapRequestHandler(sendEmailController))
+
+/**
+ * Description: Verify email when user click on the link in the email
+ * Path: /verify-email
+ * Method: POST
+ * Headers: Don't need because user can verify email without login
+ * Body: { refresh_token: string }
+ */
+usersRouter.post('/verify-email', emailVerifyTokenValidator, wrapRequestHandler(verifyEmailController))
 
 /*
  * Description: Update my profile
  * Path: /me
  * Method: PATCH
  * Headers: { Authorization: Bearer <access_token> }
-*/
+ */
 usersRouter.patch('/me', accessTokenValidator, updateMeValidator, wrapRequestHandler(updateMeController))
-
 
 export default usersRouter

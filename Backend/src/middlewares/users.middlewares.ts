@@ -1,4 +1,4 @@
-import { checkSchema, ParamSchema } from 'express-validator'
+import { body, checkSchema, ParamSchema } from 'express-validator'
 import { USERS_MESSAGES } from '~/constants/messages'
 import { validate } from '~/utils/validation'
 import { UserRole } from '~/types/domain'
@@ -150,14 +150,14 @@ export const loginValidator = validate(
         trim: true,
         custom: {
           options: async (value, { req }) => {
-            const userRow = await databaseService.users(`SELECT id FROM users WHERE email=$1 AND password_hash=$2`, [
-              value,
-              hashPassword(req.body.password)
-            ])
+            const userRow = await databaseService.users(
+              `SELECT id, verified FROM users WHERE email=$1 AND password_hash=$2`,
+              [value, hashPassword(req.body.password)]
+            )
             if (userRow.rows.length <= 0) {
               throw new Error(USERS_MESSAGES.EMAIL_OR_PASSWORD_IS_INCORRECT)
             }
-            req.user_id = userRow.rows[0].id
+            req.user = userRow.rows[0]
             return true
           }
         }
@@ -287,6 +287,62 @@ export const updateMeValidator = validate(
             const isExistRole = await userService.checkRoleExist(user_id, value)
             if (isExistRole) {
               throw new Error(USERS_MESSAGES.USER_ALREADY_HAVE_THIS_ROLE)
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)
+
+export const sendEmailValidator = async (req: Request, res: Response, next: NextFunction) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const userRow = await databaseService.users(`SELECT id, verified, email FROM users WHERE id=$1`, [user_id])
+  if (userRow.rows.length <= 0) {
+    return next(
+      new ErrorWithStatus({
+        message: USERS_MESSAGES.USER_NOT_FOUND,
+        status: HTTP_STATUS.NOT_FOUND
+      })
+    )
+  }
+  if (userRow.rows[0].verified == 'verified') {
+    return next(
+      new ErrorWithStatus({
+        message: USERS_MESSAGES.EMAIL_ALREADY_VERIFIED,
+        status: HTTP_STATUS.OK
+      })
+    )
+  }
+  req.user = userRow.rows[0]
+  next()
+}
+
+export const emailVerifyTokenValidator = validate(
+  checkSchema(
+    {
+      email_verify_token: {
+        custom: {
+          options: async (value: string, { req }) => {
+            if (!value) {
+              throw new ErrorWithStatus({
+                message: USERS_MESSAGES.EMAIL_VERIFY_TOKEN_IS_REQUIRED,
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
+            try {
+              const decoded_email_verify_token = await verifyToken({
+                token: value,
+                secretOrPublicKey: envConfig.jwtSecretEmailVerifyToken as string
+              })
+              req.decoded_email_verify_token = decoded_email_verify_token
+            } catch (error) {
+              throw new ErrorWithStatus({
+                message: capitalize((error as JsonWebTokenError).message),
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
             }
             return true
           }

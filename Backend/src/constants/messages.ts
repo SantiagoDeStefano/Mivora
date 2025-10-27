@@ -82,6 +82,7 @@ export const USERS_MESSAGES = {
   WEBSITE_MUST_BE_A_STRING: 'Website must be a string',
   WEBSITE_LENGTH_MUST_BE_BETWEEN_1_AND_200: 'Website must be between 1 and 200',
 
+  SEND_VERIFY_EMAIL_SUCCESS: 'Send verify email successfully',
   STRONG_PASSWORD:
     'Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character'
 } as const

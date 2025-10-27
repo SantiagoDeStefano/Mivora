@@ -41,7 +41,11 @@ export const getEventDetailsController = async(
   res: Response
 ): Promise<void> => {
   const eventData = req.event?.[0]
+  const event ={
+    ...eventData
+  }
   res.json({
-    eventData
+    message: EVENTS_MESSAGES.GET_EVENTS_SUCCESSFULLY,
+    result: event
   })
 }
