@@ -19,6 +19,7 @@ class UserService {
     return signToken({
       payload: {
         user_id,
+        verify,
         token_type: TokenType.AccessToken
       },
       privateKey: envConfig.jwtSecretAccessToken as string,
@@ -44,6 +45,7 @@ class UserService {
       return signToken({
         payload: {
           user_id,
+          verify,
           token_type: TokenType.RefreshToken,
           exp
         },
@@ -53,6 +55,7 @@ class UserService {
     return signToken({
       payload: {
         user_id,
+        verify,
         token_type: TokenType.RefreshToken
       },
       privateKey: envConfig.jwtSecretRefreshToken as string,
@@ -86,8 +89,8 @@ class UserService {
     return signToken({
       payload: {
         user_id,
-        token_type: TokenType.EmailVerifyToken,
-        verify
+        verify,
+        token_type: TokenType.EmailVerifyToken
       },
       privateKey: envConfig.jwtSecretEmailVerifyToken as string,
       options: {
@@ -239,7 +242,7 @@ class UserService {
 
   async getMe(user_id: UUIDv4) {
     const user = await databaseService.users(
-      `SELECT users.name, users.email, users.avatar_url, ARRAY_AGG(user_roles.role) AS role FROM users JOIN user_roles ON users.id = user_roles.user_id WHERE id=$1 GROUP BY users.id, users.name, users.email, users.avatar_url;`,
+      `SELECT users.name, users.email, users.avatar_url, users.verified, ARRAY_AGG(user_roles.role) AS role FROM users JOIN user_roles ON users.id = user_roles.user_id WHERE id=$1 GROUP BY users.id, users.name, users.email, users.avatar_url;`,
       [user_id]
     )
     user.rows[0].role = parsePgArray(user.rows[0].role)

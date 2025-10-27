@@ -39,6 +39,7 @@ export const USERS_MESSAGES = {
   IMAGE_URL_MUST_BE_BETWEEN_1_AND_400: 'Image URL must be between 1 and 400',
   INVALID_USER_ID: 'Invalid user ID',
   INVALID_USERNAME: 'Username must be between 4-15 characters and contain only letters, numbers, underscore',
+  INVALID_EMAIL_VERIFY_TOKEN: 'Invalid email verification token',
 
   LOGIN_SUCCESS: 'Login successfully',
   LOGOUT_SUCCESS: 'Logout successfully',
@@ -75,6 +76,7 @@ export const USERS_MESSAGES = {
   USERNAME_ALREADY_EXISTS: 'Username already exists',
   UPDATE_ROLE_MUST_BE_ORGANIZER: 'Update role must be organizer',
   USER_ALREADY_HAVE_THIS_ROLE: 'User already have this role',
+  USER_MUST_BE_VERIFIED_TO_BE_ORGANIZER: 'User must be verified to be organizer',
 
   VALIDATION_ERROR: 'Validation error',
   VERIFY_FORGOT_PASSWORD_SUCCESS: 'Verify forgot password successfully',

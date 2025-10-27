@@ -75,7 +75,7 @@ usersRouter.post('/me/email-verification', accessTokenValidator, sendEmailValida
  * Path: /verify-email
  * Method: POST
  * Headers: Don't need because user can verify email without login
- * Body: { refresh_token: string }
+ * Body: { email_verify_token: string }
  */
 usersRouter.post('/verify-email', emailVerifyTokenValidator, wrapRequestHandler(verifyEmailController))
 

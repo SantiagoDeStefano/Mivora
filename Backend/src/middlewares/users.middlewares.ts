@@ -283,8 +283,16 @@ export const updateMeValidator = validate(
               throw new Error(USERS_MESSAGES.UPDATE_ROLE_MUST_BE_ORGANIZER)
             }
             // Prevent updating to the same role
-            const { user_id } = req.decoded_authorization
+            const user = req.decoded_authorization as TokenPayload
+            const user_id = user.user_id
+            const verify = user.verify
+
+            const isVerified = verify === 'verified'
             const isExistRole = await userService.checkRoleExist(user_id, value)
+
+            if (!isVerified) {
+              throw new Error(USERS_MESSAGES.USER_MUST_BE_VERIFIED_TO_BE_ORGANIZER)
+            }
             if (isExistRole) {
               throw new Error(USERS_MESSAGES.USER_ALREADY_HAVE_THIS_ROLE)
             }
@@ -300,14 +308,6 @@ export const updateMeValidator = validate(
 export const sendEmailValidator = async (req: Request, res: Response, next: NextFunction) => {
   const { user_id } = req.decoded_authorization as TokenPayload
   const userRow = await databaseService.users(`SELECT id, verified, email FROM users WHERE id=$1`, [user_id])
-  if (userRow.rows.length <= 0) {
-    return next(
-      new ErrorWithStatus({
-        message: USERS_MESSAGES.USER_NOT_FOUND,
-        status: HTTP_STATUS.NOT_FOUND
-      })
-    )
-  }
   if (userRow.rows[0].verified == 'verified') {
     return next(
       new ErrorWithStatus({
@@ -337,6 +337,23 @@ export const emailVerifyTokenValidator = validate(
                 token: value,
                 secretOrPublicKey: envConfig.jwtSecretEmailVerifyToken as string
               })
+              const { user_id } = decoded_email_verify_token
+              const user = await databaseService.users(
+                `SELECT email_verify_token FROM users WHERE id=$1 AND email_verify_token=$2`,
+                [user_id, value]
+              )
+              if (user.rows.length <= 0) {
+                throw new ErrorWithStatus({
+                  message: USERS_MESSAGES.USER_NOT_FOUND,
+                  status: HTTP_STATUS.NOT_FOUND
+                })
+              }
+              if (user.rows[0].email_verify_token != value) {
+                throw new ErrorWithStatus({
+                  message: USERS_MESSAGES.INVALID_EMAIL_VERIFY_TOKEN,
+                  status: HTTP_STATUS.UNAUTHORIZED
+                })
+              }
               req.decoded_email_verify_token = decoded_email_verify_token
             } catch (error) {
               throw new ErrorWithStatus({

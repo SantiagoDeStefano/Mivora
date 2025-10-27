@@ -110,27 +110,7 @@ export const verifyEmailController = async (
   res: Response
 ): Promise<void> => {
   const { user_id } = req.decoded_email_verify_token as TokenPayload
-  const user = await databaseService.users(`SELECT id, email_verify_token FROM users WHERE id=$1`, [user_id])
-
-  //If user not found then we return HTTP 404 Not Found
-  if (user.rows.length <= 0) {
-    res.status(HTTP_STATUS.NOT_FOUND).json({
-      error: USERS_MESSAGES.USER_NOT_FOUND
-    })
-    return
-  }
-
-  //Verified so we don't throw error
-  //Instead, we return HTTP 200 OK with "Already verified" message
-  if (user.rows[0].email_verify_token == '') {
-    res.status(HTTP_STATUS.OK).json({
-      message: USERS_MESSAGES.EMAIL_ALREADY_VERIFIED
-    })
-    return
-  }
-  //If not verify then we assign user to req.user to use in controller
   const result = await userService.verifyEmail(user_id)
-
   res.json({
     message: USERS_MESSAGES.EMAIL_VERIFY_SUCCESS,
     result
