@@ -6,7 +6,7 @@ export const USERS_MESSAGES = {
   BIO_MUST_BE_A_STRING: 'Bio must be a string',
   BIO_LENGTH_MUST_BE_BETWEEN_1_AND_100: 'Bio must be between 1 and 100',
 
-  CHECK_YOUR_EMAIL_FOR_RESET_PASSWORD: 'Check your email for reset password',
+  CHECK_YOUR_EMAIL_FOR_RESET_PASSWORD_LINK: 'Check your email for reset password link',
   CONFIRM_PASSWORD_DOES_NOT_MATCH_PASSWORD: 'Password confirmation does not match password',
   CONFIRM_PASSWORD_IS_REQUIRED: 'Password confirmation is required',
   CONFIRM_PASSWORD_MUST_BE_A_STRING: 'Password confirmation must be a string',

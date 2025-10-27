@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import { NextFunction, ParamsDictionary } from 'express-serve-static-core'
 import { USERS_MESSAGES } from '~/constants/messages'
 import {
+  ForgotPasswordRequestBody,
   LoginRequestBody,
   LogoutRequestBody,
   RefreshTokenRequestBody,
@@ -115,4 +116,16 @@ export const verifyEmailController = async (
     message: USERS_MESSAGES.EMAIL_VERIFY_SUCCESS,
     result
   })
+}
+
+export const forgotPasswordController = async (
+  req: Request<ParamsDictionary, unknown, ForgotPasswordRequestBody>,
+  res: Response
+): Promise<void> => {
+  const { id, verified, email } = req.user as User
+  userService.forgotPassword({ user_id: id, verify: verified, email })
+  res.json({
+    message: USERS_MESSAGES.CHECK_YOUR_EMAIL_FOR_RESET_PASSWORD_LINK,
+  })
+  return
 }

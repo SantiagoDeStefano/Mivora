@@ -11,7 +11,7 @@ import User from '~/models/schemas/User.schema'
 import databaseService from '~/services/database.services'
 import { parsePgArray } from '~/utils/common'
 import { UserVerificationStatus } from '~/types/domain'
-import { sendVerifyStatusEmail } from '~/utils/email'
+import { sendForgotPasswordEmail, sendVerifyStatusEmail } from '~/utils/email'
 
 class UserService {
   // Signs a short-lived Access Token (used on every API call). Lifetime comes from envConfig.accessTokenExpiresIn.
@@ -94,7 +94,23 @@ class UserService {
       },
       privateKey: envConfig.jwtSecretEmailVerifyToken as string,
       options: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expiresIn: envConfig.emailVerifyTokenExpiresIn as any
+      }
+    }) as Promise<string>
+  }
+
+  async signForgotPasswordToken({ user_id, verify }: { user_id: UUIDv4; verify: UserVerificationStatus }): Promise<string> {
+    return signToken({
+      payload: {
+        user_id,
+        token_type: TokenType.ForgotPasswordToken,
+        verify
+      },
+      privateKey: envConfig.jwtSecretForgotPasswordToken as string,
+      options: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expiresIn: envConfig.forgotPasswordTokenExpiresIn as any
       }
     }) as Promise<string>
   }
@@ -305,6 +321,20 @@ class UserService {
     return {
       access_token,
       refresh_token
+    }
+  }
+
+  async forgotPassword({ user_id, verify, email }: { user_id: UUIDv4; verify: UserVerificationStatus; email: string }) {
+    const forgot_password_token = await this.signForgotPasswordToken({ user_id, verify })
+    console.log(forgot_password_token)
+    await databaseService.users(`UPDATE users SET forgot_password_token=$1 WHERE id=$2`, [forgot_password_token, user_id])
+
+    // Sending email https://twitter.com/forgot-password?token=token
+    await sendForgotPasswordEmail(email, forgot_password_token)
+
+    // For testing only, remove return this statement in production 
+    return {
+      forgot_password_token
     }
   }
 }

@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import {
+  forgotPasswordController,
   getMeController,
   loginController,
   logoutController,
@@ -12,6 +13,7 @@ import {
 import {
   accessTokenValidator,
   emailVerifyTokenValidator,
+  forgotPasswordValidator,
   loginValidator,
   refreshTokenValidator,
   registerValidator,
@@ -62,6 +64,14 @@ usersRouter.post('/refresh-token', refreshTokenValidator, wrapRequestHandler(ref
  */
 usersRouter.get('/me', accessTokenValidator, wrapRequestHandler(getMeController))
 
+/*
+ * Description: Update my profile
+ * Path: /me
+ * Method: PATCH
+ * Headers: { Authorization: Bearer <access_token> }
+ */
+usersRouter.patch('/me', accessTokenValidator, updateMeValidator, wrapRequestHandler(updateMeController))
+
 /**
  * Description: Send email verification token to current user's email
  * Path: /me/email-verification
@@ -79,12 +89,16 @@ usersRouter.post('/me/email-verification', accessTokenValidator, sendEmailValida
  */
 usersRouter.post('/verify-email', emailVerifyTokenValidator, wrapRequestHandler(verifyEmailController))
 
-/*
- * Description: Update my profile
- * Path: /me
- * Method: PATCH
- * Headers: { Authorization: Bearer <access_token> }
+/**
+ * Description: Submit email to reset password, then send email to user
+ * Path: /forgot-password
+ * Method: POST
+ * Body: { email: string }
  */
-usersRouter.patch('/me', accessTokenValidator, updateMeValidator, wrapRequestHandler(updateMeController))
+  usersRouter.post(
+    '/forgot-password', 
+    forgotPasswordValidator,
+    wrapRequestHandler(forgotPasswordController)
+  ) 
 
 export default usersRouter
