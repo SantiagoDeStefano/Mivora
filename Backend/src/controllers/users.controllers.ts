@@ -19,6 +19,8 @@ import databaseService from '~/services/database.services'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { UserVerificationStatus } from '~/types/domain'
 import User from '~/models/schemas/User.schema'
+import mediasService from '~/services/medias.services'
+import { uploadImageController } from './medias.controllers'
 
 export const registerController = async (
   req: Request<ParamsDictionary, unknown, RegisterRequestBody>,
@@ -92,6 +94,21 @@ export const updateMeController = async (
   const result = await userService.updateMe(user_id, req.body)
   res.json({
     message: USERS_MESSAGES.UPDATE_ME_SUCCESS,
+    result
+  })
+  return
+}
+
+export const updateAvatarController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const url = await mediasService.uploadImage(req)
+  const result = await userService.updateAvatar(user_id, url[0].url)
+  res.json({
+    message: USERS_MESSAGES.UPDATE_AVATAR_SUCCESS,
     result
   })
   return

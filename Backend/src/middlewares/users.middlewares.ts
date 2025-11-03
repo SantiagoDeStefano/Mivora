@@ -309,7 +309,6 @@ export const updateMeValidator = validate(
   checkSchema(
     {
       name: nameSchema,
-      avatar_url: imageSchema,
       role: {
         optional: { options: { nullable: true } },
         isString: {

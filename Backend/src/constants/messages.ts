@@ -72,6 +72,7 @@ export const USERS_MESSAGES = {
   USERNAME_MUST_BE_A_STRING: 'Username must be a string',
   USERNAME_MUST_BE_BETWEEN_1_AND_50: 'Username must be between 1 and 50',
   UPDATE_ME_SUCCESS: 'Update me successfully',
+  UPDATE_AVATAR_SUCCESS: 'Update avatar successfully',
   UNFOLLOW_SUCCESS: 'Unfollowed successfully',
   USERNAME_ALREADY_EXISTS: 'Username already exists',
   UPDATE_ROLE_MUST_BE_ORGANIZER: 'Update role must be organizer',
@@ -117,4 +118,8 @@ export const EVENTS_MESSAGES = {
 
   MAXIMUM_EVENTS_PER_PAGE_IS_BETWEEN_1_AND_50: 'Maximum events per page is between 1 and 50',
   NUMBER_OF_PAGE_MUST_BE_GREATER_THAN_0: 'Number of page must be greater than 0'
+} as const
+
+export const MEDIAS_MESSAGES = {
+  IMAGE_UPLOAD_SUCCESS: 'Image uploaded successfully'
 } as const

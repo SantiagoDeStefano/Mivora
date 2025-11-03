@@ -272,14 +272,23 @@ class UserService {
   }
 
   async updateMe(user_id: UUIDv4, body: UpdateMeRequestBody) {
-    const { name, avatar_url, role } = body
+    const { name, role } = body
     const newName = name ? name : ''
-    const newAvatarUrl = avatar_url ? avatar_url : ''
 
-    await databaseService.users(`UPDATE users SET name=$1, avatar_url=$2 WHERE id=$3`, [newName, newAvatarUrl, user_id])
+    await databaseService.users(`UPDATE users SET name=$1 WHERE id=$2`, [newName, user_id])
     if (role) {
       await databaseService.user_roles(`INSERT INTO user_roles(user_id, role) VALUES($1, $2)`, [user_id, role])
     }
+    const updatedUser = await databaseService.users(
+      `SELECT users.name, users.email, users.avatar_url, ARRAY_AGG(user_roles.role) AS role FROM users JOIN user_roles ON users.id = user_roles.user_id WHERE id=$1 GROUP BY users.id, users.name, users.email, users.avatar_url;`,
+      [user_id]
+    )
+    updatedUser.rows[0].role = parsePgArray(updatedUser.rows[0].role)
+    return updatedUser.rows[0]
+  }
+
+  async updateAvatar(user_id: UUIDv4, avatar_url: string) {
+    await databaseService.users(`UPDATE users SET avatar_url=$1 WHERE id=$2`, [avatar_url, user_id])
     const updatedUser = await databaseService.users(
       `SELECT users.name, users.email, users.avatar_url, ARRAY_AGG(user_roles.role) AS role FROM users JOIN user_roles ON users.id = user_roles.user_id WHERE id=$1 GROUP BY users.id, users.name, users.email, users.avatar_url;`,
       [user_id]
@@ -332,7 +341,7 @@ class UserService {
 
   async forgotPassword({ user_id, verify, email }: { user_id: UUIDv4; verify: UserVerificationStatus; email: string }) {
     const forgot_password_token = await this.signForgotPasswordToken({ user_id, verify })
-    console.log("forgot_password_token:", forgot_password_token)
+    console.log('forgot_password_token:', forgot_password_token)
     await databaseService.users(`UPDATE users SET forgot_password_token=$1 WHERE id=$2`, [
       forgot_password_token,
       user_id

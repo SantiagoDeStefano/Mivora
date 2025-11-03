@@ -19,6 +19,7 @@
   "devDependencies": {
     "@eslint/js": "^9.37.0",
     "@types/express": "^5.0.3",
+    "@types/formidable": "^3.4.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/lodash": "^4.17.20",
     "@types/node": "^24.6.2",
@@ -39,7 +40,9 @@
     "typescript-eslint": "^8.45.0"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.917.0",
     "@aws-sdk/client-ses": "^3.913.0",
+    "@aws-sdk/lib-storage": "^3.918.0",
     "@faker-js/faker": "^9.9.0",
     "@types/cors": "^2.8.19",
     "@types/pg": "^8.15.5",
@@ -47,9 +50,11 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "express-validator": "^7.2.1",
+    "formidable": "^3.5.4",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
     "pg": "^8.16.3",
+    "sharp": "^0.34.4",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^13.0.0",
     "yaml": "^2.8.1"

@@ -8,6 +8,7 @@ import {
   registerController,
   resetPasswordController,
   sendEmailController,
+  updateAvatarController,
   updateMeController,
   verifyEmailController,
   verifyForgotPasswordController
@@ -75,6 +76,14 @@ usersRouter.get('/me', accessTokenValidator, wrapRequestHandler(getMeController)
  * Headers: { Authorization: Bearer <access_token> }
  */
 usersRouter.patch('/me', accessTokenValidator, updateMeValidator, wrapRequestHandler(updateMeController))
+
+/*
+ * Description: Upload avatar image file to s3 and return the link
+ * Path: /me
+ * Method: PUT
+ * Headers: { Authorization: Bearer <access_token> }
+ */
+usersRouter.put('/me/avatar', accessTokenValidator, wrapRequestHandler(updateAvatarController))
 
 /**
  * Description: Send email verification token to current user's email
