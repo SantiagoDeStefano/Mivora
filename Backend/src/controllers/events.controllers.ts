@@ -1,8 +1,9 @@
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { EVENTS_MESSAGES } from '~/constants/messages'
-import { CreateEventRequestBody, Pagination } from '~/models/requests/events.requests'
+import { CreateEventRequestBody, Pagination, UpdateEventDetailsBody } from '~/models/requests/events.requests'
 import { TokenPayload } from '~/models/requests/users.requests'
+import Event from '~/models/schemas/Event.schema'
 
 import eventService from '~/services/events.services'
 
@@ -36,16 +37,25 @@ export const getEventsController = async (
   })
 }
 
-export const getEventDetailsController = async(
-  req: Request<ParamsDictionary, unknown, unknown, Pagination>,
-  res: Response
-): Promise<void> => {
+export const getEventDetailsController = async (req: Request, res: Response): Promise<void> => {
   const eventData = req.event?.[0]
-  const event ={
+  const event = {
     ...eventData
   }
   res.json({
     message: EVENTS_MESSAGES.GET_EVENTS_SUCCESSFULLY,
     result: event
+  })
+}
+
+export const updateEventDetailsController = async (
+  req: Request<ParamsDictionary, unknown, UpdateEventDetailsBody>,
+  res: Response
+): Promise<void> => {
+  const event_id = (req.event as Event[])[0].id
+  const result = await eventService.updateEvent(event_id, req.body)
+  res.json({
+    message: EVENTS_MESSAGES.UPDATE_EVENT_SUCCESS,
+    result
   })
 }

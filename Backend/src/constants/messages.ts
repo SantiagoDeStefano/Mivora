@@ -91,6 +91,8 @@ export const USERS_MESSAGES = {
 } as const
 
 export const EVENTS_MESSAGES = {
+  CHANGE_EVENT_ONLY_ALLOWED_ON_DRAFT: 'Change event only allowed on draft',
+
   EVENT_TITLE_IS_REQUIRED: "Event's title is required",
   EVENT_TITLE_MUST_BE_STRING: "Event's title must be string",
   EVENT_TITLE_MUST_BE_BETWEEN_6_AND_50: "Event's title must be between 5 and 60",
@@ -117,7 +119,9 @@ export const EVENTS_MESSAGES = {
   INVALID_EVENT_ID: 'Invalid EventID',
 
   MAXIMUM_EVENTS_PER_PAGE_IS_BETWEEN_1_AND_50: 'Maximum events per page is between 1 and 50',
-  NUMBER_OF_PAGE_MUST_BE_GREATER_THAN_0: 'Number of page must be greater than 0'
+  NUMBER_OF_PAGE_MUST_BE_GREATER_THAN_0: 'Number of page must be greater than 0',
+
+  UPDATE_EVENT_SUCCESS: 'Update event successfully'
 } as const
 
 export const MEDIAS_MESSAGES = {

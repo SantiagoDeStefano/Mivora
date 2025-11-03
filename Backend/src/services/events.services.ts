@@ -1,4 +1,4 @@
-import { CreateEventRequestBody } from '~/models/requests/events.requests'
+import { CreateEventRequestBody, UpdateEventDetailsBody } from '~/models/requests/events.requests'
 import databaseService from './database.services'
 import Event from '~/models/schemas/Event.schema'
 import { UUIDv4 } from '~/types/common'
@@ -13,9 +13,7 @@ class EventService {
       start_at,
       end_at,
       price_cents,
-      checked_in,
-      capacity,
-      status
+      capacity
     } = body
     const new_event = new Event({
       organizer_id,
@@ -26,9 +24,7 @@ class EventService {
       start_at,
       end_at,
       price_cents,
-      checked_in,
       capacity,
-      status
     })
     await databaseService.events(
       `INSERT INTO events(
@@ -64,6 +60,7 @@ class EventService {
     const newEvent = await databaseService.events(
       `
         SELECT
+          id,
           organizer_id, 
           title, 
           description, 
@@ -88,7 +85,7 @@ class EventService {
     const [eventsResult, totalEventsResult] = await Promise.all([
       databaseService.events(
         `
-        SELECT organizer_id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events
+        SELECT id, organizer_id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events
         ORDER BY created_at DESC, id DESC 
         LIMIT $1 OFFSET $2
         `,
@@ -102,6 +99,19 @@ class EventService {
       events,
       totalEvents
     }
+  }
+
+  async updateEvent(event_id: UUIDv4, body: UpdateEventDetailsBody) {
+    const { title, description, poster_url, location_text, start_at, end_at, price_cents, capacity } = body
+    await databaseService.events(
+      `UPDATE events SET title=$1, description=$2, poster_url=$3, location_text=$4, start_at=$5, end_at=$6, price_cents=$7, capacity=$8 WHERE id=$9`,
+      [title, description, poster_url, location_text, start_at, end_at, price_cents, capacity, event_id]
+    )
+    const eventRow = await databaseService.events(
+      `SELECT id, organizer_id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events WHERE id=$1 LIMIT 1`,
+      [event_id]
+    )
+    return eventRow.rows[0]
   }
 }
 

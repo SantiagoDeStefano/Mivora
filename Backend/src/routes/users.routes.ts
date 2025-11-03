@@ -74,6 +74,7 @@ usersRouter.get('/me', accessTokenValidator, wrapRequestHandler(getMeController)
  * Path: /me
  * Method: PATCH
  * Headers: { Authorization: Bearer <access_token> }
+ * Body: UpdateMeRequestBody
  */
 usersRouter.patch('/me', accessTokenValidator, updateMeValidator, wrapRequestHandler(updateMeController))
 

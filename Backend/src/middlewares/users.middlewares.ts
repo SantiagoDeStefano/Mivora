@@ -47,6 +47,7 @@ const passwordSchema: ParamSchema = {
 
 // Shared name rules
 const nameSchema: ParamSchema = {
+  trim: true,
   notEmpty: {
     errorMessage: USERS_MESSAGES.NAME_IS_REQUIRED
   },
@@ -59,8 +60,7 @@ const nameSchema: ParamSchema = {
       max: LIMIT_MIN_MAX.NAME_LENGTH_MAX
     },
     errorMessage: USERS_MESSAGES.NAME_LENGTH_MUST_BE_FROM_3_TO_100
-  },
-  trim: true
+  }
 }
 
 // Optional avatar URL rules

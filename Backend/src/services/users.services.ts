@@ -273,9 +273,15 @@ class UserService {
 
   async updateMe(user_id: UUIDv4, body: UpdateMeRequestBody) {
     const { name, role } = body
-    const newName = name ? name : ''
 
-    await databaseService.users(`UPDATE users SET name=$1 WHERE id=$2`, [newName, user_id])
+    await databaseService.users(
+      `
+      UPDATE users
+      SET name = $1
+      WHERE id = $2
+      `,
+      [name, user_id]
+    )
     if (role) {
       await databaseService.user_roles(`INSERT INTO user_roles(user_id, role) VALUES($1, $2)`, [user_id, role])
     }

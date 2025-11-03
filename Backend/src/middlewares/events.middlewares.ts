@@ -1,13 +1,17 @@
 import { checkSchema } from 'express-validator'
 import { validate } from '~/utils/validation'
 import { EVENTS_MESSAGES } from '~/constants/messages'
-import LIMIT_MIN_MAX from '~/constants/limits'
 import { EventStatus } from '~/types/domain'
 import { isValidUUIDv4 } from '~/utils/uuid'
+import { Request, Response } from 'express'
+import { NextFunction } from 'express-serve-static-core'
+
 import eventService from '~/services/events.services'
 import ErrorWithStatus from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpStatus'
 import databaseService from '~/services/database.services'
+import LIMIT_MIN_MAX from '~/constants/limits'
+import Event from '~/models/schemas/Event.schema'
 
 const event_statuts: EventStatus[] = ['draft', 'published', 'canceled']
 
@@ -16,6 +20,7 @@ export const createEventValidator = validate(
   checkSchema(
     {
       title: {
+        trim: true,
         isString: {
           errorMessage: EVENTS_MESSAGES.EVENT_TITLE_MUST_BE_STRING
         },
@@ -28,8 +33,7 @@ export const createEventValidator = validate(
             max: LIMIT_MIN_MAX.EVENT_TITLE_MAX
           },
           errorMessage: EVENTS_MESSAGES.EVENT_TITLE_MUST_BE_BETWEEN_6_AND_50
-        },
-        trim: true
+        }
       },
       description: {
         optional: { options: { nullable: true } },
@@ -135,58 +139,192 @@ export const createEventValidator = validate(
   )
 )
 
+export const updateEventValidator = validate(
+  checkSchema(
+    {
+      title: {
+        trim: true,
+        isString: {
+          errorMessage: EVENTS_MESSAGES.EVENT_TITLE_MUST_BE_STRING
+        },
+        notEmpty: {
+          errorMessage: EVENTS_MESSAGES.EVENT_TITLE_IS_REQUIRED
+        },
+        isLength: {
+          options: {
+            min: LIMIT_MIN_MAX.EVENT_TITLE_MIN,
+            max: LIMIT_MIN_MAX.EVENT_TITLE_MAX
+          },
+          errorMessage: EVENTS_MESSAGES.EVENT_TITLE_MUST_BE_BETWEEN_6_AND_50
+        }
+      },
+      description: {
+        optional: { options: { nullable: true } },
+        isString: {
+          errorMessage: EVENTS_MESSAGES.EVENT_DESCRIPTION_MUST_BE_STRING
+        },
+        isLength: {
+          options: {
+            min: LIMIT_MIN_MAX.EVENT_DESCRIPTION_MIN,
+            max: LIMIT_MIN_MAX.EVENT_DESCRIPTION_MAX
+          },
+          errorMessage: EVENTS_MESSAGES.EVENT_DESCRIPTION_MUST_BE_BETWEEN_10_AND_100
+        },
+        trim: true
+      },
+      poster_url: {
+        optional: { options: { nullable: true } },
+        isString: {
+          errorMessage: EVENTS_MESSAGES.EVENT_POSTER_URL_MUST_BE_STRING
+        },
+        isLength: {
+          options: {
+            min: LIMIT_MIN_MAX.EVENT_POSTER_URL_MIN,
+            max: LIMIT_MIN_MAX.EVENT_POSTER_URL_MAX
+          },
+          errorMessage: EVENTS_MESSAGES.EVENT_POSTER_URL_MUST_BE_BETWEEN_4_AND_400
+        },
+        trim: true
+      },
+      location_text: {
+        isString: {
+          errorMessage: EVENTS_MESSAGES
+        },
+        isLength: {
+          options: {
+            min: LIMIT_MIN_MAX.EVENT_LOCATION_MIN,
+            max: LIMIT_MIN_MAX.EVENT_LOCATION_MAX
+          },
+          errorMessage: EVENTS_MESSAGES
+        },
+        trim: true
+      },
+      start_at: {
+        isISO8601: {
+          options: { strict: true, strictSeparator: true },
+          errorMessage: EVENTS_MESSAGES.EVENT_START_AT_MUST_BE_ISO8601
+        },
+        toDate: true
+      },
+      end_at: {
+        isISO8601: {
+          options: { strict: true, strictSeparator: true },
+          errorMessage: EVENTS_MESSAGES.EVENT_END_AT_MUST_BE_ISO8601
+        },
+        custom: {
+          options: (value, { req }) => {
+            const start = Date.parse(req.body.start_at)
+            const end = Date.parse(value)
+            // If start is invalid, let the start_at validator report it.
+            if (isNaN(start) || isNaN(end)) return true
+            return end > start
+          },
+          errorMessage: EVENTS_MESSAGES.EVENT_END_AT_MUST_BE_AFTER_START_AT
+        },
+        toDate: true
+      },
+      price_cents: {
+        isNumeric: {
+          errorMessage: EVENTS_MESSAGES.EVENT_PRICE_MUST_BE_NUMERIC
+        },
+        toInt: true,
+        custom: {
+          options: (value, { req }) => {
+            return value > 0
+          },
+          errorMessage: EVENTS_MESSAGES.EVENT_PRICE_MUST_BE_POSITIVE
+        }
+      },
+      capacity: {
+        isNumeric: {
+          errorMessage: EVENTS_MESSAGES.EVENT_CAPACITY_MUST_BE_NUMBER
+        },
+        toInt: true,
+        custom: {
+          options: (value, { req }) => {
+            return value > 0
+          },
+          errorMessage: EVENTS_MESSAGES.EVENT_CAPACITY_MUST_BE_POSITIVE
+        }
+      }
+    },
+    ['body']
+  )
+)
+
 export const paginationValidator = validate(
-  checkSchema({
-    limit: {
-      isNumeric: true,
-      custom: {
-        options: async (value, { req }) => {
-          const num = Number(value)
-          if (num > LIMIT_MIN_MAX.EVENT_PER_PAGE_MAX || num < LIMIT_MIN_MAX.EVENT_PER_PAGE_MIN) {
-            throw new Error(EVENTS_MESSAGES.MAXIMUM_EVENTS_PER_PAGE_IS_BETWEEN_1_AND_50)
+  checkSchema(
+    {
+      limit: {
+        isNumeric: true,
+        custom: {
+          options: async (value, { req }) => {
+            const num = Number(value)
+            if (num > LIMIT_MIN_MAX.EVENT_PER_PAGE_MAX || num < LIMIT_MIN_MAX.EVENT_PER_PAGE_MIN) {
+              throw new Error(EVENTS_MESSAGES.MAXIMUM_EVENTS_PER_PAGE_IS_BETWEEN_1_AND_50)
+            }
+          }
+        }
+      },
+      page: {
+        isNumeric: true,
+        custom: {
+          options: async (values, { req }) => {
+            const num = Number(values)
+            if (num < 1) {
+              throw new Error(EVENTS_MESSAGES.NUMBER_OF_PAGE_MUST_BE_GREATER_THAN_0)
+            }
           }
         }
       }
     },
-    page: {
-      isNumeric: true,
-      custom: {
-        options: async (values, { req }) => {
-          const num = Number(values)
-          if (num < 1) {
-            throw new Error(EVENTS_MESSAGES.NUMBER_OF_PAGE_MUST_BE_GREATER_THAN_0)
-          }
-        }
-      }
-    }
-  })
+    ['query']
+  )
 )
 
 export const eventIdValidator = validate(
-  checkSchema({
-    event_id: {
-      custom: {
-        options: async (values, { req }) => {
-          if (!isValidUUIDv4(values)) {
-            throw new ErrorWithStatus({
-              status: HTTP_STATUS.BAD_REQUEST,
-              message: EVENTS_MESSAGES.INVALID_EVENT_ID
-            })
+  checkSchema(
+    {
+      event_id: {
+        custom: {
+          options: async (values, { req }) => {
+            if (!isValidUUIDv4(values)) {
+              console.log(values)
+              throw new ErrorWithStatus({
+                status: HTTP_STATUS.BAD_REQUEST,
+                message: EVENTS_MESSAGES.INVALID_EVENT_ID
+              })
+            }
+            const event = await databaseService.events(
+              `SELECT id, organizer_id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events WHERE id=$1`,
+              [values]
+            )
+            if (event.rows.length <= 0) {
+              throw new ErrorWithStatus({
+                status: HTTP_STATUS.NOT_FOUND,
+                message: EVENTS_MESSAGES.EVENT_NOT_FOUND
+              })
+            }
+            req.event = event.rows
+            return true
           }
-          const event = await databaseService.events(
-            `SELECT organizer_id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events WHERE id=$1`,
-            [values]
-          )
-          if(event.rows.length <= 0) {
-            throw new ErrorWithStatus({
-              status: HTTP_STATUS.NOT_FOUND,
-              message: EVENTS_MESSAGES.EVENT_NOT_FOUND
-            })
-          }
-          req.event = event.rows
-          return true;
         }
       }
-    }
-  })
+    },
+    ['params']
+  )
 )
+
+export const eventStatusValidator = async (req: Request, res: Response, next: NextFunction) => {
+  const events = req.event as Event[]
+  const event = events[0]
+  if (event.status != 'draft') {
+    return next(
+      new ErrorWithStatus({
+        message: EVENTS_MESSAGES.CHANGE_EVENT_ONLY_ALLOWED_ON_DRAFT,
+        status: HTTP_STATUS.CONFLICT
+      })
+    )
+  }
+  next()
+}
