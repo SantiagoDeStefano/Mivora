@@ -59,3 +59,12 @@ export const updateEventDetailsController = async (
     result
   })
 }
+
+export const publishEventController = async (req: Request, res: Response): Promise<void> => {
+  const event_id = (req.event as Event[])[0].id
+  const result = await eventService.publishEvent(event_id)
+  res.json({
+    message: EVENTS_MESSAGES.PUBLISH_EVENT_SUCCESS,
+    result
+  })
+}

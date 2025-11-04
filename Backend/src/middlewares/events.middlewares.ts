@@ -315,16 +315,30 @@ export const eventIdValidator = validate(
   )
 )
 
-export const eventStatusValidator = async (req: Request, res: Response, next: NextFunction) => {
-  const events = req.event as Event[]
-  const event = events[0]
-  if (event.status != 'draft') {
-    return next(
-      new ErrorWithStatus({
-        message: EVENTS_MESSAGES.CHANGE_EVENT_ONLY_ALLOWED_ON_DRAFT,
-        status: HTTP_STATUS.CONFLICT
-      })
-    )
+export const eventStatusValidator =
+  (allowedStatus: string, errorMessage: string, httpStatus: number) =>
+  async (req: Request, res: Response, next: NextFunction) => {
+    const events = req.event as Event[]
+    const event = events[0]
+    if (event.status != allowedStatus) {
+      return next(
+        new ErrorWithStatus({
+          message: errorMessage,
+          status: httpStatus
+        })
+      )
+    }
+    next()
   }
-  next()
-}
+
+export const updateEventStatusValidator = eventStatusValidator(
+  'draft',
+  EVENTS_MESSAGES.CHANGE_EVENT_ONLY_ALLOWED_ON_DRAFT,
+  HTTP_STATUS.CONFLICT
+)
+
+export const publishEventStatusValidator = eventStatusValidator(
+  'draft',
+  EVENTS_MESSAGES.PUBLISH_EVENT_ONLY_ALLOWED_ON_DRAFT,
+  HTTP_STATUS.CONFLICT
+)

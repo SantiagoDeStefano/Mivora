@@ -5,16 +5,7 @@ import { UUIDv4 } from '~/types/common'
 
 class EventService {
   async createEvent(organizer_id: UUIDv4, body: CreateEventRequestBody) {
-    const {
-      title,
-      description,
-      poster_url,
-      location_text,
-      start_at,
-      end_at,
-      price_cents,
-      capacity
-    } = body
+    const { title, description, poster_url, location_text, start_at, end_at, price_cents, capacity } = body
     const new_event = new Event({
       organizer_id,
       title,
@@ -24,7 +15,7 @@ class EventService {
       start_at,
       end_at,
       price_cents,
-      capacity,
+      capacity
     })
     await databaseService.events(
       `INSERT INTO events(
@@ -107,6 +98,15 @@ class EventService {
       `UPDATE events SET title=$1, description=$2, poster_url=$3, location_text=$4, start_at=$5, end_at=$6, price_cents=$7, capacity=$8 WHERE id=$9`,
       [title, description, poster_url, location_text, start_at, end_at, price_cents, capacity, event_id]
     )
+    const eventRow = await databaseService.events(
+      `SELECT id, organizer_id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events WHERE id=$1 LIMIT 1`,
+      [event_id]
+    )
+    return eventRow.rows[0]
+  }
+
+  async publishEvent(event_id: UUIDv4) {
+    await databaseService.events(`UPDATE events SET status='published' WHERE id=$1`, [event_id])
     const eventRow = await databaseService.events(
       `SELECT id, organizer_id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events WHERE id=$1 LIMIT 1`,
       [event_id]

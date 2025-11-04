@@ -3,6 +3,7 @@ import {
   createEventController,
   getEventDetailsController,
   getEventsController,
+  publishEventController,
   updateEventDetailsController
 } from '~/controllers/events.controllers'
 import { accessTokenValidator, organizerValidator } from '~/middlewares/users.middlewares'
@@ -10,8 +11,9 @@ import { wrapRequestHandler } from '~/utils/handlers'
 import {
   createEventValidator,
   eventIdValidator,
-  eventStatusValidator,
   paginationValidator,
+  publishEventStatusValidator,
+  updateEventStatusValidator,
   updateEventValidator
 } from '~/middlewares/events.middlewares'
 
@@ -32,17 +34,17 @@ eventsRouter.post(
 )
 
 /**
- * Description: Change event's details
+ * Description: Update event's details
  * Path: /:event_id
  * Method: PATCH
  * Query: { title: string, description?: string, poster_url?: string, localtion_text: , start_at: , end_at: , price_cents: , capacity: number, status: EventStatus }
  */
 eventsRouter.patch(
   '/:event_id',
-  eventIdValidator,
-  eventStatusValidator,
   accessTokenValidator,
   organizerValidator,
+  eventIdValidator,
+  updateEventStatusValidator,
   updateEventValidator,
   wrapRequestHandler(updateEventDetailsController)
 )
@@ -61,6 +63,20 @@ eventsRouter.get('/', paginationValidator, wrapRequestHandler(getEventsControlle
  * Path: /:event_id
  * Method: GET
  */
-eventsRouter.get('/:event_id', eventIdValidator, accessTokenValidator, wrapRequestHandler(getEventDetailsController))
+eventsRouter.get('/:event_id', accessTokenValidator, eventIdValidator, wrapRequestHandler(getEventDetailsController))
+
+/**
+ * Description: Publish event (change event's status to 'published')
+ * Path: /:event_id/publish
+ * Method: PATCH
+ */
+eventsRouter.patch(
+  '/:event_id/publish',
+  accessTokenValidator,
+  organizerValidator,
+  eventIdValidator,
+  publishEventStatusValidator,
+  wrapRequestHandler(publishEventController)
+)
 
 export default eventsRouter

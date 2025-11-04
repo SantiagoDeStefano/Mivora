@@ -121,6 +121,9 @@ export const EVENTS_MESSAGES = {
   MAXIMUM_EVENTS_PER_PAGE_IS_BETWEEN_1_AND_50: 'Maximum events per page is between 1 and 50',
   NUMBER_OF_PAGE_MUST_BE_GREATER_THAN_0: 'Number of page must be greater than 0',
 
+  PUBLISH_EVENT_SUCCESS: 'Publish event successfully',
+  PUBLISH_EVENT_ONLY_ALLOWED_ON_DRAFT: 'Publish event only allowed on draft',
+
   UPDATE_EVENT_SUCCESS: 'Update event successfully'
 } as const
 
