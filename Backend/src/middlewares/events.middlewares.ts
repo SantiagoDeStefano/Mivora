@@ -342,3 +342,9 @@ export const publishEventStatusValidator = eventStatusValidator(
   EVENTS_MESSAGES.PUBLISH_EVENT_ONLY_ALLOWED_ON_DRAFT,
   HTTP_STATUS.CONFLICT
 )
+
+export const cancelEventStatusValidator = eventStatusValidator(
+  'published',
+  EVENTS_MESSAGES.CANCEL_EVENT_ONLY_ALLOWED_ON_PUBLISHED,
+  HTTP_STATUS.CONFLICT
+)

@@ -88,3 +88,12 @@ export const publishEventController = async (req: Request, res: Response): Promi
     result
   })
 }
+
+export const cancelEventController = async (req: Request, res: Response): Promise<void> => {
+  const event_id = (req.event as Event[])[0].id
+  const result = await eventService.cancelEvent(event_id)
+  res.json({
+    message: EVENTS_MESSAGES.CANCEL_EVENT_SUCCESS,
+    result
+  })
+}

@@ -133,6 +133,15 @@ class EventService {
     )
     return eventRow.rows[0]
   }
+
+  async cancelEvent(event_id: UUIDv4) {
+    await databaseService.events(`UPDATE events SET status='canceled' WHERE id=$1`, [event_id])
+    const eventRow = await databaseService.events(
+      `SELECT id, organizer_id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events WHERE id=$1 LIMIT 1`,
+      [event_id]
+    )
+    return eventRow.rows[0]
+  }
 }
 
 const eventService = new EventService()

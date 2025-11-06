@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import {
+  cancelEventController,
   createEventController,
   getCreatedEventsController,
   getEventDetailsController,
@@ -10,6 +11,7 @@ import {
 import { accessTokenValidator, organizerValidator } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
 import {
+  cancelEventStatusValidator,
   createEventValidator,
   eventIdValidator,
   paginationValidator,
@@ -93,6 +95,20 @@ eventsRouter.patch(
   eventIdValidator,
   publishEventStatusValidator,
   wrapRequestHandler(publishEventController)
+)
+
+/**
+ * Description: Cancel event (change event's status to 'canceled')
+ * Path: /:event_id/cancel
+ * Method: PATCH
+ */
+eventsRouter.patch(
+  '/:event_id/cancel',
+  accessTokenValidator,
+  organizerValidator,
+  eventIdValidator,
+  cancelEventStatusValidator,
+  wrapRequestHandler(cancelEventController)
 )
 
 export default eventsRouter

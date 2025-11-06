@@ -92,6 +92,8 @@ export const USERS_MESSAGES = {
 
 export const EVENTS_MESSAGES = {
   CHANGE_EVENT_ONLY_ALLOWED_ON_DRAFT: 'Change event only allowed on draft',
+  CANCEL_EVENT_ONLY_ALLOWED_ON_PUBLISHED: 'Cancel event only allowed on published',
+  CANCEL_EVENT_SUCCESS: 'Cancel event successfully',
 
   EVENT_TITLE_IS_REQUIRED: "Event's title is required",
   EVENT_TITLE_MUST_BE_STRING: "Event's title must be string",
