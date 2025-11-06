@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import {
   createEventController,
+  getCreatedEventsController,
   getEventDetailsController,
   getEventsController,
   publishEventController,
@@ -64,6 +65,21 @@ eventsRouter.get('/', paginationValidator, wrapRequestHandler(getEventsControlle
  * Method: GET
  */
 eventsRouter.get('/:event_id', accessTokenValidator, eventIdValidator, wrapRequestHandler(getEventDetailsController))
+
+/**
+ * Description: Get event's created list
+ * Path: /
+ * Method: GET
+ * Header: { Authorization: Bearer <access_token> }
+ * Query: { limit: number, page: number }
+ */
+eventsRouter.get(
+  '/',
+  accessTokenValidator,
+  organizerValidator,
+  paginationValidator,
+  wrapRequestHandler(getCreatedEventsController)
+)
 
 /**
  * Description: Publish event (change event's status to 'published')

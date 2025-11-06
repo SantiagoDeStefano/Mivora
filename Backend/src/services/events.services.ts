@@ -92,6 +92,26 @@ class EventService {
     }
   }
 
+  async getCreatedEvents(organizer_id: UUIDv4, limit: number, page: number) {
+    const [eventsResult, totalEventsResult] = await Promise.all([
+      databaseService.events(
+        `
+        SELECT id, organizer_id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events WHERE organizer_id=$1
+        ORDER BY created_at DESC, id DESC 
+        LIMIT $2 OFFSET $3
+        `,
+        [organizer_id, limit, limit * (page - 1)]
+      ),
+      databaseService.events(`SELECT COUNT(id) FROM events`)
+    ])
+    const events = eventsResult.rows
+    const totalEvents = totalEventsResult.rows[0].count
+    return {
+      events,
+      totalEvents
+    }
+  }
+
   async updateEvent(event_id: UUIDv4, body: UpdateEventDetailsBody) {
     const { title, description, poster_url, location_text, start_at, end_at, price_cents, capacity } = body
     await databaseService.events(

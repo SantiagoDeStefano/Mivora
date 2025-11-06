@@ -6,6 +6,7 @@ import { TokenPayload } from '~/models/requests/users.requests'
 import Event from '~/models/schemas/Event.schema'
 
 import eventService from '~/services/events.services'
+import { UUIDv4 } from '~/types/common'
 
 export const createEventController = async (
   req: Request<ParamsDictionary, unknown, CreateEventRequestBody>,
@@ -28,6 +29,25 @@ export const getEventsController = async (
   const result = await eventService.getEvents(limit, page)
   res.json({
     message: EVENTS_MESSAGES.GET_EVENTS_SUCCESSFULLY,
+    result: {
+      events: result.events,
+      limit,
+      page,
+      total_page: Math.ceil(result.totalEvents / limit)
+    }
+  })
+}
+
+export const getCreatedEventsController = async (
+  req: Request<ParamsDictionary, unknown, unknown, Pagination>,
+  res: Response
+): Promise<void> => {
+  const limit = Number(req.query.limit)
+  const page = Number(req.query.page)
+  const organizer_id = req.decoded_authorization?.user_id as UUIDv4
+  const result = await eventService.getCreatedEvents(organizer_id, limit, page)
+  res.json({
+    message: EVENTS_MESSAGES.GET_CREATED_EVENTS_SUCCESSFULLY,
     result: {
       events: result.events,
       limit,

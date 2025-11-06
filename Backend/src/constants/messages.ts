@@ -115,6 +115,7 @@ export const EVENTS_MESSAGES = {
   EVENT_CREATED_SUCCESSFULLY: 'Event created successfully',
   EVENT_NOT_FOUND: 'Event not found',
   GET_EVENTS_SUCCESSFULLY: 'Get events successfully',
+  GET_CREATED_EVENTS_SUCCESSFULLY: 'Get created events successfully',
 
   INVALID_EVENT_ID: 'Invalid EventID',
 
