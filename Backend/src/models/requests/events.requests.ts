@@ -29,3 +29,7 @@ export interface Pagination extends Query {
   limit: string
   page: string
 }
+
+export interface EventWithStatus extends Pagination {
+  status: EventStatus
+}

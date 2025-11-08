@@ -2,6 +2,7 @@ import { CreateEventRequestBody, UpdateEventDetailsBody } from '~/models/request
 import databaseService from './database.services'
 import Event from '~/models/schemas/Event.schema'
 import { UUIDv4 } from '~/types/common'
+import { EventStatus } from '~/types/domain'
 
 class EventService {
   async createEvent(organizer_id: UUIDv4, body: CreateEventRequestBody) {
@@ -72,40 +73,47 @@ class EventService {
     return newEvent.rows[0]
   }
 
-  async getEvents(limit: number, page: number) {
-    const [eventsResult, totalEventsResult] = await Promise.all([
-      databaseService.events(
-        `
-        SELECT id, organizer_id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events
+  async getPublishedEvents(limit: number, page: number, status: EventStatus) {
+    const eventsResult = await databaseService.events(
+      `
+        SELECT id, organizer_id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events WHERE status=$1
         ORDER BY created_at DESC, id DESC 
-        LIMIT $1 OFFSET $2
+        LIMIT $2 OFFSET $3
         `,
-        [limit, limit * (page - 1)]
-      ),
-      databaseService.events(`SELECT COUNT(id) FROM events`)
-    ])
+      [status, limit, limit * (page - 1)]
+    )
     const events = eventsResult.rows
-    const totalEvents = totalEventsResult.rows[0].count
+    const totalEvents = eventsResult.rows.length
     return {
       events,
       totalEvents
     }
   }
+  async getEventsWithStatus(organizer_id: UUIDv4, status: EventStatus, limit: number, page: number) {
+    const eventsResult = !status
+      ? await databaseService.events(
+          `
+            SELECT id, organizer_id, title, description, poster_url, location_text,
+                start_at, end_at, price_cents, checked_in, capacity, status
+            FROM events WHERE organizer_id=$1
+            ORDER BY created_at DESC, id DESC 
+            LIMIT $2 OFFSET $3
+          `,
+          [organizer_id, limit, limit * (page - 1)]
+        )
+      : await databaseService.events(
+          `
+            SELECT id, organizer_id, title, description, poster_url, location_text,
+                start_at, end_at, price_cents, checked_in, capacity, status
+            FROM events WHERE organizer_id=$1 AND status = $2
+            ORDER BY created_at DESC, id DESC 
+            LIMIT $3 OFFSET $4
+          `,
+          [organizer_id, status, limit, limit * (page - 1)]
+        )
 
-  async getCreatedEvents(organizer_id: UUIDv4, limit: number, page: number) {
-    const [eventsResult, totalEventsResult] = await Promise.all([
-      databaseService.events(
-        `
-        SELECT id, organizer_id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events WHERE organizer_id=$1
-        ORDER BY created_at DESC, id DESC 
-        LIMIT $2 OFFSET $3
-        `,
-        [organizer_id, limit, limit * (page - 1)]
-      ),
-      databaseService.events(`SELECT COUNT(id) FROM events`)
-    ])
     const events = eventsResult.rows
-    const totalEvents = totalEventsResult.rows[0].count
+    const totalEvents = eventsResult.rows.length
     return {
       events,
       totalEvents

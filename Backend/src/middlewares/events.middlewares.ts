@@ -315,7 +315,7 @@ export const eventIdValidator = validate(
   )
 )
 
-export const eventStatusValidator =
+export const changeEventStatusValidator =
   (allowedStatus: string, errorMessage: string, httpStatus: number) =>
   async (req: Request, res: Response, next: NextFunction) => {
     const events = req.event as Event[]
@@ -330,21 +330,41 @@ export const eventStatusValidator =
     }
     next()
   }
+export const getEventStatusValidator = validate(
+  checkSchema(
+    {
+      status: {
+        optional: { options: { nullable: true } },
+        isIn: {
+          options: [event_statuts],
+          errorMessage: EVENTS_MESSAGES.EVENT_STATUS_MUST_BE_DRAFT_PUBLISHED_CANCELED
+        }
+      }
+    },
+    ['query']
+  )
+)
 
-export const updateEventStatusValidator = eventStatusValidator(
+export const updateEventStatusValidator = changeEventStatusValidator(
   'draft',
   EVENTS_MESSAGES.CHANGE_EVENT_ONLY_ALLOWED_ON_DRAFT,
   HTTP_STATUS.CONFLICT
 )
 
-export const publishEventStatusValidator = eventStatusValidator(
+export const publishEventStatusValidator = changeEventStatusValidator(
   'draft',
   EVENTS_MESSAGES.PUBLISH_EVENT_ONLY_ALLOWED_ON_DRAFT,
   HTTP_STATUS.CONFLICT
 )
 
-export const cancelEventStatusValidator = eventStatusValidator(
+export const cancelEventStatusValidator = changeEventStatusValidator(
   'published',
   EVENTS_MESSAGES.CANCEL_EVENT_ONLY_ALLOWED_ON_PUBLISHED,
+  HTTP_STATUS.CONFLICT
+)
+
+export const getPublishedEventStatusValidator = changeEventStatusValidator(
+  'published',
+  EVENTS_MESSAGES.GET_EVENT_DETAILS_IS_ONLY_ON_PUBLISHED,
   HTTP_STATUS.CONFLICT
 )

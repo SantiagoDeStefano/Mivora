@@ -2,9 +2,9 @@ import { Router } from 'express'
 import {
   cancelEventController,
   createEventController,
-  getCreatedEventsController,
   getEventDetailsController,
-  getEventsController,
+  getEventsWithStatusController,
+  getPublishedEventsController,
   publishEventController,
   updateEventDetailsController
 } from '~/controllers/events.controllers'
@@ -14,6 +14,8 @@ import {
   cancelEventStatusValidator,
   createEventValidator,
   eventIdValidator,
+  getEventStatusValidator,
+  getPublishedEventStatusValidator,
   paginationValidator,
   publishEventStatusValidator,
   updateEventStatusValidator,
@@ -24,12 +26,12 @@ const eventsRouter = Router()
 
 /**
  * Description: Create a new event
- * Path: /
+ * Path: /organizer/
  * Method: POST
  * Body: { title: string, description?: string, poster_url?: string, localtion_text: , start_at: , end_at: , price_cents: , capacity: number, status: EventStatus }
  */
 eventsRouter.post(
-  '/',
+  '/organizer/',
   accessTokenValidator,
   organizerValidator,
   createEventValidator,
@@ -38,12 +40,12 @@ eventsRouter.post(
 
 /**
  * Description: Update event's details
- * Path: /:event_id
+ * Path: /organizer/:event_id
  * Method: PATCH
  * Query: { title: string, description?: string, poster_url?: string, localtion_text: , start_at: , end_at: , price_cents: , capacity: number, status: EventStatus }
  */
 eventsRouter.patch(
-  '/:event_id',
+  '/organizer/:event_id',
   accessTokenValidator,
   organizerValidator,
   eventIdValidator,
@@ -53,34 +55,41 @@ eventsRouter.patch(
 )
 
 /**
- * Description: Get event's list
+ * Description: Get published event
  * Path: /
  * Method: GET
  * Header: { Authorization: Bearer <access_token> }
  * Query: { limit: number, page: number }
  */
-eventsRouter.get('/', paginationValidator, wrapRequestHandler(getEventsController))
+eventsRouter.get('/', paginationValidator, wrapRequestHandler(getPublishedEventsController))
 
 /**
- * Description: Get event's details
+ * Description: Get event with status
+ * Path: /
+ * Method: GET
+ * Header: { Authorization: Bearer <access_token> }
+ * Query: { limit: number, page: number, status?: string }
+ */
+eventsRouter.get(
+  '/organizer/',
+  accessTokenValidator,
+  organizerValidator,
+  getEventStatusValidator,
+  paginationValidator,
+  wrapRequestHandler(getEventsWithStatusController)
+)
+
+/**
+ * Description: Get published event's details
  * Path: /:event_id
  * Method: GET
  */
-eventsRouter.get('/:event_id', accessTokenValidator, eventIdValidator, wrapRequestHandler(getEventDetailsController))
-
-/**
- * Description: Get event's created list
- * Path: /
- * Method: GET
- * Header: { Authorization: Bearer <access_token> }
- * Query: { limit: number, page: number }
- */
 eventsRouter.get(
-  '/',
+  '/:event_id',
   accessTokenValidator,
-  organizerValidator,
-  paginationValidator,
-  wrapRequestHandler(getCreatedEventsController)
+  eventIdValidator,
+  getPublishedEventStatusValidator,
+  wrapRequestHandler(getEventDetailsController)
 )
 
 /**
@@ -89,7 +98,7 @@ eventsRouter.get(
  * Method: PATCH
  */
 eventsRouter.patch(
-  '/:event_id/publish',
+  '/organizer/:event_id/publish',
   accessTokenValidator,
   organizerValidator,
   eventIdValidator,
@@ -103,7 +112,7 @@ eventsRouter.patch(
  * Method: PATCH
  */
 eventsRouter.patch(
-  '/:event_id/cancel',
+  '/organizer/:event_id/cancel',
   accessTokenValidator,
   organizerValidator,
   eventIdValidator,
