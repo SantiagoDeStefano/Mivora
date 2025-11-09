@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Button from "../Button";
 import Container from "../Container/Container";
 import { BRAND } from "../../constants/brand";
+import path from "../../constants/path";
 
 export default function Header() {
   const [open, setOpen] = React.useState(false);
@@ -61,11 +62,11 @@ export default function Header() {
             </div>
 
             {/* Auth buttons */}
-            <Link to="/login" className="hidden sm:inline-flex">
+            <Link to= {path.login} className="hidden sm:inline-flex">
               <Button variant="ghost">Log in</Button>
             </Link>
-            <Link to="/signup" className="hidden sm:inline-flex">
-              <Button style={{ backgroundColor: BRAND.primary }}>Sign up</Button>
+            <Link to= {path.register} className="hidden sm:inline-flex">
+              <Button style={{ backgroundColor: BRAND.primary }}>Register</Button>
             </Link>
 
             {/* Mobile menu */}
@@ -94,7 +95,7 @@ export default function Header() {
             <ul className="divide-y divide-gray-200 overflow-hidden rounded-xl border border-gray-200 dark:divide-gray-800 dark:border-gray-800">
               <li className="bg-white/70 dark:bg-gray-950/70 backdrop-blur">
                 <Link
-                  to="/login"
+                  to={path.login}
                   className="block px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
                   Log in
@@ -102,11 +103,11 @@ export default function Header() {
               </li>
               <li className="bg-white/70 dark:bg-gray-950/70 backdrop-blur">
                 <Link
-                  to="/signup"
+                  to={path.register}
                   className="block px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300"
                   style={{ color: BRAND.primary }}
                 >
-                  Sign up
+                  Register
                 </Link>
               </li>
             </ul>

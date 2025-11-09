@@ -4,13 +4,13 @@
 // import { useMutation } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 
-
-import Card from "../../components/Card";
-import Label from "../../components/Label";
-import Input from "../../components/Input/Input";
-import Button from "../../components/Button";
-import Container from "../../components/Container/Container";
-import ForgotPasswordModal from "../../components/ForgotPassword";
+import path from "../../../constants/path";
+import Card from "../../../components/Card";
+import Label from "../../../components/Label";
+import Input from "../../../components/Input/Input";
+import Button from "../../../components/Button";
+import Container from "../../../components/Container/Container";
+import ForgotPasswordModal from "../ForgotPassword";
 import { useState } from "react";
 
 // import authApi, { type LoginRequest } from "../../apis/auth.api";
@@ -148,7 +148,7 @@ export default function Login() {
 
             <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
               New to Mivora?{" "}
-              <Link to="/signup" className="text-pink-600 hover:underline">Create an account</Link>
+              <Link to={path.register} className="text-pink-600 hover:underline">Create an account</Link>
             </p>
           </Card>
         </div>

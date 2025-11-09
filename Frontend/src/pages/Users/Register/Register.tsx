@@ -3,12 +3,14 @@
 // import { yupResolver } from "@hookform/resolvers/yup";
 // import { useMutation } from "@tanstack/react-query";
 // import * as yup from 'yup';
-import Card from "../../components/Card/Card";
-import Label from "../../components/Label/Label";
-import Input from "../../components/Input/Input";
+import Card from "../../../components/Card/Card";
+import Label from "../../../components/Label/Label";
+import Input from "../../../components/Input/Input";
 // import Select from "../../components/Select/Select";
-import Button from "../../components/Button";
-import Container from "../../components/Container/Container";
+import Button from "../../../components/Button";
+import Container from "../../../components/Container/Container";
+import { Link } from "react-router-dom";
+import path from "../../../constants/path";
 // import { useNavigate } from 'react-router-dom';
 // import authApi, { type RegisterRequest } from "../../apis/auth.api";
 // import { AppContext } from "../../contexts/app.context";
@@ -25,7 +27,7 @@ import Container from "../../components/Container/Container";
 
 // type RegisterForm = yup.InferType<typeof registerSchema>;
 
-export default function SigninPage() {
+export default function RegisterPage() {
   // const nav = useNavigate();
   // const { setIsAuthenticated } = useContext(AppContext);
   // const [role, setRole] = useState<Role>("attendee");
@@ -148,7 +150,7 @@ export default function SigninPage() {
 
             <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
               Already have an account?{" "}
-              <a href="/login" className="text-pink-600 hover:underline">Log in</a>
+              <Link to={path.login} className="text-pink-600 hover:underline">Log in</Link>
             </p>
           </Card>
         </div>

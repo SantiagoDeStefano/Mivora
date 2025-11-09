@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
-import Label from "../../components/Label/Label";
-import Input from "../../components/Input/Input";
-import Button from "../../components/Button";
+import Label from "../../../components/Label/Label";
+import Input from "../../../components/Input/Input";
+import Button from "../../../components/Button";
 
 /**
  * ForgotPasswordModal (UI-only)

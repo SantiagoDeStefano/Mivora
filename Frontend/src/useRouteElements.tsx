@@ -5,9 +5,9 @@ import path from "././constants/path";
 import ExplorePage from "./pages/Explore";
 import EventDetailsPage from "./pages/EventDetail";
 import TicketsPage from "./pages/attendee/Tickets/Tickets";
-import ProfilePage from "./pages/Profile/Profile";
-import LoginPage from "./pages/Login/Login";
-import SigninPage from "./pages/Signin/Signin";
+import ProfilePage from "./pages/Users/Profile/Profile";
+import LoginPage from "./pages/Users/Login/Login";
+import SigninPage from "./pages/Users/Register/Register";
 
 // -- Attendee Pages ---
 import AttendeeDashboard from "./pages/attendee/Dashboard/Dashboard";
@@ -22,7 +22,7 @@ import QRScannerPage from "./pages/organizer/scanner";
 // import RejectedRoute from "./routes/RejectedRoute";
 import MainLayout from "./layouts/MainLayout";
 import RegisterLayout from "./layouts/RegisterLayout";
-import AttendeeLayout from "./layouts/AttendeeLayout"
+import UserLayout from "./layouts/UserLayout"
 
 export default function useRouteElements() {
   const routeElements = useRoutes([
@@ -58,21 +58,21 @@ export default function useRouteElements() {
         }, // "/tickets"<TicketsPage /> },        
         { path: path.profile, 
           element: (
-          <MainLayout>
+          <UserLayout>
           <ProfilePage />
-            </MainLayout>
+            </UserLayout>
           )
           },
           
           { path: path.attendee_dashboard,
           element: (
-          <AttendeeLayout>
+          <UserLayout>
           <AttendeeDashboard
             user={undefined}
             events={[]}
             tickets={[]}
           />
-            </AttendeeLayout>
+            </UserLayout>
           )
         },
         // "/profile"
@@ -111,7 +111,7 @@ export default function useRouteElements() {
           </RegisterLayout> 
           )
         },   // "/login"
-        { path: path.signup, 
+        { path: path.register, 
           element: (
           <RegisterLayout>
             <SigninPage />
