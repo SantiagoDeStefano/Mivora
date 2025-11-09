@@ -296,7 +296,7 @@ export const organizerValidator = async (req: Request, res: Response, next: Next
   if (role.rows.length <= 0) {
     return next(
       new ErrorWithStatus({
-        message: USERS_MESSAGES.EVENT_CREATOR_MUST_BE_ORGANIZER,
+        message: USERS_MESSAGES.MUST_BE_ORGANIZER,
         status: HTTP_STATUS.FORBIDDEN
       })
     )
