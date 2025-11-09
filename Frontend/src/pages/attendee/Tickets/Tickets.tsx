@@ -2,7 +2,6 @@ import { useState } from "react";
 import Card from "../../../components/Card/Card";
 import Badge from "../../../components/Badge/Badge";
 import Button from "../../../components/Button/Button";
-import Container from "../../../components/Container/Container";
 
 export default function TicketsPage() {
   const [tab, setTab] = useState<"upcoming" | "past">("upcoming");
@@ -10,8 +9,7 @@ export default function TicketsPage() {
 
   return (
     <section id="tickets" className="py-10 sm:py-14">
-  <Container>
-    <div className="mx-auto w-full max-w-3xl">
+      <div className="mx-auto w-full max-w-3xl">
       <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <h2 className="mt-1 text-2xl sm:text-3xl font-semibold">Your tickets</h2>
 
@@ -144,7 +142,6 @@ export default function TicketsPage() {
     </div>
   </div>
 )}
-      </Container>
     </section>
   );
 }

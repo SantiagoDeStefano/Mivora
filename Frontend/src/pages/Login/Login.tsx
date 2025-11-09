@@ -10,6 +10,8 @@ import Label from "../../components/Label";
 import Input from "../../components/Input/Input";
 import Button from "../../components/Button";
 import Container from "../../components/Container/Container";
+import ForgotPasswordModal from "../../components/ForgotPassword";
+import { useState } from "react";
 
 // import authApi, { type LoginRequest } from "../../apis/auth.api";
 // import * as yup from 'yup'
@@ -88,6 +90,8 @@ export default function Login() {
 
   // const isPending = loginAccountMutation.isPending;
 
+  const [forgotOpen, setForgotOpen] = useState(false);
+
   return (
     <section id="login" className="py-10 sm:py-14">
       <Container>
@@ -123,9 +127,19 @@ export default function Login() {
                 />
               </div>
 
-              <div className="flex items-center justify-between text-sm">
-                <Link to="/forgot-password" className="text-pink-600 hover:underline">Forgot password?</Link>
-              </div>
+             <button
+                type="button"
+                onClick={() => setForgotOpen(true)}
+                className="mr-auto text-sm text-pink-600 hover:underline"
+              >
+                Forgot password?
+              </button>
+
+              <ForgotPasswordModal
+                open={forgotOpen}
+                onClose={() => setForgotOpen(false)}
+              />
+
 
               <Button type="submit" className="h-10">
                 Log in

@@ -3,12 +3,11 @@ import path from "././constants/path";
 
 // --- Public Pages ---
 import ExplorePage from "./pages/Explore";
-import EventDetailsPage from "./pages/EventDetail/EventDetail";
+import EventDetailsPage from "./pages/EventDetail";
 import TicketsPage from "./pages/attendee/Tickets/Tickets";
 import ProfilePage from "./pages/Profile/Profile";
 import LoginPage from "./pages/Login/Login";
 import SigninPage from "./pages/Signin/Signin";
-import ForgotPasswordPage from "./pages/ForgotPassword/ForgotPassword";
 
 // -- Attendee Pages ---
 import AttendeeDashboard from "./pages/attendee/Dashboard/Dashboard";
@@ -16,7 +15,7 @@ import AttendeeDashboard from "./pages/attendee/Dashboard/Dashboard";
 // --- Organizer Pages ---
 import OrganizerDashboard from "./pages/organizer/Dashboard";
 import CreateEventPage from "./pages/organizer/create-event";
-import ManageEventPage from "./pages/organizer/[eventId]";
+import ManageEventPage from "./pages/organizer/ManageEvent";
 import QRScannerPage from "./pages/organizer/scanner";
 
 // import ProtectedRoute from "./routes/ProtectedRoute";
@@ -119,13 +118,7 @@ export default function useRouteElements() {
           </RegisterLayout>
           ) 
         }, // "/signup"
-        { path: path.forgot_password, 
-          element: (
-          <MainLayout>
-            <ForgotPasswordPage />
-          </MainLayout>
-          ) 
-        }, // "/forgot-password"  
+          
       ],
     },
   ]);

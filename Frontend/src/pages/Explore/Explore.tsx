@@ -3,6 +3,7 @@ import { Surface } from "../../components/Card/Card";
 import Button from "../../components/Button";
 import Badge from "../../components/Badge/Badge";
 import Container from "../../components/Container/Container";
+import { Link } from "react-router-dom";
 
 export type Filter = {
   when: "any" | "today" | "this-weekend";
@@ -32,7 +33,6 @@ export default function ExplorePage({
   loading = false,
   filter = { when: "any", price: "any" },
   onFilterChange,
-  onViewEvent,
   onGetTickets,
   onApply,
 }: ExplorePageProps) {
@@ -133,15 +133,14 @@ export default function ExplorePage({
                       >
                         Get tickets
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => onViewEvent?.(e.id)}
-                        aria-label={`View details for ${e.title}`}
-                        disabled={!onViewEvent}
+                      
+                      <Link
+                        to={`/events/${e.id}`}
+                        className="inline-flex items-center justify-center px-3 py-1.5 rounded-xl text-sm font-medium bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
                       >
                         View event
-                      </Button>
+                      </Link>
+                      
                     </div>
                     {e.trending && <Badge tone="pink">Trending</Badge>}
                   </div>

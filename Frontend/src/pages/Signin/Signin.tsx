@@ -140,30 +140,7 @@ export default function SigninPage() {
                 />
               </div>
 
-              {/* Organizer-only fields */}
-              {/* {role === "organizer" && (
-                <>
-                  <div>
-                    <Label htmlFor="org-name">Organization name</Label>
-                    <Input id="org-name" placeholder="Your brand or company" value={orgName} onChange={(e) => setOrgName(e.target.value)} />
-                  </div>
-                  <div>
-                    <Label htmlFor="org-website">Website (optional)</Label>
-                    <Input id="org-website" placeholder="https://example.com" value={orgWebsite} onChange={(e) => setOrgWebsite(e.target.value)} />
-                  </div>
-                  <div>
-                    <Label htmlFor="su-locale">Primary language</Label>
-                    <Select id="su-locale" defaultValue="en">
-                      <option value="en">English</option>
-                      <option value="vi">Tiếng Việt</option>
-                      <option value="ar">العربية (RTL)</option>
-                    </Select>
-                  </div>
-                </>
-              )} */}
-
  
-
               <Button type="submit">
                 Create account
               </Button>

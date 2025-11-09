@@ -27,30 +27,14 @@ export default function NavHeader({ user, onSignOut }: NavHeaderProps) {
       />
     </Link>
 
-    {/* Middle: Search (ẩn bớt trên màn nhỏ) */}
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        const q = new FormData(e.currentTarget).get("q");
-        if (q) {
-          // Điều hướng tới trang tìm kiếm của bạn
-          // ví dụ: navigate(`/search?q=${encodeURIComponent(q)}`)
-        }
-      }}
-      className="hidden sm:flex items-center flex-1 max-w-xl mx-2"
-      role="search"
-    >
-      <label htmlFor="global-search" className="sr-only">
-        Search events
-      </label>
-      <input
-        id="global-search"
-        name="q"
-        type="search"
-        placeholder="Search events…"
-        className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500/60"
-      />
-    </form>
+                  {/* Search */}
+            <div className="hidden sm:flex items-center gap-2 rounded-xl border border-gray-300 px-3 py-1.5 dark:border-gray-700">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="opacity-60">
+                <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="m21 21-4.3-4.3m-8.7 2a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z" />
+              </svg>
+              <input placeholder="Search events..." className="w-56 bg-transparent text-sm outline-none" aria-label="Search" />
+            </div>
+
 
     {/* Right: Quick links + Account */}
     <div className="flex items-center gap-2">
