@@ -34,17 +34,13 @@ export default function Header() {
       <Container>
         <div className="flex h-14 items-center gap-2">
           {/* Brand */}
-        <Link
-          to="/"
-          className="group flex items-center rounded-xl px-2 py-1.5 hover:bg-pink-50 dark:hover:bg-gray-800"
-          aria-label="Home"
-        >
-          <img
-            src="/src/assets/Logo.svg"
-            alt="Logo"
-          className="h-10 w-auto object-contain align-middle relative top-[1px]"
-          ></img>
-        </Link>
+    <Link to="/" className="flex items-center gap-2 group mr-auto">
+      <img
+        src="/src/assets/Logo.svg"
+        alt="Logo"
+        className="h-8 w-auto object-contain transition-transform group-hover:scale-105"
+      />
+    </Link>
 
 
           {/* Desktop nav */}

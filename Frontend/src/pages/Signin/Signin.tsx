@@ -162,17 +162,7 @@ export default function SigninPage() {
                 </>
               )} */}
 
-              {/* Attendee language (optional) */}
-              {/* {role === "attendee" && (
-                <div>
-                  <Label htmlFor="su-locale">Preferred language</Label>
-                  <Select id="su-locale" defaultValue="en">
-                    <option value="en">English</option>
-                    <option value="vi">Tiếng Việt</option>
-                    <option value="ar">العربية (RTL)</option>
-                  </Select>
-                </div>
-              )} */}
+ 
 
               <Button type="submit">
                 Create account

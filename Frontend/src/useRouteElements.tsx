@@ -4,13 +4,17 @@ import path from "././constants/path";
 // --- Public Pages ---
 import ExplorePage from "./pages/Explore";
 import EventDetailsPage from "./pages/EventDetail/EventDetail";
-import TicketsPage from "./pages/Tickets/Tickets";
+import TicketsPage from "./pages/attendee/Tickets/Tickets";
 import ProfilePage from "./pages/Profile/Profile";
 import LoginPage from "./pages/Login/Login";
 import SigninPage from "./pages/Signin/Signin";
+import ForgotPasswordPage from "./pages/ForgotPassword/ForgotPassword";
+
+// -- Attendee Pages ---
+import AttendeeDashboard from "./pages/attendee/Dashboard/Dashboard";
 
 // --- Organizer Pages ---
-import OrganizerDashboard from "./pages/organizer/dashboard";
+import OrganizerDashboard from "./pages/organizer/Dashboard";
 import CreateEventPage from "./pages/organizer/create-event";
 import ManageEventPage from "./pages/organizer/[eventId]";
 import QRScannerPage from "./pages/organizer/scanner";
@@ -19,6 +23,7 @@ import QRScannerPage from "./pages/organizer/scanner";
 // import RejectedRoute from "./routes/RejectedRoute";
 import MainLayout from "./layouts/MainLayout";
 import RegisterLayout from "./layouts/RegisterLayout";
+import AttendeeLayout from "./layouts/AttendeeLayout"
 
 export default function useRouteElements() {
   const routeElements = useRoutes([
@@ -58,7 +63,20 @@ export default function useRouteElements() {
           <ProfilePage />
             </MainLayout>
           )
-          },  // "/profile"
+          },
+          
+          { path: path.attendee_dashboard,
+          element: (
+          <AttendeeLayout>
+          <AttendeeDashboard
+            user={undefined}
+            events={[]}
+            tickets={[]}
+          />
+            </AttendeeLayout>
+          )
+        },
+        // "/profile"
         // element: <ProfilePage /> },        
 
         // Organizer
@@ -101,6 +119,13 @@ export default function useRouteElements() {
           </RegisterLayout>
           ) 
         }, // "/signup"
+        { path: path.forgot_password, 
+          element: (
+          <MainLayout>
+            <ForgotPasswordPage />
+          </MainLayout>
+          ) 
+        }, // "/forgot-password"  
       ],
     },
   ]);
