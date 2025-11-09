@@ -289,7 +289,6 @@ export const eventIdValidator = validate(
         custom: {
           options: async (values, { req }) => {
             if (!isValidUUIDv4(values)) {
-              console.log(values)
               throw new ErrorWithStatus({
                 status: HTTP_STATUS.BAD_REQUEST,
                 message: EVENTS_MESSAGES.INVALID_EVENT_ID
@@ -311,7 +310,7 @@ export const eventIdValidator = validate(
         }
       }
     },
-    ['params']
+    ['params', 'body']
   )
 )
 

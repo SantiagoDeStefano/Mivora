@@ -28,6 +28,7 @@ class DatabaseService {
   user_roles = (sqlQuery: string, params?: string[]) => this.pool.query(sqlQuery, params)
   refresh_tokens = (sqlQuery: string, params?: any[]) => this.pool.query(sqlQuery, params)
   events = (sqlQuery: string, params?: any[]) => this.pool.query(sqlQuery, params)
+  tickets = (sqlQuery: string, params?: any[]) => this.pool.query(sqlQuery, params)
 }
 
 const databaseService = new DatabaseService()

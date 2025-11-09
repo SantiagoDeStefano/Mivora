@@ -136,3 +136,7 @@ export const EVENTS_MESSAGES = {
 export const MEDIAS_MESSAGES = {
   IMAGE_UPLOAD_SUCCESS: 'Image uploaded successfully'
 } as const
+
+export const TICKETS_MESSAGES = {
+  BOOK_TICKET_SUCCESS: 'Book ticket successfully'
+}
