@@ -1,8 +1,8 @@
-import { useContext } from "react";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { useMutation } from "@tanstack/react-query";
-import { Link, useNavigate } from "react-router-dom";
+// import { useContext } from "react";
+// import { useForm } from "react-hook-form";
+// import { yupResolver } from "@hookform/resolvers/yup";
+// import { useMutation } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 
 
 import Card from "../../components/Card";
@@ -11,81 +11,82 @@ import Input from "../../components/Input/Input";
 import Button from "../../components/Button";
 import Container from "../../components/Container/Container";
 
-import authApi, { type LoginRequest } from "../../apis/auth.api";
-import * as yup from 'yup'
-import { AppContext } from "../../contexts/app.context";
+// import authApi, { type LoginRequest } from "../../apis/auth.api";
+// import * as yup from 'yup'
+// import { AppContext } from "../../contexts/app.context";
 // import { type AuthErrorResponse } from "../../types/auth.types";
 
-const loginSchema = yup.object({
-  email: yup
-    .string()
-    .required('Email is required')
-    .matches(/^[a-zA-Z0-9._%+-]+@gmail\.com$/, 'Email must be a valid Google email address')
-    .min(5, 'Email must be between 5 - 160 characters')
-    .max(160, 'Email must be between 5 - 160 characters')
-    .defined(),
-  password: yup
-    .string()
-    .required('Password is required')
-    .min(6, 'Password must be at least 6 - 160 characters')
-    .max(160, 'Password must be at least 6 - 160 characters')
-    .defined()
-})
+// const loginSchema = yup.object({
+//   email: yup
+//     .string()
+//     .required('Email is required')
+//     .matches(/^[a-zA-Z0-9._%+-]+@gmail\.com$/, 'Email must be a valid Google email address')
+//     .min(5, 'Email must be between 5 - 160 characters')
+//     .max(160, 'Email must be between 5 - 160 characters')
+//     .defined(),
+//   password: yup
+//     .string()
+//     .required('Password is required')
+//     .min(6, 'Password must be at least 6 - 160 characters')
+//     .max(160, 'Password must be at least 6 - 160 characters')
+//     .defined()
+// })
 
-type LoginForm = LoginRequest;
+// type LoginForm = LoginRequest;
 
 export default function Login() {
-  const { setIsAuthenticated } = useContext(AppContext)
-  const navigate = useNavigate()
-  const {
-    register,
-    handleSubmit,
-    setError,
-    formState: { errors }
-  } = useForm({
-    resolver: yupResolver(loginSchema),
-    defaultValues: {
-      email: '',
-      password: ''
-    }
-  })
+  // const { setIsAuthenticated } = useContext(AppContext)
+  // const navigate = useNavigate()
+  // const {
+  //   register,
+  //   handleSubmit,
+  //   setError,
+  //   formState: { errors }
+  // }
+  //  = useForm({
+  //   resolver: yupResolver(loginSchema),
+  //   defaultValues: {
+  //     email: '',
+  //     password: ''
+  //   }
+  // })
 
-  const loginAccountMutation = useMutation({
-    mutationFn: (body: LoginForm) => {
-      return authApi.loginAccount(body)
-    }
-  })
+  // const loginAccountMutation = useMutation({
+  //   mutationFn: (body: LoginForm) => {
+  //     return authApi.loginAccount(body)
+  //   }
+  // })
 
-  const onSubmit = handleSubmit((data) => {
-    console.log('Login attempt with data:', data);
-    loginAccountMutation.mutate(data as LoginRequest, {
-      onSuccess: (response) => {
-        console.log('Login success:', response.data);
-        // Store tokens in localStorage
-        localStorage.setItem('access_token', response.data.result.access_token);
-        localStorage.setItem('refresh_token', response.data.result.refresh_token);
-        setIsAuthenticated(true);
-        navigate('/');
-      },
-      onError: (error: unknown) => {
-        console.log('Login error:', error);
-        if (error && typeof error === 'object' && 'response' in error) {
-          const axiosError = error as { response?: { data?: { errors?: Record<string, { msg: string }> } } };
-          if (axiosError.response?.data?.errors) {
-            const formErrors = axiosError.response.data.errors;
-            Object.keys(formErrors).forEach((key) => {
-              setError(key as keyof LoginForm, {
-                message: formErrors[key].msg,
-                type: 'Server'
-              });
-            });
-          }
-        }
-      }
-    });
-  });
+  // const onSubmit = handleSubmit((data) => {
+  //   console.log('Login attempt with data:', data);
+  //   loginAccountMutation.mutate(data as LoginRequest, {
+  //     onSuccess: (response) => {
+  //       console.log('Login success:', response.data);
+  //       // Store tokens in localStorage
+  //       localStorage.setItem('access_token', response.data.result.access_token);
+  //       localStorage.setItem('refresh_token', response.data.result.refresh_token);
+  //       setIsAuthenticated(true);
+  //       navigate('/');
+  //     },
+  //     onError: (error: unknown) => {
+  //       console.log('Login error:', error);
+  //       if (error && typeof error === 'object' && 'response' in error) {
+  //         const axiosError = error as { response?: { data?: { errors?: Record<string, { msg: string }> } } };
+  //         if (axiosError.response?.data?.errors) {
+  //           const formErrors = axiosError.response.data.errors;
+  //           Object.keys(formErrors).forEach((key) => {
+  //             setError(key as keyof LoginForm, {
+  //               message: formErrors[key].msg,
+  //               type: 'Server'
+  //             });
+  //           });
+  //         }
+  //       }
+  //     }
+  //   });
+  // });
 
-  const isPending = loginAccountMutation.isPending;
+  // const isPending = loginAccountMutation.isPending;
 
   return (
     <section id="login" className="py-10 sm:py-14">
@@ -97,57 +98,37 @@ export default function Login() {
               <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Welcome back</p>
             </header>
 
-            <div className="mt-4 grid gap-3">
-              <button className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800">
-                Continue with Google
-              </button>
-              <button className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800">
-                Continue with Apple
-              </button>
-            </div>
-
-            <div className="my-5 flex items-center gap-3 text-xs text-gray-500">
-              <span className="h-px flex-1 bg-gray-200 dark:bg-gray-800" />
-              <span>or continue with email</span>
-              <span className="h-px flex-1 bg-gray-200 dark:bg-gray-800" />
-            </div>
-
-            <form className="grid gap-4" onSubmit={onSubmit} noValidate>
+            <form className=" mt-4 grid gap-4" noValidate>
               <div>
                 <Label htmlFor="login-email">Email</Label>
-                <Input<LoginForm>
+                <Input
                   id="login-email"
                   name="email"
                   type="email"
-                  register={register}
                   placeHolder="you@email.com"
                   className="mt-1"
-                  errorMessages={errors.email?.message}
                 />
               </div>
 
               <div>
                 <Label htmlFor="login-pass">Password</Label>
-                <Input<LoginForm>
+                <Input
                   id="login-pass"
                   name="password"
                   type="password"
-                  register={register}
+                  // register={register}
                   placeHolder="At least 8 characters"
                   className="mt-1"
-                  errorMessages={errors.password?.message}
+                  // errorMessages={errors.password?.message}
                 />
               </div>
 
               <div className="flex items-center justify-between text-sm">
-                <label className="inline-flex items-center gap-2">
-                  <input type="checkbox" className="h-4 w-4" /> Remember me
-                </label>
-                <a href="#" className="text-pink-600 hover:underline">Forgot password?</a>
+                <Link to="/forgot-password" className="text-pink-600 hover:underline">Forgot password?</Link>
               </div>
 
-              <Button type="submit" disabled={isPending} className="h-10">
-                {isPending ? "Logging in…" : "Log in"}
+              <Button type="submit" className="h-10">
+                Log in
               </Button>
             </form>
 

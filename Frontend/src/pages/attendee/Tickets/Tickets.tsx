@@ -1,8 +1,8 @@
 import { useState } from "react";
-import Card from "../../components/Card/Card";
-import Badge from "../../components/Badge/Badge";
-import Button from "../../components/Button/Button";
-import Container from "../../components/Container/Container";
+import Card from "../../../components/Card/Card";
+import Badge from "../../../components/Badge/Badge";
+import Button from "../../../components/Button/Button";
+import Container from "../../../components/Container/Container";
 
 export default function TicketsPage() {
   const [tab, setTab] = useState<"upcoming" | "past">("upcoming");
