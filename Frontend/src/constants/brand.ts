@@ -1,4 +1,5 @@
+
 export const BRAND = {
-  name: "Mivora",
-  primary: "#ec4899",
-};
+  name: 'Mivora',
+  primary: '#ec4899'
+}

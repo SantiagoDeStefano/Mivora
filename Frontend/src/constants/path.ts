@@ -1,21 +1,15 @@
-const path = {
-  // Public pages
-  home: '/',
-  explore: '/explore',
-  event_details: '/events/:id',
 
-  // User pages
-  profile: '/profile',
+const path = {
+  home: '/',
+  event_details: '/events/:id',
   tickets: '/tickets',
+  profile: '/profile',
   login: '/login',
   signup: '/signup',
-  logout: '/logout',
-
-  // Organizer pages
-  organizer_dashboard: '/organizer',
+  organizer_dashboard: '/organizer/dashboard',
   organizer_create_event: '/organizer/create-event',
   organizer_manage_event: '/organizer/events/:eventId',
-  organizer_scanner: '/organizer/scanner',
-} as const;
+  organizer_scanner: '/organizer/scanner'
+} as const
 
-export default path;
+export default path

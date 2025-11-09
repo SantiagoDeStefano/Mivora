@@ -2,7 +2,6 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import Button from "../Button";
 import Container from "../Container/Container";
-import { LogoMark } from "../../constants/brandLogo";
 import { BRAND } from "../../constants/brand";
 import { navItems } from "../../constants/navItems";
 
@@ -35,16 +34,18 @@ export default function Header() {
       <Container>
         <div className="flex h-14 items-center gap-2">
           {/* Brand */}
-          <Link
-            to="/"
-            className="group flex items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-pink-50 dark:hover:bg-gray-800"
-            aria-label={`${BRAND.name} home`}
-          >
-            <LogoMark />
-            <span className="text-sm font-semibold tracking-tight" style={{ color: BRAND.primary }}>
-              {BRAND.name}
-            </span>
-          </Link>
+        <Link
+          to="/"
+          className="group flex items-center rounded-xl px-2 py-1.5 hover:bg-pink-50 dark:hover:bg-gray-800"
+          aria-label="Home"
+        >
+          <img
+            src="/src/assets/Logo.svg"
+            alt="Logo"
+          className="h-10 w-auto object-contain align-middle relative top-[1px]"
+          ></img>
+        </Link>
+
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1">
@@ -135,7 +136,6 @@ export default function Header() {
           </div>
         </div>
       )}
-
 
         {/* Mobile nav */}
         {open && (

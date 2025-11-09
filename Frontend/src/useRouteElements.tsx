@@ -2,31 +2,35 @@ import { useRoutes } from "react-router-dom";
 import path from "././constants/path";
 
 // --- Public Pages ---
-// import ExplorePage from "./pages/Explore/Explore";
+import ExplorePage from "./pages/Explore";
 import EventDetailsPage from "./pages/EventDetail/EventDetail";
-// import TicketsPage from "./pages/Tickets/Tickets";
-// import ProfilePage from "./pages/Profile/Profile";
+import TicketsPage from "./pages/Tickets/Tickets";
+import ProfilePage from "./pages/Profile/Profile";
 import LoginPage from "./pages/Login/Login";
 import SigninPage from "./pages/Signin/Signin";
 
 // --- Organizer Pages ---
-// import OrganizerDashboard from "./pages/organizer/dashboard";
+import OrganizerDashboard from "./pages/organizer/dashboard";
 import CreateEventPage from "./pages/organizer/create-event";
-// import ManageEventPage from "./pages/organizer/[eventId]";
-// import QRScannerPage from "./pages/organizer/scanner";
+import ManageEventPage from "./pages/organizer/[eventId]";
+import QRScannerPage from "./pages/organizer/scanner";
 
-import ProtectedRoute from "./routes/ProtectedRoute";
-import RejectedRoute from "./routes/RejectedRoute";
+// import ProtectedRoute from "./routes/ProtectedRoute";
+// import RejectedRoute from "./routes/RejectedRoute";
 import MainLayout from "./layouts/MainLayout";
 import RegisterLayout from "./layouts/RegisterLayout";
 
 export default function useRouteElements() {
   const routeElements = useRoutes([
     // Public
-    // {
-    //   path: path.home,      // "/"
-    //   element: <ExplorePage />,
-    // },
+    {
+      path: path.home,      // "/"
+      element: (
+        <MainLayout>
+          <ExplorePage />
+        </MainLayout>
+      ),
+    },
     {
       path: path.event_details, // "/events/:id"
       element: (
@@ -39,28 +43,48 @@ export default function useRouteElements() {
     // Authenticated-only
     {
       path: "/",
-      element: <ProtectedRoute />,
+      // element: <ProtectedRoute />,
       children: [
-        // { path: path.tickets, element: <TicketsPage /> },        // "/tickets"
-        // { path: path.profile, element: <ProfilePage /> },        // "/profile"
+        { path: path.tickets, 
+          element: (
+            <MainLayout>
+          <TicketsPage />
+            </MainLayout>
+          ) 
+        }, // "/tickets"<TicketsPage /> },        
+        { path: path.profile, 
+          element: (
+          <MainLayout>
+          <ProfilePage />
+            </MainLayout>
+          )
+          },  // "/profile"
+        // element: <ProfilePage /> },        
 
         // Organizer
-        // { path: path.organizer_dashboard, element: <OrganizerDashboard /> }, // "/organizer"
+        { path: path.organizer_dashboard, 
+          element: (
+          <MainLayout>
+            <OrganizerDashboard />
+          </MainLayout> 
+          ) 
+        }, 
+        
         { path: path.organizer_create_event, 
           element: (
             <MainLayout>
           <CreateEventPage />
             </MainLayout>
           ) }, // "/organizer/create-event"
-        // { path: path.organizer_manage_event, element: <ManageEventPage /> }, // "/organizer/events/:eventId"
-        // { path: path.organizer_scanner, element: <QRScannerPage /> },        // "/organizer/scanner"
+        { path: path.organizer_manage_event, element: <ManageEventPage /> }, 
+        { path: path.organizer_scanner, element: <QRScannerPage /> },        
       ],
     },
 
     // Guests-only
     {
       path: "/",
-      element: <RejectedRoute />,
+      // element: <RejectedRoute />,
       children: [
         { 
           path: path.login, 

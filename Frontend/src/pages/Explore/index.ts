@@ -1,2 +1,2 @@
-import Explore from "./Explore";
-export default Explore;
+import ExploreContainer from "./ExploreContainer";
+export default ExploreContainer;
