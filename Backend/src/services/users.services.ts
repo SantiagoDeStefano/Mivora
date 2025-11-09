@@ -10,13 +10,16 @@ import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import User from '~/models/schemas/User.schema'
 import databaseService from '~/services/database.services'
 import { parsePgArray } from '~/utils/common'
+import { UserVerificationStatus } from '~/types/domain'
+import { sendForgotPasswordEmail, sendVerifyStatusEmail } from '~/utils/email'
 
 class UserService {
   // Signs a short-lived Access Token (used on every API call). Lifetime comes from envConfig.accessTokenExpiresIn.
-  private signAccessToken({ user_id }: { user_id: UUIDv4 }): Promise<string> {
+  private signAccessToken({ user_id, verify }: { user_id: UUIDv4; verify: UserVerificationStatus }): Promise<string> {
     return signToken({
       payload: {
         user_id,
+        verify,
         token_type: TokenType.AccessToken
       },
       privateKey: envConfig.jwtSecretAccessToken as string,
@@ -29,11 +32,20 @@ class UserService {
 
   // Signs a Refresh Token. If exp (unix seconds) is provided, it is embedded directly; otherwise uses configured expiresIn.
   // This dual mode enables rotation while preserving original expiration when desired.
-  private signRefreshToken({ user_id, exp }: { user_id: UUIDv4; exp?: number }): Promise<string> {
+  private signRefreshToken({
+    user_id,
+    verify,
+    exp
+  }: {
+    user_id: UUIDv4
+    verify: UserVerificationStatus
+    exp?: number
+  }): Promise<string> {
     if (exp) {
       return signToken({
         payload: {
           user_id,
+          verify,
           token_type: TokenType.RefreshToken,
           exp
         },
@@ -43,6 +55,7 @@ class UserService {
     return signToken({
       payload: {
         user_id,
+        verify,
         token_type: TokenType.RefreshToken
       },
       privateKey: envConfig.jwtSecretRefreshToken as string,
@@ -54,10 +67,58 @@ class UserService {
   }
 
   // Convenience helper: signs both tokens in parallel sequence for a given user.
-  private async signAccessAndRefreshToken({ user_id }: { user_id: UUIDv4 }): Promise<[string, string]> {
-    const access_token = await this.signAccessToken({ user_id })
-    const refresh_token = await this.signRefreshToken({ user_id })
+  private async signAccessAndRefreshToken({
+    user_id,
+    verify
+  }: {
+    user_id: UUIDv4
+    verify: UserVerificationStatus
+  }): Promise<[string, string]> {
+    const access_token = await this.signAccessToken({ user_id, verify })
+    const refresh_token = await this.signRefreshToken({ user_id, verify })
     return [access_token, refresh_token]
+  }
+
+  private signEmailVerifyToken({
+    user_id,
+    verify
+  }: {
+    user_id: string
+    verify: UserVerificationStatus
+  }): Promise<string> {
+    return signToken({
+      payload: {
+        user_id,
+        verify,
+        token_type: TokenType.EmailVerifyToken
+      },
+      privateKey: envConfig.jwtSecretEmailVerifyToken as string,
+      options: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expiresIn: envConfig.emailVerifyTokenExpiresIn as any
+      }
+    }) as Promise<string>
+  }
+
+  async signForgotPasswordToken({
+    user_id,
+    verify
+  }: {
+    user_id: UUIDv4
+    verify: UserVerificationStatus
+  }): Promise<string> {
+    return signToken({
+      payload: {
+        user_id,
+        token_type: TokenType.ForgotPasswordToken,
+        verify
+      },
+      privateKey: envConfig.jwtSecretForgotPasswordToken as string,
+      options: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expiresIn: envConfig.forgotPasswordTokenExpiresIn as any
+      }
+    }) as Promise<string>
   }
 
   // Decodes/validates a refresh token using the refresh secret. Returns payload (expects iat/exp in seconds).
@@ -82,8 +143,17 @@ class UserService {
 
     await Promise.all([
       databaseService.users(
-        `INSERT INTO users(id, name, email, password_hash, avatar_url) VALUES($1, $2, $3, $4, $5)`,
-        [new_user.id, new_user.name, new_user.email, new_user.password_hash, new_user.avatar_url]
+        `INSERT INTO users(id, name, email, password_hash, email_verify_token, forgot_password_token, avatar_url, verified) VALUES($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [
+          new_user.id,
+          new_user.name,
+          new_user.email,
+          new_user.password_hash,
+          new_user.email_verify_token,
+          new_user.forgot_password_token,
+          new_user.avatar_url,
+          new_user.verified
+        ]
       ),
       databaseService.user_roles(`INSERT INTO user_roles (user_id, role) VALUES ($1, $2)`, [
         new_user.id,
@@ -92,7 +162,8 @@ class UserService {
     ])
 
     const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
-      user_id: new_user.id
+      user_id: new_user.id,
+      verify: 'unverified'
     })
     const { iat, exp } = await this.decodeRefreshToken(refresh_token) // iat/exp are unix seconds from JWT.
 
@@ -108,8 +179,8 @@ class UserService {
   }
 
   // Issues a fresh token pair for an existing user and stores the refresh token record.
-  async login(user_id: UUIDv4) {
-    const [access_token, refresh_token] = await this.signAccessAndRefreshToken({ user_id })
+  async login(user_id: UUIDv4, verify: UserVerificationStatus) {
+    const [access_token, refresh_token] = await this.signAccessAndRefreshToken({ user_id, verify })
     const { iat, exp } = await this.decodeRefreshToken(refresh_token)
 
     const refreshToken = new RefreshToken({
@@ -154,10 +225,20 @@ class UserService {
 
   // Refresh flow: issues new access + refresh tokens, deletes the old refresh token, and inserts the new one.
   // Keeps the same exp for the new refresh token if provided (rotation with preserved expiry).
-  async refreshToken({ user_id, refresh_token, exp }: { user_id: UUIDv4; refresh_token: string; exp: number }) {
+  async refreshToken({
+    user_id,
+    refresh_token,
+    verify,
+    exp
+  }: {
+    user_id: UUIDv4
+    refresh_token: string
+    verify: UserVerificationStatus
+    exp: number
+  }) {
     const [new_access_token, new_refresh_token] = await Promise.all([
-      this.signAccessToken({ user_id }),
-      this.signRefreshToken({ user_id, exp }),
+      this.signAccessToken({ user_id, verify }),
+      this.signRefreshToken({ user_id, verify, exp }),
       databaseService.refresh_tokens(`DELETE FROM refresh_tokens WHERE token_hash=$1`, [refresh_token]) // Remove old token to prevent reuse.
     ])
 
@@ -176,14 +257,14 @@ class UserService {
     )
 
     return {
-      new_access_token,
-      new_refresh_token
+      access_token: new_access_token,
+      refresh_token: new_refresh_token
     }
   }
 
   async getMe(user_id: UUIDv4) {
     const user = await databaseService.users(
-      `SELECT users.name, users.email, users.avatar_url, ARRAY_AGG(user_roles.role) AS role FROM users JOIN user_roles ON users.id = user_roles.user_id WHERE id=$1 GROUP BY users.id, users.name, users.email, users.avatar_url;`,
+      `SELECT users.name, users.email, users.avatar_url, users.verified, ARRAY_AGG(user_roles.role) AS role FROM users JOIN user_roles ON users.id = user_roles.user_id WHERE id=$1 GROUP BY users.id, users.name, users.email, users.avatar_url;`,
       [user_id]
     )
     user.rows[0].role = parsePgArray(user.rows[0].role)
@@ -191,11 +272,16 @@ class UserService {
   }
 
   async updateMe(user_id: UUIDv4, body: UpdateMeRequestBody) {
-    const { name, avatar_url, role } = body
-    const newName = name ? name : ''
-    const newAvatarUrl = avatar_url ? avatar_url : ''
+    const { name, role } = body
 
-    await databaseService.users(`UPDATE users SET name=$1, avatar_url=$2 WHERE id=$3`, [newName, newAvatarUrl, user_id])
+    await databaseService.users(
+      `
+      UPDATE users
+      SET name = $1
+      WHERE id = $2
+      `,
+      [name, user_id]
+    )
     if (role) {
       await databaseService.user_roles(`INSERT INTO user_roles(user_id, role) VALUES($1, $2)`, [user_id, role])
     }
@@ -205,6 +291,83 @@ class UserService {
     )
     updatedUser.rows[0].role = parsePgArray(updatedUser.rows[0].role)
     return updatedUser.rows[0]
+  }
+
+  async updateAvatar(user_id: UUIDv4, avatar_url: string) {
+    await databaseService.users(`UPDATE users SET avatar_url=$1 WHERE id=$2`, [avatar_url, user_id])
+    const updatedUser = await databaseService.users(
+      `SELECT users.name, users.email, users.avatar_url, ARRAY_AGG(user_roles.role) AS role FROM users JOIN user_roles ON users.id = user_roles.user_id WHERE id=$1 GROUP BY users.id, users.name, users.email, users.avatar_url;`,
+      [user_id]
+    )
+    updatedUser.rows[0].role = parsePgArray(updatedUser.rows[0].role)
+    return updatedUser.rows[0]
+  }
+
+  async sendEmailVerifyToken(user_id: UUIDv4, email: string) {
+    const email_verify_token = await this.signEmailVerifyToken({ user_id, verify: 'unverified' })
+    console.log('email_verify_token:', email_verify_token)
+
+    await sendVerifyStatusEmail(email, email_verify_token)
+    await databaseService.users(`UPDATE users SET email_verify_token=$1 WHERE id=$2`, [email_verify_token, user_id])
+  }
+
+  async verifyEmail(user_id: UUIDv4) {
+    //Declare update value
+    const [tokens] = await Promise.all([
+      this.signAccessAndRefreshToken({ user_id, verify: 'verified' }),
+
+      databaseService.users(`UPDATE users SET verified=$1, email_verify_token=$2 WHERE id=$3`, [
+        'verified',
+        '',
+        user_id
+      ])
+    ])
+
+    const [access_token, refresh_token] = tokens
+
+    const { iat, exp } = await this.decodeRefreshToken(refresh_token)
+
+    const refreshToken = new RefreshToken({
+      user_id: user_id,
+      token_hash: refresh_token,
+      iat,
+      exp
+    })
+
+    await databaseService.refresh_tokens(
+      `INSERT INTO refresh_tokens (id, user_id, token_hash, iat, exp) VALUES ($1, $2, $3, to_timestamp($4), to_timestamp($5))`,
+      [refreshToken.id, refreshToken.user_id, refreshToken.token_hash, refreshToken.iat, refreshToken.exp]
+    )
+
+    return {
+      access_token,
+      refresh_token
+    }
+  }
+
+  async forgotPassword({ user_id, verify, email }: { user_id: UUIDv4; verify: UserVerificationStatus; email: string }) {
+    const forgot_password_token = await this.signForgotPasswordToken({ user_id, verify })
+    console.log('forgot_password_token:', forgot_password_token)
+    await databaseService.users(`UPDATE users SET forgot_password_token=$1 WHERE id=$2`, [
+      forgot_password_token,
+      user_id
+    ])
+
+    // Sending email https://twitter.com/forgot-password?token=token
+    await sendForgotPasswordEmail(email, forgot_password_token)
+
+    // For testing only, remove return this statement in production
+    return {
+      forgot_password_token
+    }
+  }
+  async resetPassword(user_id: string, new_password: string) {
+    const password = hashPassword(new_password)
+    await databaseService.users(`UPDATE users SET password_hash=$1, forgot_password_token=$2 WHERE id=$3`, [
+      password,
+      '',
+      user_id
+    ])
   }
 }
 

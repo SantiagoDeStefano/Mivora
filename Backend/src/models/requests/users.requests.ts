@@ -1,7 +1,7 @@
-import { JwtPayload } from '@supabase/supabase-js'
+import { JwtPayload } from 'jsonwebtoken'
 import { TokenType } from '~/constants/enums'
 import { UUIDv4 } from '~/types/common'
-import { UserRole } from '~/types/domain'
+import { UserRole, UserVerificationStatus } from '~/types/domain'
 
 // Body
 export interface RegisterRequestBody {
@@ -29,6 +29,7 @@ export interface RefreshTokenRequestBody {
 export interface TokenPayload extends JwtPayload {
   user_id: UUIDv4
   token_type: TokenType
+  verify: UserVerificationStatus
   iat: number
   exp: number
 }
@@ -37,4 +38,22 @@ export interface UpdateMeRequestBody {
   name?: string
   avatar_url?: string
   role?: UserRole
+}
+
+export interface VerifyEmailRequestBody {
+  email_verify_token: string
+}
+
+export interface ForgotPasswordRequestBody {
+  email: string
+}
+
+export interface VerifyForgotPasswordRequestBody {
+  forgot_password_token: string
+}
+
+export interface ResetPasswordRequestBody {
+  forgot_password_token: string
+  password: string
+  confirm_password: string
 }

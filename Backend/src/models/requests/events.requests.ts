@@ -1,10 +1,8 @@
-import { UUIDv4 } from '~/types/common'
 import { EventStatus } from '~/types/domain'
 import { Query } from 'express-serve-static-core'
 
 // Body
 export interface CreateEventRequestBody {
-  id?: UUIDv4
   title: string
   description?: string
   poster_url?: string
@@ -12,13 +10,26 @@ export interface CreateEventRequestBody {
   start_at: Date
   end_at: Date
   price_cents: number
-  checked_in?: number
   capacity: number
-  status?: EventStatus
+}
+
+export interface UpdateEventDetailsBody {
+  title?: string
+  description?: string
+  poster_url?: string
+  location_text?: string
+  start_at?: Date
+  end_at?: Date
+  price_cents?: number
+  capacity?: number
 }
 
 // Query
 export interface Pagination extends Query {
   limit: string
   page: string
+}
+
+export interface EventWithStatus extends Pagination {
+  status: EventStatus
 }

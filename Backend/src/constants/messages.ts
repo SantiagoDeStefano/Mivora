@@ -6,7 +6,7 @@ export const USERS_MESSAGES = {
   BIO_MUST_BE_A_STRING: 'Bio must be a string',
   BIO_LENGTH_MUST_BE_BETWEEN_1_AND_100: 'Bio must be between 1 and 100',
 
-  CHECK_YOUR_EMAIL_FOR_RESET_PASSWORD: 'Check your email for reset password',
+  CHECK_YOUR_EMAIL_FOR_RESET_PASSWORD_LINK: 'Check your email for reset password link',
   CONFIRM_PASSWORD_DOES_NOT_MATCH_PASSWORD: 'Password confirmation does not match password',
   CONFIRM_PASSWORD_IS_REQUIRED: 'Password confirmation is required',
   CONFIRM_PASSWORD_MUST_BE_A_STRING: 'Password confirmation must be a string',
@@ -26,6 +26,7 @@ export const USERS_MESSAGES = {
   EMAIL_VERIFY_TOKEN_IS_REQUIRED: 'Email verify token is required',
   EMAIL_OR_PASSWORD_IS_INCORRECT: 'Email or password is incorrect',
   EVENT_CREATOR_MUST_BE_ORGANIZER: 'Event creator must be organizer',
+  MUST_BE_ORGANIZER: 'Must be organizer',
 
   FORGOT_PASSWORD_TOKEN_REQUIRED: 'Forgot password token is required',
   FOLLOW_SUCCESS: 'Follow successfully',
@@ -39,6 +40,7 @@ export const USERS_MESSAGES = {
   IMAGE_URL_MUST_BE_BETWEEN_1_AND_400: 'Image URL must be between 1 and 400',
   INVALID_USER_ID: 'Invalid user ID',
   INVALID_USERNAME: 'Username must be between 4-15 characters and contain only letters, numbers, underscore',
+  INVALID_EMAIL_VERIFY_TOKEN: 'Invalid email verification token',
 
   LOGIN_SUCCESS: 'Login successfully',
   LOGOUT_SUCCESS: 'Logout successfully',
@@ -71,22 +73,29 @@ export const USERS_MESSAGES = {
   USERNAME_MUST_BE_A_STRING: 'Username must be a string',
   USERNAME_MUST_BE_BETWEEN_1_AND_50: 'Username must be between 1 and 50',
   UPDATE_ME_SUCCESS: 'Update me successfully',
+  UPDATE_AVATAR_SUCCESS: 'Update avatar successfully',
   UNFOLLOW_SUCCESS: 'Unfollowed successfully',
   USERNAME_ALREADY_EXISTS: 'Username already exists',
   UPDATE_ROLE_MUST_BE_ORGANIZER: 'Update role must be organizer',
   USER_ALREADY_HAVE_THIS_ROLE: 'User already have this role',
+  USER_MUST_BE_VERIFIED_TO_BE_ORGANIZER: 'User must be verified to be organizer',
 
   VALIDATION_ERROR: 'Validation error',
-  VERIFY_FORGOT_PASSWORD_SUCCESS: 'Verify forgot password successfully',
+  VERIFY_FORGOT_PASSWORD_TOKEN_SUCCESS: 'Verify forgot password token successfully',
 
   WEBSITE_MUST_BE_A_STRING: 'Website must be a string',
   WEBSITE_LENGTH_MUST_BE_BETWEEN_1_AND_200: 'Website must be between 1 and 200',
 
+  SEND_VERIFY_EMAIL_SUCCESS: 'Send verify email successfully',
   STRONG_PASSWORD:
     'Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character'
 } as const
 
 export const EVENTS_MESSAGES = {
+  CHANGE_EVENT_ONLY_ALLOWED_ON_DRAFT: 'Change event only allowed on draft',
+  CANCEL_EVENT_ONLY_ALLOWED_ON_PUBLISHED: 'Cancel event only allowed on published',
+  CANCEL_EVENT_SUCCESS: 'Cancel event successfully',
+
   EVENT_TITLE_IS_REQUIRED: "Event's title is required",
   EVENT_TITLE_MUST_BE_STRING: "Event's title must be string",
   EVENT_TITLE_MUST_BE_BETWEEN_6_AND_50: "Event's title must be between 5 and 60",
@@ -108,10 +117,22 @@ export const EVENTS_MESSAGES = {
   EVENT_STATUS_MUST_BE_DRAFT_PUBLISHED_CANCELED: "Event's status must be draft, published, or canceled",
   EVENT_CREATED_SUCCESSFULLY: 'Event created successfully',
   EVENT_NOT_FOUND: 'Event not found',
+
   GET_EVENTS_SUCCESSFULLY: 'Get events successfully',
+  GET_CREATED_EVENTS_SUCCESSFULLY: 'Get created events successfully',
+  GET_EVENT_DETAILS_IS_ONLY_ON_PUBLISHED: "Get event's details is only on published",
 
   INVALID_EVENT_ID: 'Invalid EventID',
 
   MAXIMUM_EVENTS_PER_PAGE_IS_BETWEEN_1_AND_50: 'Maximum events per page is between 1 and 50',
-  NUMBER_OF_PAGE_MUST_BE_GREATER_THAN_0: 'Number of page must be greater than 0'
+  NUMBER_OF_PAGE_MUST_BE_GREATER_THAN_0: 'Number of page must be greater than 0',
+
+  PUBLISH_EVENT_SUCCESS: 'Publish event successfully',
+  PUBLISH_EVENT_ONLY_ALLOWED_ON_DRAFT: 'Publish event only allowed on draft',
+
+  UPDATE_EVENT_SUCCESS: 'Update event successfully'
+} as const
+
+export const MEDIAS_MESSAGES = {
+  IMAGE_UPLOAD_SUCCESS: 'Image uploaded successfully'
 } as const

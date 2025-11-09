@@ -1,5 +1,6 @@
 import { defaultErrorHandler } from './middlewares/errors.middlewares'
 import { envConfig } from './constants/config'
+import { initFolder } from './utils/file'
 
 // import '~/utils/fake'
 import databaseService from './services/database.services'
@@ -10,6 +11,7 @@ import fs from 'fs'
 import YAML from 'yaml'
 import swaggerUi from 'swagger-ui-express'
 import cors from 'cors'
+import mediasRouter from './routes/medias.routes'
 
 const file = fs.readFileSync('MivoraSwagger.yaml', 'utf8')
 const swaggerDocument = YAML.parse(file)
@@ -24,10 +26,14 @@ app.use(
   })
 )
 
+// Create upload folder
+initFolder()
+
 app.use(express.json())
 app.use('/mivora/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 app.use('/users', usersRouter)
 app.use('/events', eventsRouter)
+app.use('/medias', mediasRouter)
 
 databaseService.verifyConnection()
 

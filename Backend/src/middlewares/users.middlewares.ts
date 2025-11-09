@@ -1,4 +1,4 @@
-import { checkSchema, ParamSchema } from 'express-validator'
+import { body, checkSchema, ParamSchema } from 'express-validator'
 import { USERS_MESSAGES } from '~/constants/messages'
 import { validate } from '~/utils/validation'
 import { UserRole } from '~/types/domain'
@@ -47,6 +47,7 @@ const passwordSchema: ParamSchema = {
 
 // Shared name rules
 const nameSchema: ParamSchema = {
+  trim: true,
   notEmpty: {
     errorMessage: USERS_MESSAGES.NAME_IS_REQUIRED
   },
@@ -59,8 +60,7 @@ const nameSchema: ParamSchema = {
       max: LIMIT_MIN_MAX.NAME_LENGTH_MAX
     },
     errorMessage: USERS_MESSAGES.NAME_LENGTH_MUST_BE_FROM_3_TO_100
-  },
-  trim: true
+  }
 }
 
 // Optional avatar URL rules
@@ -76,6 +76,49 @@ const imageSchema: ParamSchema = {
       max: LIMIT_MIN_MAX.IMAGE_LENGTH_MAX
     },
     errorMessage: USERS_MESSAGES.IMAGE_URL_MUST_BE_BETWEEN_1_AND_400
+  }
+}
+
+// Verify forgot_password_token
+const forgotPasswordTokenSchema: ParamSchema = {
+  custom: {
+    options: async (value: string, { req }) => {
+      if (!value) {
+        throw new ErrorWithStatus({
+          message: USERS_MESSAGES.FORGOT_PASSWORD_TOKEN_REQUIRED,
+          status: HTTP_STATUS.UNAUTHORIZED
+        })
+      }
+      try {
+        const decoded_forgot_password_token = await verifyToken({
+          token: value,
+          secretOrPublicKey: envConfig.jwtSecretForgotPasswordToken as string
+        })
+        const { user_id } = decoded_forgot_password_token
+        const user = await databaseService.users(`SELECT id, forgot_password_token FROM users WHERE id=$1`, [user_id])
+        if (user.rows.length <= 0) {
+          throw new ErrorWithStatus({
+            message: USERS_MESSAGES.USER_NOT_FOUND,
+            status: HTTP_STATUS.NOT_FOUND
+          })
+        }
+
+        // Prevent multiple forgot_password_token verification
+        if (user.rows[0].forgot_password_token != value) {
+          throw new ErrorWithStatus({
+            message: USERS_MESSAGES.INVALID_FORGOT_PASSWORD_TOKEN,
+            status: HTTP_STATUS.UNAUTHORIZED
+          })
+        }
+        req.decoded_forgot_password_token = decoded_forgot_password_token
+      } catch (error) {
+        throw new ErrorWithStatus({
+          message: capitalize((error as JsonWebTokenError).message),
+          status: HTTP_STATUS.UNAUTHORIZED
+        })
+      }
+      return true
+    }
   }
 }
 
@@ -150,14 +193,14 @@ export const loginValidator = validate(
         trim: true,
         custom: {
           options: async (value, { req }) => {
-            const userRow = await databaseService.users(`SELECT id FROM users WHERE email=$1 AND password_hash=$2`, [
-              value,
-              hashPassword(req.body.password)
-            ])
+            const userRow = await databaseService.users(
+              `SELECT id, verified FROM users WHERE email=$1 AND password_hash=$2`,
+              [value, hashPassword(req.body.password)]
+            )
             if (userRow.rows.length <= 0) {
               throw new Error(USERS_MESSAGES.EMAIL_OR_PASSWORD_IS_INCORRECT)
             }
-            req.user_id = userRow.rows[0].id
+            req.user = userRow.rows[0]
             return true
           }
         }
@@ -253,7 +296,7 @@ export const organizerValidator = async (req: Request, res: Response, next: Next
   if (role.rows.length <= 0) {
     return next(
       new ErrorWithStatus({
-        message: USERS_MESSAGES.EVENT_CREATOR_MUST_BE_ORGANIZER,
+        message: USERS_MESSAGES.MUST_BE_ORGANIZER,
         status: HTTP_STATUS.FORBIDDEN
       })
     )
@@ -266,7 +309,6 @@ export const updateMeValidator = validate(
   checkSchema(
     {
       name: nameSchema,
-      avatar_url: imageSchema,
       role: {
         optional: { options: { nullable: true } },
         isString: {
@@ -283,8 +325,16 @@ export const updateMeValidator = validate(
               throw new Error(USERS_MESSAGES.UPDATE_ROLE_MUST_BE_ORGANIZER)
             }
             // Prevent updating to the same role
-            const { user_id } = req.decoded_authorization
+            const user = req.decoded_authorization as TokenPayload
+            const user_id = user.user_id
+            const verify = user.verify
+
+            const isVerified = verify === 'verified'
             const isExistRole = await userService.checkRoleExist(user_id, value)
+
+            if (!isVerified) {
+              throw new Error(USERS_MESSAGES.USER_MUST_BE_VERIFIED_TO_BE_ORGANIZER)
+            }
             if (isExistRole) {
               throw new Error(USERS_MESSAGES.USER_ALREADY_HAVE_THIS_ROLE)
             }
@@ -292,6 +342,115 @@ export const updateMeValidator = validate(
           }
         }
       }
+    },
+    ['body']
+  )
+)
+
+export const sendEmailValidator = async (req: Request, res: Response, next: NextFunction) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const userRow = await databaseService.users(`SELECT id, verified, email FROM users WHERE id=$1`, [user_id])
+  if (userRow.rows[0].verified == 'verified') {
+    return next(
+      new ErrorWithStatus({
+        message: USERS_MESSAGES.EMAIL_ALREADY_VERIFIED,
+        status: HTTP_STATUS.OK
+      })
+    )
+  }
+  req.user = userRow.rows[0]
+  next()
+}
+
+export const emailVerifyTokenValidator = validate(
+  checkSchema(
+    {
+      email_verify_token: {
+        custom: {
+          options: async (value: string, { req }) => {
+            if (!value) {
+              throw new ErrorWithStatus({
+                message: USERS_MESSAGES.EMAIL_VERIFY_TOKEN_IS_REQUIRED,
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
+            try {
+              const decoded_email_verify_token = await verifyToken({
+                token: value,
+                secretOrPublicKey: envConfig.jwtSecretEmailVerifyToken as string
+              })
+              const { user_id } = decoded_email_verify_token
+              const user = await databaseService.users(
+                `SELECT email_verify_token FROM users WHERE id=$1 AND email_verify_token=$2`,
+                [user_id, value]
+              )
+              if (user.rows.length <= 0) {
+                throw new ErrorWithStatus({
+                  message: USERS_MESSAGES.USER_NOT_FOUND,
+                  status: HTTP_STATUS.NOT_FOUND
+                })
+              }
+              if (user.rows[0].email_verify_token != value) {
+                throw new ErrorWithStatus({
+                  message: USERS_MESSAGES.INVALID_EMAIL_VERIFY_TOKEN,
+                  status: HTTP_STATUS.UNAUTHORIZED
+                })
+              }
+              req.decoded_email_verify_token = decoded_email_verify_token
+            } catch (error) {
+              throw new ErrorWithStatus({
+                message: capitalize((error as JsonWebTokenError).message),
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)
+
+export const forgotPasswordValidator = validate(
+  checkSchema(
+    {
+      email: {
+        isEmail: {
+          errorMessage: USERS_MESSAGES.EMAIL_IS_INVALID
+        },
+        trim: true,
+        custom: {
+          options: async (value, { req }) => {
+            const user = await databaseService.users(`SELECT id, email, verified FROM users WHERE email=$1`, [value])
+            if (user.rows.length <= 0) {
+              throw new Error(USERS_MESSAGES.USER_NOT_FOUND)
+            }
+            req.user = user.rows[0]
+            return true
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)
+
+export const verifyForgotPasswordTokenValidator = validate(
+  checkSchema(
+    {
+      forgot_password_token: forgotPasswordTokenSchema
+    },
+    ['body']
+  )
+)
+
+export const resetPasswordValidator = validate(
+  checkSchema(
+    {
+      password: passwordSchema,
+      confirm_password: confirmPasswordSchema('password'),
+      forgot_password_token: forgotPasswordTokenSchema
     },
     ['body']
   )
