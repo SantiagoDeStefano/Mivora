@@ -12,6 +12,7 @@ import YAML from 'yaml'
 import swaggerUi from 'swagger-ui-express'
 import cors from 'cors'
 import mediasRouter from './routes/medias.routes'
+import ticketsRouter from './routes/tickets.routes'
 
 const file = fs.readFileSync('MivoraSwagger.yaml', 'utf8')
 const swaggerDocument = YAML.parse(file)
@@ -33,6 +34,7 @@ app.use(express.json())
 app.use('/mivora/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 app.use('/users', usersRouter)
 app.use('/events', eventsRouter)
+app.use('/tickets', ticketsRouter)
 app.use('/medias', mediasRouter)
 
 databaseService.verifyConnection()

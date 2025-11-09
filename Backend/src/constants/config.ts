@@ -16,7 +16,8 @@ export const envConfig = {
   jwtSecretAccessToken: process.env.JWT_SECRET_ACCESS_TOKEN,
   jwtSecretRefreshToken: process.env.JWT_SECRET_REFRESH_TOKEN,
   jwtSecretEmailVerifyToken: process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN,
-  jwtSecretForgotPasswordToken: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string,
+  jwtSecretForgotPasswordToken: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN,
+  jwtSecretQRCodeToken: process.env.JWT_SECRET_QRCODE_TOKEN,
   passwordSecret: process.env.PASSWORD_SECRET,
 
   // Expires

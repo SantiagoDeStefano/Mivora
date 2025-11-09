@@ -286,7 +286,7 @@ class UserService {
       await databaseService.user_roles(`INSERT INTO user_roles(user_id, role) VALUES($1, $2)`, [user_id, role])
     }
     const updatedUser = await databaseService.users(
-      `SELECT users.name, users.email, users.avatar_url, ARRAY_AGG(user_roles.role) AS role FROM users JOIN user_roles ON users.id = user_roles.user_id WHERE id=$1 GROUP BY users.id, users.name, users.email, users.avatar_url;`,
+      `SELECT users.name, users.email, users.avatar_url, users.verified, ARRAY_AGG(user_roles.role) AS role FROM users JOIN user_roles ON users.id = user_roles.user_id WHERE id=$1 GROUP BY users.id, users.name, users.email, users.avatar_url;`,
       [user_id]
     )
     updatedUser.rows[0].role = parsePgArray(updatedUser.rows[0].role)
