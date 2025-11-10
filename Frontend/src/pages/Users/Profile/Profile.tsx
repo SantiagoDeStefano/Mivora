@@ -40,7 +40,7 @@ export default function ProfilePage({ profile, onEdit }: Props) {
 
           <div className="flex items-center gap-2">
             <Button variant="secondary">Verify email</Button>
-            
+              
             <Button type="button" onClick={onEdit}>
               Edit profile
             </Button>

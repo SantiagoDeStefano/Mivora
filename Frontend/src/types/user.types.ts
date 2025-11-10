@@ -1,4 +1,3 @@
-// type Role = 'Attendee' | 'Organizer';
 
 // export interface User {
 //     _id: string;

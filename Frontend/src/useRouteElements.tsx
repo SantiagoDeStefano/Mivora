@@ -9,6 +9,8 @@ import LoginPage from "./pages/Users/Login/Login";
 import SigninPage from "./pages/Users/Register/Register";
 
 import MePage from "./pages/Users/Me";
+import ForgotPasswordModal from "./pages/Users/ForgotPassword";
+import ResetPasswordModal from "./pages/Users/ResetPassword";
 
 // -- Attendee Pages ---
 import AttendeeDashboard from "./pages/attendee/Dashboard/Dashboard";
@@ -57,7 +59,7 @@ export default function useRouteElements() {
             </MainLayout>
           ) 
         }, // "/tickets"<TicketsPage /> },   
-             
+
         { path: path.profile, 
           element: (
           <UserLayout>
@@ -113,6 +115,20 @@ export default function useRouteElements() {
           </RegisterLayout> 
           )
         },   // "/login"
+        { path: path.forgot_password, 
+          element: (
+          <RegisterLayout>
+            <ForgotPasswordModal />
+          </RegisterLayout>
+          ) 
+        }, // "/forgot-password"
+        { path: path.reset_password, 
+          element: (
+          <RegisterLayout>
+            <ResetPasswordModal />
+          </RegisterLayout>
+          ) 
+        }, // "/reset-password"
         { path: path.register, 
           element: (
           <RegisterLayout>
@@ -120,7 +136,6 @@ export default function useRouteElements() {
           </RegisterLayout>
           ) 
         }, // "/signup"
-          
       ],
     },
   ]);

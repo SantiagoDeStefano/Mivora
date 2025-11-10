@@ -1,18 +1,26 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import ReactDOM from "react-dom";
 import Label from "../../../components/Label/Label";
 import Input from "../../../components/Input/Input";
 import Button from "../../../components/Button";
 
-export default function ForgotPasswordModal() {
+export default function ResetPasswordModal() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  // Nếu cần, token verify sẽ nằm ở query ?token=...
+  const token = params.get("token"); // hiện tại chỉ đọc, chưa dùng
 
   const onClose = () => navigate("/users/login");
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // UI-only: sau khi “đổi mật khẩu” xong thì quay về login
+    navigate("/users/login");
+  };
 
   return ReactDOM.createPortal(
     <div
       className="fixed inset-0 z-[100]"
-      aria-labelledby="fp-title"
+      aria-labelledby="rp-title"
       role="dialog"
       aria-modal="true"
     >
@@ -28,10 +36,10 @@ export default function ForgotPasswordModal() {
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800">
             <h2
-              id="fp-title"
+              id="rp-title"
               className="text-lg font-semibold text-gray-900 dark:text-gray-50"
             >
-              Forgot your password?
+              Reset your password
             </h2>
             <button
               onClick={onClose}
@@ -43,18 +51,32 @@ export default function ForgotPasswordModal() {
           </div>
 
           {/* Body */}
-          <form className="px-4 py-4 grid gap-3" noValidate>
+          <form onSubmit={onSubmit} className="px-4 py-4 grid gap-3" noValidate>
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              Enter your email address and we'll send you a reset link.
+              Enter a new password for your account.
+            </div>
+
+            {/* (Optional) Hiển thị token đã verify cho dev check */}
+            {/* <div className="text-xs text-gray-400">token: {token}</div> */}
+
+            <div>
+              <Label htmlFor="rp-pass">New password</Label>
+              <Input
+                id="rp-pass"
+                name="password"
+                type="password"
+                placeHolder="At least 8 characters"
+                className="mt-1"
+              />
             </div>
 
             <div>
-              <Label htmlFor="fp-email">Email address</Label>
+              <Label htmlFor="rp-pass-confirm">Confirm new password</Label>
               <Input
-                id="fp-email"
-                name="email"
-                type="email"
-                placeHolder="you@example.com"
+                id="rp-pass-confirm"
+                name="passwordConfirm"
+                type="password"
+                placeHolder="Re-enter new password"
                 className="mt-1"
               />
             </div>
@@ -63,8 +85,13 @@ export default function ForgotPasswordModal() {
               <Button type="button" onClick={onClose} variant="secondary">
                 Cancel
               </Button>
-              <Button type="submit">Send reset link</Button>
+              <Button type="submit">Change password</Button>
             </div>
+
+            {/* Gợi ý nhỏ */}
+            <p className="text-xs text-gray-500 mt-1">
+              Use at least 8 characters with a mix of letters and numbers.
+            </p>
           </form>
         </div>
       </div>
