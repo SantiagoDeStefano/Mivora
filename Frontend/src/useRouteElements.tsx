@@ -5,9 +5,10 @@ import path from "././constants/path";
 import ExplorePage from "./pages/Explore";
 import EventDetailsPage from "./pages/EventDetail";
 import TicketsPage from "./pages/attendee/Tickets/Tickets";
-import ProfilePage from "./pages/Users/Profile/Profile";
 import LoginPage from "./pages/Users/Login/Login";
 import SigninPage from "./pages/Users/Register/Register";
+
+import MePage from "./pages/Users/Me";
 
 // -- Attendee Pages ---
 import AttendeeDashboard from "./pages/attendee/Dashboard/Dashboard";
@@ -55,11 +56,12 @@ export default function useRouteElements() {
           <TicketsPage />
             </MainLayout>
           ) 
-        }, // "/tickets"<TicketsPage /> },        
+        }, // "/tickets"<TicketsPage /> },   
+             
         { path: path.profile, 
           element: (
           <UserLayout>
-          <ProfilePage />
+          <MePage />
             </UserLayout>
           )
           },

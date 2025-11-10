@@ -4,7 +4,7 @@ const path = {
   login: '/users/login',
   register: '/users/register',
   profile: '/users/me',
-
+  update_profile: '/users/me/update',
 
   event_details: '/events/:id',
   attendee_dashboard: '/attendee/dashboard',

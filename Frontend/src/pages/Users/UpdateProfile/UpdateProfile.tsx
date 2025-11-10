@@ -1,4 +1,4 @@
-// src/pages/Users/Profile/Profile.tsx
+// src/pages/Users/Profile/UpdateProfile.tsx
 import React from "react";
 import { NavLink } from "react-router-dom";
 import Container from "../../../components/Container";
@@ -9,10 +9,11 @@ import { Pencil } from "lucide-react";
 
 interface Props {
   profile: Profile;
-  onEdit?: () => void;
+  onCancel: () => void; // UI-only: gắn logic điều hướng sau
+  onSaved: () => void;  // UI-only: gắn logic lưu sau
 }
 
-export default function ProfilePage({ profile, onEdit }: Props) {
+export default function UpdateProfile({ profile, onCancel, onSaved }: Props) {
   const me = profile;
   const isVerified = me.verified === "verified";
 
@@ -39,10 +40,11 @@ export default function ProfilePage({ profile, onEdit }: Props) {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="secondary">Verify email</Button>
-            
-            <Button type="button" onClick={onEdit}>
-              Edit profile
+            <Button type="button" variant="secondary" onClick={onCancel}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={onSaved}>
+              Save changes
             </Button>
           </div>
         </div>
@@ -144,6 +146,7 @@ export default function ProfilePage({ profile, onEdit }: Props) {
                 Account Information
               </h2>
 
+              {/* UI-only: không gắn submit, không state */}
               <form className="flex flex-col items-center gap-5">
                 <div className="w-full max-w-sm">
                   <label
@@ -156,8 +159,7 @@ export default function ProfilePage({ profile, onEdit }: Props) {
                     id="pf-name"
                     type="text"
                     defaultValue={me.name}
-                    className="w-full max-w-sm rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm"
-                    readOnly
+                    className="w-full max-w-sm rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-pink-500/60"
                   />
                 </div>
 
@@ -193,6 +195,7 @@ export default function ProfilePage({ profile, onEdit }: Props) {
                   />
                 </div>
 
+                {/* Role (dropdown) */}
                 <div className="w-full max-w-sm">
                   <label
                     htmlFor="pf-role"
@@ -200,14 +203,23 @@ export default function ProfilePage({ profile, onEdit }: Props) {
                   >
                     Role
                   </label>
-                  <input
+
+                  <select
                     id="pf-role"
-                    type="text"
-                    defaultValue={isAttendee ? "Attendee" : "Organizer"}
-                    className="w-full max-w-sm rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-gray-50 dark:bg-gray-950/60 cursor-not-allowed"
-                    readOnly
-                  />
+                    defaultValue={me.role}
+                    className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:ring-2 focus:ring-pink-500/60"
+                  >
+                    <option value="attendee">Attendee</option>
+                    <option value="organizer">Organizer</option>
+                  </select>
+
+                  <p className="mt-1 text-xs text-gray-500 text-center sm:text-left">
+                    Choose your role.
+                  </p>
                 </div>
+
+
+                {/* Nếu cần thêm fields khác, thêm ở đây theo cùng style */}
               </form>
             </div>
           </div>
