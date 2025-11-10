@@ -31,9 +31,9 @@ export default class User {
     this.password_hash = user.password_hash
     this.email_verify_token = user.email_verify_token || 'have_never_request_verification_email'
     this.forgot_password_token = user.forgot_password_token || 'have_never_request_forgot_password_token'
-    this.avatar_url = user.avatar_url || ''
+    this.avatar_url =
+      user.avatar_url ||
+      'https://mivora-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/avatar-images/tiu7tvddseqens3u2h5pvfnn2.jpg'
     this.verified = user.verified || 'unverified'
   }
 }
-
-
