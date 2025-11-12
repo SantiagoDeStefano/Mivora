@@ -22,7 +22,7 @@ const PORT = Number(envConfig.port)
 const app = express()
 app.use(
   cors({
-    origin: ['http://localhost:4000', 'http://26.35.82.76:4000'],
+    origin: ['http://localhost:4000', 'http://26.35.82.76:4000', 'http://localhost:5173'],
     credentials: true
   })
 )

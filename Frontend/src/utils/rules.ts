@@ -1,77 +1,74 @@
-// import * as yup from "yup";
+import { USERS_MESSAGES } from '../constants/messages'
+import LIMIT_MIN_MAX from '../constants/limits'
+import * as yup from 'yup'
 
-// // --- SCHEMAS ---
+// helper: counts for each character class
+const countMatches = (s: string, re: RegExp) => (s.match(re) || []).length
 
-// export const authSchema = yup.object({
-//   email: yup
-//     .string()
-//     .required('Email is required')
-//     .matches(/^[a-zA-Z0-9._%+-]+@gmail\.com$/, 'Email must be a valid Google email address')
-//     .min(5, 'Email must be between 5 - 160 characters')
-//     .max(160, 'Email must be between 5 - 160 characters'),
-//   password: yup
-//     .string()
-//     .required('Password is required')
-//     .min(6, 'Password must be at least 6 - 160 characters')
-//     .max(160, 'Password must be at least 6 - 160 characters'),
-//   confirm_password: yup
-//     .string()
-//     .required('Password confirmation is required')
-//     .min(6, 'Password must be at least 6 - 160 characters')
-//     .max(160, 'Password must be at least 6 - 160 characters')
-//     .oneOf([yup.ref('password')], 'Passwords do not match')
-// });
+// --- SCHEMAS ---
+export const registerSchema = yup.object({
+  name: yup
+    .string()
+    .required(USERS_MESSAGES.NAME_IS_REQUIRED)
+    .min(LIMIT_MIN_MAX.NAME_LENGTH_MIN, USERS_MESSAGES.NAME_LENGTH_MUST_BE_FROM_3_TO_100)
+    .max(LIMIT_MIN_MAX.NAME_LENGTH_MAX, USERS_MESSAGES.NAME_LENGTH_MUST_BE_FROM_3_TO_100),
+  email: yup
+    .string()
+    .required(USERS_MESSAGES.EMAIL_IS_REQUIRED)
+    .matches(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, USERS_MESSAGES.EMAIL_IS_INVALID),
+  password: yup
+    .string()
+    .required(USERS_MESSAGES.PASSWORD_IS_REQUIRED)
+    .min(LIMIT_MIN_MAX.PASSWORD_LENGTH_MIN, USERS_MESSAGES.PASSWORD_MUST_BE_FROM_8_TO_24)
+    .max(LIMIT_MIN_MAX.PASSWORD_LENGTH_MAX, USERS_MESSAGES.PASSWORD_MUST_BE_FROM_8_TO_24)
+    .test(
+      'strong-password',
+      USERS_MESSAGES.STRONG_PASSWORD, // one generic message like backend
+      (value) => {
+        if (!value) return false
 
-// export const priceSchema = yup.object({
-//   price_min: yup
-//     .string()
-//     .default("")
-//     .test({
-//       name: "price-range",
-//       message: "Invalid price range",
-//       test(value) {
-//         const min = (value ?? "").trim();
-//         const max = (this.parent.price_max ?? "").trim();
-//         if (min === "" && max === "") return false;
-//         if (min !== "" && !/^\d+$/.test(min)) return false;
-//         if (max !== "" && !/^\d+$/.test(max)) return false;
-//         if (min !== "" && max !== "") {
-//           return Number(min) <= Number(max);
-//         }
-//         return true;
-//       },
-//     }),
-//   price_max: yup
-//     .string()
-//     .default("")
-//     .test({
-//       name: "price-range",
-//       message: "Invalid price range",
-//       test(value) {
-//         const min = (this.parent.price_min ?? "").trim();
-//         const max = (value ?? "").trim();
-//         if (min === "" && max === "") return false;
-//         if (min !== "" && !/^\d+$/.test(min)) return false;
-//         if (max !== "" && !/^\d+$/.test(max)) return false;
-//         if (min !== "" && max !== "") {
-//           return Number(min) <= Number(max);
-//         }
-//         return true;
-//       },
-//     }),
-// });
+        const {
+          STRONG_PASSWORD_MIN_LENGTH,
+          STRONG_PASSWORD_MIN_LOWERCASE,
+          STRONG_PASSWORD_MIN_UPPERCASE,
+          STRONG_PASSWORD_MIN_NUMBER,
+          STRONG_PASSWORD_MIN_SYMBOL
+        } = LIMIT_MIN_MAX
 
-// export const eventTitleSchema = yup.object({
-//   title: yup
-//     .string()
-//     .trim()
-//     .required("Event title is required.")
-//     .min(3, "Title must be at least 3 characters")
-//     .max(120, "Title must be at most 120 characters"),
-// });
+        // if you want to enforce the "strong" min length independently of .min/.max:
+        if (value.length < STRONG_PASSWORD_MIN_LENGTH) return false
 
+        const lowers = countMatches(value, /[a-z]/g)
+        const uppers = countMatches(value, /[A-Z]/g)
+        const numbers = countMatches(value, /\d/g)
+        const symbols = countMatches(value, /[^A-Za-z0-9]/g) // like validator.js: “symbols” = non-alphanumeric
 
-// // --- TYPES ---
-// export type AuthSchema = yup.InferType<typeof authSchema>;
-// export type PriceSchema = yup.InferType<typeof priceSchema>;
-// export type EventTitleSchema = yup.InferType<typeof eventTitleSchema>;
+        return (
+          lowers >= STRONG_PASSWORD_MIN_LOWERCASE &&
+          uppers >= STRONG_PASSWORD_MIN_UPPERCASE &&
+          numbers >= STRONG_PASSWORD_MIN_NUMBER &&
+          symbols >= STRONG_PASSWORD_MIN_SYMBOL
+        )
+      }
+    ),
+  confirm_password: yup
+    .string()
+    .required(USERS_MESSAGES.CONFIRM_PASSWORD_IS_REQUIRED)
+    .min(LIMIT_MIN_MAX.PASSWORD_LENGTH_MIN, USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_FROM_8_TO_24)
+    .max(LIMIT_MIN_MAX.PASSWORD_LENGTH_MAX, USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_FROM_8_TO_24)
+    .oneOf([yup.ref('password')], USERS_MESSAGES.CONFIRM_PASSWORD_DOES_NOT_MATCH_PASSWORD)
+})
+
+export const eventTitleSchema = yup.object({
+  title: yup
+    .string()
+    .trim()
+    .required('Event title is required.')
+    .min(3, 'Title must be at least 3 characters')
+    .max(120, 'Title must be at most 120 characters')
+})
+
+// --- TYPES ---
+export type RegisterSchema = Required<yup.InferType<typeof registerSchema>>
+
+export type EventTitleSchema = yup.InferType<typeof eventTitleSchema>

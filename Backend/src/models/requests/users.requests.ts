@@ -9,8 +9,6 @@ export interface RegisterRequestBody {
   email: string
   password: string
   confirm_password: string
-  role?: string
-  avatar_url?: string
 }
 
 export interface LoginRequestBody {

@@ -18,6 +18,7 @@ import ErrorWithStatus from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpStatus'
 import LIMIT_MIN_MAX from '~/constants/limits'
 
+
 // Allowed user roles
 const user_roles: UserRole[] = ['attendee', 'organizer']
 
@@ -153,6 +154,9 @@ export const registerValidator = validate(
         isEmail: {
           errorMessage: USERS_MESSAGES.EMAIL_IS_INVALID
         },
+        notEmpty: {
+          errorMessage: USERS_MESSAGES.EMAIL_IS_REQUIRED
+        },
         trim: true,
         custom: {
           options: async (value) => {
@@ -165,18 +169,7 @@ export const registerValidator = validate(
         }
       },
       password: passwordSchema,
-      confirm_password: confirmPasswordSchema('password'),
-      role: {
-        optional: { options: { nullable: true } },
-        isString: {
-          errorMessage: USERS_MESSAGES.ROLE_MUST_BE_A_STRING
-        },
-        isIn: {
-          options: [user_roles],
-          errorMessage: USERS_MESSAGES.ROLE_MUST_BE_ATTENDEE_OR_ORGANIZER
-        }
-      },
-      avatar_url: imageSchema
+      confirm_password: confirmPasswordSchema('password')
     },
     ['body']
   )

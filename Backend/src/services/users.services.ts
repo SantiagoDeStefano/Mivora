@@ -131,19 +131,21 @@ class UserService {
 
   // Registers a new user, creates a role row, issues tokens, and persists the refresh token record.
   async register(payload: RegisterRequestBody) {
-    const { name, email, password, role, avatar_url } = payload
+    const { name, email, password } = payload
     const password_hash = hashPassword(password) // Hashing password before storing (uses sha256 in hashPassword).
 
     const new_user = new User({
       name,
       email,
-      password_hash,
-      avatar_url
+      password_hash
     })
 
     await Promise.all([
       databaseService.users(
-        `INSERT INTO users(id, name, email, password_hash, email_verify_token, forgot_password_token, avatar_url, verified) VALUES($1, $2, $3, $4, $5, $6, $7, $8)`,
+        `INSERT INTO 
+          users(id, name, email, password_hash, email_verify_token, forgot_password_token, avatar_url, verified) 
+          VALUES($1, $2, $3, $4, $5, $6, $7, $8)
+        `,
         [
           new_user.id,
           new_user.name,
@@ -155,10 +157,7 @@ class UserService {
           new_user.verified
         ]
       ),
-      databaseService.user_roles(`INSERT INTO user_roles (user_id, role) VALUES ($1, $2)`, [
-        new_user.id,
-        role || 'attendee'
-      ])
+      databaseService.user_roles(`INSERT INTO user_roles (user_id, role) VALUES ($1, $2)`, [new_user.id, 'attendee'])
     ])
 
     const [access_token, refresh_token] = await this.signAccessAndRefreshToken({

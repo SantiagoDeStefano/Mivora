@@ -14,13 +14,10 @@ import {
   VerifyForgotPasswordRequestBody
 } from '~/models/requests/users.requests'
 import { UUIDv4 } from '~/types/common'
-import userService from '~/services/users.services'
-import databaseService from '~/services/database.services'
-import HTTP_STATUS from '~/constants/httpStatus'
 import { UserVerificationStatus } from '~/types/domain'
 import User from '~/models/schemas/User.schema'
+import userService from '~/services/users.services'
 import mediasService from '~/services/medias.services'
-import { uploadImageController } from './medias.controllers'
 
 export const registerController = async (
   req: Request<ParamsDictionary, unknown, RegisterRequestBody>,
@@ -99,11 +96,7 @@ export const updateMeController = async (
   return
 }
 
-export const updateAvatarController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const updateAvatarController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { user_id } = req.decoded_authorization as TokenPayload
   const url = await mediasService.uploadImage(req)
   const result = await userService.updateAvatar(user_id, url[0].url)
@@ -144,7 +137,7 @@ export const forgotPasswordController = async (
   const { id, verified, email } = req.user as User
   await userService.forgotPassword({ user_id: id, verify: verified, email })
   res.json({
-    message: USERS_MESSAGES.CHECK_YOUR_EMAIL_FOR_RESET_PASSWORD_LINK,
+    message: USERS_MESSAGES.CHECK_YOUR_EMAIL_FOR_RESET_PASSWORD_LINK
   })
   return
 }
