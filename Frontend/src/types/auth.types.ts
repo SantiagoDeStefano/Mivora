@@ -1,14 +1,9 @@
 import { User } from './user.types'
+import { SuccessResponse } from './util.types'
 
-export interface GetMeResponse {
-  message: string
-  result: User
-}
+export type GetMeResponse = SuccessResponse<User>
 
-export interface AuthResponse {
-  message: string
-  result: {
-    access_token: string
-    refresh_token: string
-  }
-}
+export type AuthResponse = SuccessResponse<{
+  access_token: string
+  refresh_token: string
+}>

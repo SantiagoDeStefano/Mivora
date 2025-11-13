@@ -15,7 +15,7 @@ import Input from '../../../components/Input/Input'
 import Button from '../../../components/Button'
 import Container from '../../../components/Container/Container'
 import path from '../../../constants/path'
-import authApi from '../../../apis/auth.api'
+import usersApi from '../../../apis/users.api'
 
 export default function RegisterPage() {
   const { setIsAuthenticated, setProfile } = useContext(AppContext)
@@ -32,20 +32,19 @@ export default function RegisterPage() {
 
   const registerAccountMutation = useMutation({
     mutationFn: (body: RegisterSchema) => {
-      return authApi.registerAccount(body)
+      return usersApi.registerAccount(body)
     }
   })
 
   const onSubmit = handleSubmit((data) => {
-    console.log('Form submitted with:', data)
     registerAccountMutation.mutate(data, {
       onSuccess: async (data) => {
         setIsAuthenticated(true)
         setAccessTokenToLocalStorage(data.data.result.access_token)
         setRefreshTokenToLocalStorage(data.data.result.refresh_token)
-        const getMeResponse = await authApi.getMe()
+        const getMeResponse = await usersApi.getMe()
         setProfile(getMeResponse.data.result)
-        navigate('/events')
+        navigate(path.profile)
       },
       onError: (error) => {
         if (isAxiosUnprocessableEntityError<ErrorResponse<ValidationErrorResponse>>(error)) {

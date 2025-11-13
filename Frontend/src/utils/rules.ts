@@ -6,16 +6,19 @@ import * as yup from 'yup'
 const countMatches = (s: string, re: RegExp) => (s.match(re) || []).length
 
 // --- SCHEMAS ---
+// These rules was taken from users.middlewaress's registerValidator
 export const registerSchema = yup.object({
   name: yup
     .string()
     .required(USERS_MESSAGES.NAME_IS_REQUIRED)
     .min(LIMIT_MIN_MAX.NAME_LENGTH_MIN, USERS_MESSAGES.NAME_LENGTH_MUST_BE_FROM_3_TO_100)
-    .max(LIMIT_MIN_MAX.NAME_LENGTH_MAX, USERS_MESSAGES.NAME_LENGTH_MUST_BE_FROM_3_TO_100),
+    .max(LIMIT_MIN_MAX.NAME_LENGTH_MAX, USERS_MESSAGES.NAME_LENGTH_MUST_BE_FROM_3_TO_100)
+    .trim(),
   email: yup
     .string()
     .required(USERS_MESSAGES.EMAIL_IS_REQUIRED)
-    .matches(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, USERS_MESSAGES.EMAIL_IS_INVALID),
+    .matches(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, USERS_MESSAGES.EMAIL_IS_INVALID)
+    .trim(),
   password: yup
     .string()
     .required(USERS_MESSAGES.PASSWORD_IS_REQUIRED)
@@ -59,6 +62,19 @@ export const registerSchema = yup.object({
     .oneOf([yup.ref('password')], USERS_MESSAGES.CONFIRM_PASSWORD_DOES_NOT_MATCH_PASSWORD)
 })
 
+export const loginSchema = yup.object({
+  email: yup
+    .string()
+    .required(USERS_MESSAGES.EMAIL_IS_REQUIRED)
+    .matches(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, USERS_MESSAGES.EMAIL_IS_INVALID)
+    .trim(),
+  password: yup
+    .string()
+    .required(USERS_MESSAGES.PASSWORD_IS_REQUIRED)
+    .min(LIMIT_MIN_MAX.PASSWORD_LENGTH_MIN, USERS_MESSAGES.PASSWORD_MUST_BE_FROM_8_TO_24)
+    .max(LIMIT_MIN_MAX.PASSWORD_LENGTH_MAX, USERS_MESSAGES.PASSWORD_MUST_BE_FROM_8_TO_24)
+})
+
 export const eventTitleSchema = yup.object({
   title: yup
     .string()
@@ -70,5 +86,6 @@ export const eventTitleSchema = yup.object({
 
 // --- TYPES ---
 export type RegisterSchema = Required<yup.InferType<typeof registerSchema>>
+export type LoginSchema = Required<yup.InferType<typeof loginSchema>>
 
 export type EventTitleSchema = yup.InferType<typeof eventTitleSchema>

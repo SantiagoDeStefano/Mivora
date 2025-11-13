@@ -1,8 +1,8 @@
-import './App.css'
-import useRouteElements from './useRouteElements'
 // import { useContext, useEffect } from 'react'
-// import { localStorageEventTarget } from './pages/Profile/auth'
+import useRouteElements from './useRouteElements'
+// import { localStorageEventTarget } from './utils/auth'
 // import { AppContext } from './contexts/app.context'
+import './App.css'
 
 function App() {
   const routeElements = useRouteElements()
@@ -13,11 +13,7 @@ function App() {
   //     localStorageEventTarget.removeEventListener('clearLocalStorage', reset)
   //   }
   // }, [reset])
-  return (
-    <div>
-      {routeElements}
-    </div>
-  )
+  return <div>{routeElements}</div>
 }
 
 export default App

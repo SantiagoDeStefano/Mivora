@@ -1,5 +1,5 @@
 // import React, { useState } from 'react';
-// import authApi from '../apis/auth.api';
+// import usersApi from '../apis/auth.api';
 
 // export default function TestAuth() {
 //   const [testResults, setTestResults] = useState<string[]>([]);
@@ -12,23 +12,23 @@
 //   const testBackendConnection = async () => {
 //     setIsLoading(true);
 //     addResult('Testing backend connection...');
-    
+
 //     try {
 //       const response = await fetch('http://26.35.82.76:4000');
 //       addResult(`Backend response: ${response.status} ${response.statusText}`);
 //     } catch (error) {
 //       addResult(`Backend connection failed: ${error}`);
 //     }
-    
+
 //     setIsLoading(false);
 //   };
 
 //   const testLogin = async () => {
 //     setIsLoading(true);
 //     addResult('Testing login...');
-    
+
 //     try {
-//       const response = await authApi.loginAccount({
+//       const response = await usersApi.loginAccount({
 //         email: 'test@example.com',
 //         password: 'testpassword'
 //       });
@@ -36,16 +36,16 @@
 //     } catch (error: any) {
 //       addResult(`Login error: ${error.response?.status} - ${error.response?.data?.message || error.message}`);
 //     }
-    
+
 //     setIsLoading(false);
 //   };
 
 //   const testRegister = async () => {
 //     setIsLoading(true);
 //     addResult('Testing registration...');
-    
+
 //     try {
-//       const response = await authApi.registerAccount({
+//       const response = await usersApi.registerAccount({
 //         name: 'Test User',
 //         email: 'test@example.com',
 //         password: 'testpassword',
@@ -55,7 +55,7 @@
 //     } catch (error: any) {
 //       addResult(`Registration error: ${error.response?.status} - ${error.response?.data?.message || error.message}`);
 //     }
-    
+
 //     setIsLoading(false);
 //   };
 
@@ -63,25 +63,25 @@
 //     <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
 //       <h1>Authentication Test Page</h1>
 //       <p>Use this page to test your authentication setup.</p>
-      
+
 //       <div style={{ marginBottom: '20px' }}>
-//         <button 
+//         <button
 //           onClick={testBackendConnection}
 //           disabled={isLoading}
 //           style={{ marginRight: '10px', padding: '10px' }}
 //         >
 //           Test Backend Connection
 //         </button>
-        
-//         <button 
+
+//         <button
 //           onClick={testLogin}
 //           disabled={isLoading}
 //           style={{ marginRight: '10px', padding: '10px' }}
 //         >
 //           Test Login
 //         </button>
-        
-//         <button 
+
+//         <button
 //           onClick={testRegister}
 //           disabled={isLoading}
 //           style={{ padding: '10px' }}
@@ -90,9 +90,9 @@
 //         </button>
 //       </div>
 
-//       <div style={{ 
-//         backgroundColor: '#f5f5f5', 
-//         padding: '15px', 
+//       <div style={{
+//         backgroundColor: '#f5f5f5',
+//         padding: '15px',
 //         borderRadius: '5px',
 //         fontFamily: 'monospace',
 //         fontSize: '12px',
@@ -124,4 +124,3 @@
 //     </div>
 //   );
 // }
-

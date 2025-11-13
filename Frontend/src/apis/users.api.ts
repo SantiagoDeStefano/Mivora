@@ -13,7 +13,11 @@ export interface LoginRequest {
   password: string
 }
 
-const authApi = {
+export interface RefreshTokenRequest {
+  refresh_token: string
+}
+
+const usersApi = {
   registerAccount: (body: RegisterRequest) => {
     return http.post<AuthResponse>('/users/register', body)
   },
@@ -23,9 +27,12 @@ const authApi = {
   logout: () => {
     return http.post('/users/logout')
   },
+  refreshToken: (body: RefreshTokenRequest) => {
+    return http.post<AuthResponse>('/users/refresh-token', body)
+  },
   getMe: () => {
     return http.get<GetMeResponse>('/users/me')
   }
 }
 
-export default authApi
+export default usersApi
