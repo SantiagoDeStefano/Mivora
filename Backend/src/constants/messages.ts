@@ -52,6 +52,7 @@ export const USERS_MESSAGES = {
   NAME_MUST_BE_A_STRING: 'Name must be a string',
 
   OLD_PASSWORD_DOES_NOT_MATCH: 'Old password does not match',
+  ONE_USER_PER_EVENT_ONLY: 'One user per event only',
 
   PASSWORD_IS_REQUIRED: 'Password is required',
   PASSWORD_MUST_BE_A_STRING: 'Password must be a string',
