@@ -51,9 +51,9 @@ export const logoutController = async (
   res: Response
 ): Promise<void> => {
   const { refresh_token } = req.body
-  const result = await userService.logout(refresh_token)
+  await userService.logout(refresh_token)
   res.json({
-    result
+    message: USERS_MESSAGES.LOGOUT_SUCCESS
   })
   return
 }

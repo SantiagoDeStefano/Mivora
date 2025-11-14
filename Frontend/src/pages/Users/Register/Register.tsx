@@ -3,7 +3,11 @@ import { useContext } from 'react'
 import { AppContext } from '../../../contexts/app.context'
 import { registerSchema, RegisterSchema } from '../../../utils/rules'
 import { useMutation } from '@tanstack/react-query'
-import { setAccessTokenToLocalStorage, setRefreshTokenToLocalStorage } from '../../../utils/auth'
+import {
+  setAccessTokenToLocalStorage,
+  setProfileToLocalStorage,
+  setRefreshTokenToLocalStorage
+} from '../../../utils/auth'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { isAxiosUnprocessableEntityError } from '../../../utils/format'
@@ -44,6 +48,7 @@ export default function RegisterPage() {
         setRefreshTokenToLocalStorage(data.data.result.refresh_token)
         const getMeResponse = await usersApi.getMe()
         setProfile(getMeResponse.data.result)
+        setProfileToLocalStorage(getMeResponse.data.result)
         navigate(path.profile)
       },
       onError: (error) => {

@@ -4,7 +4,11 @@ import { AppContext } from '../../../contexts/app.context'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useMutation } from '@tanstack/react-query'
-import { setAccessTokenToLocalStorage, setRefreshTokenToLocalStorage } from '../../../utils/auth'
+import {
+  setAccessTokenToLocalStorage,
+  setProfileToLocalStorage,
+  setRefreshTokenToLocalStorage
+} from '../../../utils/auth'
 import { isAxiosUnprocessableEntityError } from '../../../utils/format'
 import { ErrorResponse, ValidationErrorResponse } from '../../../types/util.types'
 import { loginSchema, LoginSchema } from '../../../utils/rules'
@@ -44,6 +48,7 @@ export default function Login() {
         setRefreshTokenToLocalStorage(data.data.result.refresh_token)
         const getMeResponse = await usersApi.getMe()
         setProfile(getMeResponse.data.result)
+        setProfileToLocalStorage(getMeResponse.data.result)
         navigate(path.profile)
       },
       onError: (error) => {

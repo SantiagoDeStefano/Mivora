@@ -6,7 +6,7 @@ import ExplorePage from './pages/Explore'
 import EventDetailsPage from './pages/EventDetail'
 import TicketsPage from './pages/attendee/Tickets/Tickets'
 import LoginPage from './pages/Users/Login/Login'
-import SigninPage from './pages/Users/Register/Register'
+import RegisterPage from './pages/Users/Register/Register'
 
 import MePage from './pages/Users/Me'
 import ForgotPasswordModal from './pages/Users/ForgotPassword'
@@ -137,7 +137,7 @@ export default function useRouteElements() {
           path: path.register,
           element: (
             <RegisterLayout>
-              <SigninPage />
+              <RegisterPage />
             </RegisterLayout>
           )
         } // "/signup"

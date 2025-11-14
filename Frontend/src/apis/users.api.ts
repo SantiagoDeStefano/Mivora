@@ -1,4 +1,4 @@
-import type { AuthResponse, GetMeResponse } from '../types/auth.types'
+import type { AuthResponse, GetMeResponse, MessageOnly } from '../types/auth.types'
 import http from '../utils/http'
 
 export interface RegisterRequest {
@@ -24,8 +24,8 @@ const usersApi = {
   loginAccount: (body: LoginRequest) => {
     return http.post<AuthResponse>('/users/login', body)
   },
-  logout: () => {
-    return http.post('/users/logout')
+  logout: (body: RefreshTokenRequest) => {
+    return http.post<MessageOnly>('/users/logout', body)
   },
   refreshToken: (body: RefreshTokenRequest) => {
     return http.post<AuthResponse>('/users/refresh-token', body)
