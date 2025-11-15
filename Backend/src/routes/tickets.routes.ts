@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { bookTicketController } from '~/controllers/tickets.controllers'
 import { eventIdValidator } from '~/middlewares/events.middlewares'
-import { bookTicketValidator, scanTicketValidator } from '~/middlewares/tickets.middlewares'
+import { bookTicketValidator } from '~/middlewares/tickets.middlewares'
 import { accessTokenValidator, organizerValidator } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
 
@@ -20,7 +20,7 @@ ticketsRouter.post(
   accessTokenValidator,
   organizerValidator,
   eventIdValidator,
-  scanTicketValidator,
+  // scanTicketValidator,
   wrapRequestHandler(bookTicketController)
 )
 
