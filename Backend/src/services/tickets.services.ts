@@ -1,9 +1,6 @@
-import { CreateEventRequestBody, UpdateEventDetailsBody } from '~/models/requests/events.requests'
-import databaseService from './database.services'
-import Event from '~/models/schemas/Event.schema'
 import { UUIDv4 } from '~/types/common'
-import { EventStatus } from '~/types/domain'
-import { signToken } from '~/utils/jwt'
+
+import databaseService from './database.services'
 import qrCode from './qrcode.services'
 import Ticket from '~/models/schemas/Tickets.schema'
 

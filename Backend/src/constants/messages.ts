@@ -139,5 +139,6 @@ export const MEDIAS_MESSAGES = {
 } as const
 
 export const TICKETS_MESSAGES = {
-  BOOK_TICKET_SUCCESS: 'Book ticket successfully'
+  BOOK_TICKET_SUCCESS: 'Book ticket successfully',
+  QR_CODE_TOKEN_REQUIRED: 'QR code token is required'
 }
