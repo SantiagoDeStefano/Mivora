@@ -4,7 +4,6 @@ import { RegisterRequestBody, UpdateMeRequestBody } from '~/models/requests/user
 import { UUIDv4 } from '~/types/common'
 import { hashPassword } from '~/utils/crypto'
 import { signToken, verifyToken } from '~/utils/jwt'
-import { USERS_MESSAGES } from '~/constants/messages'
 
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import User from '~/models/schemas/User.schema'
@@ -202,7 +201,7 @@ class UserService {
 
   // Logs out a single session by deleting the refresh token row. Access token naturally expires on its own.
   async logout(refresh_token: string) {
-await databaseService.refresh_tokens(`DELETE FROM refresh_tokens WHERE token_hash=$1`, [refresh_token])
+    await databaseService.refresh_tokens(`DELETE FROM refresh_tokens WHERE token_hash=$1`, [refresh_token])
   }
 
   // Fast existence check for email (returns boolean). Use LIMIT 1 to reduce result size.

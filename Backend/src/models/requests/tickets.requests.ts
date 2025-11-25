@@ -1,4 +1,6 @@
 import { UUIDv4 } from '~/types/common'
+import { Pagination } from './events.requests'
+import { TicketStatus } from '~/types/domain'
 
 // Body
 export interface BookTicketRequestBody {
@@ -7,4 +9,8 @@ export interface BookTicketRequestBody {
 
 export interface ScanTicketRequestBody {
   ticket: UUIDv4
+}
+
+export interface TicketWithStatus extends Pagination {
+  status: TicketStatus
 }

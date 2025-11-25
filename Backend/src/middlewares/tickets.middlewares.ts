@@ -1,18 +1,22 @@
 import { NextFunction } from 'express-serve-static-core'
 import { TokenPayload } from '~/models/requests/users.requests'
 import { Request, Response } from 'express'
-import databaseService from '~/services/database.services'
-import Event from '~/models/schemas/Event.schema'
-import ErrorWithStatus from '~/models/Errors'
 import { EVENTS_MESSAGES, TICKETS_MESSAGES, USERS_MESSAGES } from '~/constants/messages'
-import HTTP_STATUS from '~/constants/httpStatus'
 import { validate } from '~/utils/validation'
 import { checkSchema } from 'express-validator'
 import { verifyToken } from '~/utils/jwt'
 import { envConfig } from '~/constants/config'
 import { capitalize } from 'lodash'
 import { JsonWebTokenError } from 'jsonwebtoken'
+import { TicketStatus } from '~/types/domain'
+
 import Ticket from '~/models/schemas/Tickets.schema'
+import databaseService from '~/services/database.services'
+import Event from '~/models/schemas/Event.schema'
+import ErrorWithStatus from '~/models/Errors'
+import HTTP_STATUS from '~/constants/httpStatus'
+
+const ticket_status: TicketStatus[] = ['booked', 'checked_in']
 
 export const bookTicketValidator = async (req: Request, res: Response, next: NextFunction) => {
   const { user_id } = req.decoded_authorization as TokenPayload
@@ -113,3 +117,18 @@ export const eventCreatorValidator = async (req: Request, res: Response, next: N
   }
   next()
 }
+
+export const getTicketStatusValidator = validate(
+  checkSchema(
+    {
+      status: {
+        optional: { options: { nullable: true } },
+        isIn: {
+          options: [ticket_status],
+          errorMessage: TICKETS_MESSAGES.TICKET_STATUS_MUST_BE_BOOKED_CHECKED_IN
+        }
+      }
+    },
+    ['query']
+  )
+)

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { TICKETS_MESSAGES } from '~/constants/messages'
-import { BookTicketRequestBody, ScanTicketRequestBody } from '~/models/requests/tickets.requests'
+import { BookTicketRequestBody, ScanTicketRequestBody, TicketWithStatus } from '~/models/requests/tickets.requests'
 import { TokenPayload } from '~/models/requests/users.requests'
 
 import Event from '~/models/schemas/Event.schema'
@@ -32,5 +32,20 @@ export const scanTicketController = async (
   await ticketsService.scanTicket(ticket_id)
   res.json({
     message: TICKETS_MESSAGES.TICKET_SCANNED_SUCCESS
+  })
+}
+
+export const getTicketWithStatusController = async (
+  req: Request<ParamsDictionary, unknown, unknown, TicketWithStatus>,
+  res: Response
+): Promise<void> => {
+  const limit = Number(req.query.limit)
+  const page = Number(req.query.page)
+  const status = req.query.status
+
+  const result = await ticketsService.getTicketWithStatus(status, limit, page)
+  res.json({
+    message: TICKETS_MESSAGES.BOOK_TICKET_SUCCESS,
+    result
   })
 }
