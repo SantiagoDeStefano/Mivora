@@ -65,6 +65,30 @@ class TicketsService {
       qr_code
     }
   }
+
+  async scanTicket(ticket_id: UUIDv4) {
+    await databaseService.tickets(
+      `
+        UPDATE tickets SET status=$1, checked_in_at=$2 WHERE id=$3
+      `,
+      ['checked_in', new Date(), ticket_id]
+    )
+    const new_ticket = await databaseService.tickets(
+      `
+        SELECT
+          id,
+          event_id,
+          user_id,
+          status,
+          checked_in_at,
+          price_cents
+        FROM tickets
+        WHERE id=$1
+      `,
+      [ticket_id]
+    )
+    return { ticket: new_ticket.rows[0] }
+  }
 }
 
 const ticketsService = new TicketsService()

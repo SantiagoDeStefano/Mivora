@@ -11,7 +11,7 @@ import {
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { isAxiosUnprocessableEntityError } from '../../../utils/format'
-import { ErrorResponse, ValidationErrorResponse } from '../../../types/util.types'
+import { ErrorResponse, ValidationErrorResponse } from '../../../types/response.types'
 
 import Card from '../../../components/Card/Card'
 import Label from '../../../components/Label/Label'
