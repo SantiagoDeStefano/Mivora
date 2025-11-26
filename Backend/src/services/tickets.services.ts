@@ -75,26 +75,31 @@ class TicketsService {
     )
     return { ticket: ticket.rows[0] }
   }
-  async getTicketWithStatus(status: TicketStatus, limit: number, page: number) {
-    const ticketsResult = !status
-      ? await databaseService.tickets(
-          `
-            SELECT id, event_id, user_id, status, checked_in_at, price_cents, qr_code_token
-            FROM tickets
-            ORDER BY created_at DESC, id DESC 
-            LIMIT $1 OFFSET $2
-          `,
-          [limit, limit * (page - 1)]
-        )
-      : await databaseService.tickets(
-          `
-            SELECT id, event_id, user_id, status, checked_in_at, price_cents, qr_code_token
-            FROM tickets WHERE status=$1
-            ORDER BY created_at DESC, id DESC 
-            LIMIT $2 OFFSET $3
-          `,
-          [status, limit, limit * (page - 1)]
-        )
+  async searchTicketWithStatus(limit: number, page: number, search?: string, status?: TicketStatus) {
+    const statusParam = status ?? null // null = "all statuses"
+    const searchParam = search ?? null // null = "no search"
+    const ticketsResult = await databaseService.tickets(
+      `
+        SELECT 
+          tickets.id, 
+          events.title, 
+          tickets.user_id, 
+          tickets.status, 
+          tickets.checked_in_at, 
+          tickets.price_cents, 
+          tickets.qr_code_token
+        FROM tickets  
+        JOIN events ON tickets.event_id = events.id
+        WHERE
+          tickets.status = COALESCE($1::ticket_status, tickets.status)
+          AND
+          events.title ILIKE COALESCE('%' || $2::text || '%', events.title)
+        ORDER BY tickets.created_at DESC, tickets.id DESC
+        LIMIT $3 OFFSET $4
+      `,
+      [statusParam, searchParam, limit, limit * (page - 1)]
+    )
+    const totalTickets = ticketsResult.rows.length
     const tickets = await Promise.all(
       ticketsResult.rows.map(async (ticket) => {
         const qr_code = await qrCode.generateQrTicketCode(ticket.qr_code_token)
@@ -109,7 +114,7 @@ class TicketsService {
       })
     )
 
-    return { tickets }
+    return { tickets, totalTickets }
   }
 }
 

@@ -11,6 +11,7 @@ export interface ScanTicketRequestBody {
   ticket: UUIDv4
 }
 
-export interface TicketWithStatus extends Pagination {
-  status: TicketStatus
+export interface SearchTicketWithStatus extends Pagination {
+  status?: TicketStatus
+  q?: string
 }
