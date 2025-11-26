@@ -3,6 +3,39 @@
 @import "tailwindcss";
 
 /* (optional) you can still add your own CSS here */
-html { color-scheme: light dark; }
+/* Force dark appearance even when the site is served in "light" mode: */
+html { color-scheme: dark; }
 :root { --shadow-card: 0 10px 30px -12px rgba(0,0,0,.25); }
+
+/* Base dark background and text so light-mode rendering matches dark-mode */
+html, body, #root {
+	background-color: #0b1220 !important;
+	color: #e6eef8 !important;
+}
+
+/* Common overrides for Tailwind light utility classes so components render dark */
+.bg-white, .bg-white\/70, [class*="bg-white"] {
+	background-color: #0b1220 !important;
+}
+.border-gray-200, [class*="border-gray-200"] {
+	border-color: rgba(255,255,255,0.04) !important;
+}
+.border-gray-300, [class*="border-gray-300"] {
+	border-color: rgba(255,255,255,0.06) !important;
+}
+.text-gray-700, [class*="text-gray-700"] {
+	color: #dbe7f5 !important;
+}
+.text-gray-800, [class*="text-gray-800"] {
+	color: #cfe3f8 !important;
+}
+
+/* Inputs, selects, textareas: dark background + light text */
+input, textarea, select, .input, .form-control {
+	background-color: #07111b !important;
+	color: #e6eef8 !important;
+	border-color: rgba(255,255,255,0.06) !important;
+}
+
+/* Keep font smoothing */
 body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
