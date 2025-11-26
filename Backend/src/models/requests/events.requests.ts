@@ -30,6 +30,11 @@ export interface Pagination extends Query {
   page: string
 }
 
-export interface EventWithStatus extends Pagination {
-  status: EventStatus
+export interface SearchEventWithStatus extends Pagination {
+  status?: EventStatus
+  q?: string
+}
+
+export interface SearchEvents extends Pagination {
+  q: string
 }

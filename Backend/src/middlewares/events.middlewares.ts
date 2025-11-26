@@ -260,7 +260,7 @@ export const paginationValidator = validate(
           options: async (value, { req }) => {
             const num = Number(value)
             if (num > LIMIT_MIN_MAX.EVENT_PER_PAGE_MAX || num < LIMIT_MIN_MAX.EVENT_PER_PAGE_MIN) {
-              throw new Error(EVENTS_MESSAGES.MAXIMUM_EVENTS_PER_PAGE_IS_BETWEEN_1_AND_50)
+              throw new Error(EVENTS_MESSAGES.EVENTS_LENGTH_PER_PAGE_IS_BETWEEN_1_AND_50)
             }
           }
         }
@@ -281,6 +281,28 @@ export const paginationValidator = validate(
   )
 )
 
+export const searchValidator = validate(
+  checkSchema(
+    {
+      q: {
+        optional: { options: { nullable: true } },
+        isString: {
+          errorMessage: EVENTS_MESSAGES.SEARCH_MUST_BE_STRING
+        },
+        trim: true,
+        isLength: {
+          options: {
+            min: LIMIT_MIN_MAX.SEARCH_MIN,
+            max: LIMIT_MIN_MAX.SEARCH_MAX
+          },
+          errorMessage: EVENTS_MESSAGES.MAXIMUM_SEARCH_LENGTH_MUST_BE_BETWEEN_3_AND_20
+        }
+      }
+    },
+    ['query']
+  )
+)
+
 export const eventIdValidator = validate(
   checkSchema(
     {
@@ -294,7 +316,7 @@ export const eventIdValidator = validate(
               })
             }
             const event = await databaseService.events(
-              `SELECT id, organizer_id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events WHERE id=$1`,
+              `SELECT id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events WHERE id=$1`,
               [values]
             )
             if (event.rows.length <= 0) {

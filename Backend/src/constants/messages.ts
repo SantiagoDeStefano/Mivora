@@ -123,9 +123,12 @@ export const EVENTS_MESSAGES = {
   GET_CREATED_EVENTS_SUCCESSFULLY: 'Get created events successfully',
   GET_EVENT_DETAILS_IS_ONLY_ON_PUBLISHED: "Get event's details is only on published",
 
+  SEARCH_MUST_BE_STRING: 'Search values must be string',
+
   INVALID_EVENT_ID: 'Invalid EventID',
 
-  MAXIMUM_EVENTS_PER_PAGE_IS_BETWEEN_1_AND_50: 'Maximum events per page is between 1 and 50',
+  EVENTS_LENGTH_PER_PAGE_IS_BETWEEN_1_AND_50: 'Maximum events per page is between 1 and 50',
+  MAXIMUM_SEARCH_LENGTH_MUST_BE_BETWEEN_3_AND_20: 'Search length must be between 3 and 20',
   NUMBER_OF_PAGE_MUST_BE_GREATER_THAN_0: 'Number of page must be greater than 0',
 
   PUBLISH_EVENT_SUCCESS: 'Publish event successfully',

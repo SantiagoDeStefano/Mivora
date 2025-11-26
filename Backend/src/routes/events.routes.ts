@@ -3,8 +3,8 @@ import {
   cancelEventController,
   createEventController,
   getEventDetailsController,
+  getEventsController,
   getEventsWithStatusController,
-  getPublishedEventsController,
   publishEventController,
   updateEventDetailsController
 } from '~/controllers/events.controllers'
@@ -18,6 +18,7 @@ import {
   getPublishedEventStatusValidator,
   paginationValidator,
   publishEventStatusValidator,
+  searchValidator,
   updateEventStatusValidator,
   updateEventValidator
 } from '~/middlewares/events.middlewares'
@@ -55,26 +56,26 @@ eventsRouter.patch(
 )
 
 /**
- * Description: Get published event
+ * Description: Get and search all published event
  * Path: /
  * Method: GET
- * Header: { Authorization: Bearer <access_token> }
- * Query: { limit: number, page: number }
+ * Query: { limit: number, page: number, q?: string }
  */
-eventsRouter.get('/', paginationValidator, wrapRequestHandler(getPublishedEventsController))
+eventsRouter.get('/', searchValidator, paginationValidator, wrapRequestHandler(getEventsController))
 
 /**
  * Description: Get event with status
  * Path: /
  * Method: GET
  * Header: { Authorization: Bearer <access_token> }
- * Query: { limit: number, page: number, status?: string }
+ * Query: { limit: number, page: number, status?: string, q?: string }
  */
 eventsRouter.get(
   '/organizer/',
   accessTokenValidator,
   organizerValidator,
   getEventStatusValidator,
+  searchValidator,
   paginationValidator,
   wrapRequestHandler(getEventsWithStatusController)
 )

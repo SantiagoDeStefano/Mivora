@@ -3,8 +3,8 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { EVENTS_MESSAGES } from '~/constants/messages'
 import {
   CreateEventRequestBody,
-  EventWithStatus,
-  Pagination,
+  SearchEvents,
+  SearchEventWithStatus,
   UpdateEventDetailsBody
 } from '~/models/requests/events.requests'
 import { TokenPayload } from '~/models/requests/users.requests'
@@ -26,14 +26,16 @@ export const createEventController = async (
   })
 }
 
-export const getPublishedEventsController = async (
-  req: Request<ParamsDictionary, unknown, unknown, Pagination>,
+export const getEventsController = async (
+  req: Request<ParamsDictionary, unknown, unknown, SearchEvents>,
   res: Response
 ): Promise<void> => {
   const limit = Number(req.query.limit)
   const page = Number(req.query.page)
+  const search = req.query.q
+  // Easier postman uses, change to published on production
   const eventStatus = 'draft' as EventStatus
-  const result = await eventService.getPublishedEvents(limit, page, eventStatus)
+  const result = await eventService.getPublishedEvents(search, limit, page, eventStatus)
   res.json({
     message: EVENTS_MESSAGES.GET_EVENTS_SUCCESSFULLY,
     result: {
@@ -46,14 +48,15 @@ export const getPublishedEventsController = async (
 }
 
 export const getEventsWithStatusController = async (
-  req: Request<ParamsDictionary, unknown, unknown, EventWithStatus>,
+  req: Request<ParamsDictionary, unknown, unknown, SearchEventWithStatus>,
   res: Response
 ): Promise<void> => {
   const limit = Number(req.query.limit)
   const page = Number(req.query.page)
   const status = req.query.status
+  const search = req.query.q
   const organizer_id = req.decoded_authorization?.user_id as UUIDv4
-  const result = await eventService.getEventsWithStatus(organizer_id, status, limit, page)
+  const result = await eventService.getEventsWithStatus(organizer_id, limit, page, search, status)
   res.json({
     message: EVENTS_MESSAGES.GET_EVENTS_SUCCESSFULLY,
     result: {
