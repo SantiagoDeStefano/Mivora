@@ -1,15 +1,15 @@
 import { Link, useMatch } from "react-router-dom";
-
+import path from "../../constants/path";
 export default function RegisterHeader() {
-  const registerMatch = useMatch("/signup");
+  const registerMatch = useMatch(path.register);
   const isRegister = Boolean(registerMatch);
 
   return (
-<header className="py-2 border-b border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/60 backdrop-blur-md">
-  <div className="max-w-7xl mx-auto px-4">
+<header className="py-2 sticky top-0 z-40 bg-gray-950 border-b border-gray-800 text-gray-400 backdrop-blur-md">
+  <div className="max-w-7xl mx-auto px-4">  
     <nav className="flex items-center justify-between">
       {/* Sign In / Sign Up */}
-      <div className="text-lg sm:text-xl lg:text-2xl font-medium text-gray-700 dark:text-gray-200">
+      <div className="text-lg sm:text-xl lg:text-2xl font-medium text-gray-400">
         {isRegister ? "Sign Up" : "Sign In"}
       </div>
 

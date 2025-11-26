@@ -41,7 +41,7 @@ export default function NavHeader({ user }: NavHeaderProps) {
   }
 
   return (
-    <header className='sticky top-0 z-40 border-b border-gray-200/70 dark:border-gray-800/70 bg-white/70 dark:bg-gray-900/60 backdrop-blur-md'>
+    <header className='sticky top-0 z-40 bg-gray-950 border-b border-gray-800 text-gray-400'>
       <div className='max-w-7xl mx-auto px-4 py-3 flex items-center gap-3'>
         {/* Left: Brand */}
         <Link to='/' className='flex items-center gap-2 group mr-auto'>
@@ -53,7 +53,7 @@ export default function NavHeader({ user }: NavHeaderProps) {
         </Link>
 
         {/* Search */}
-        <div className='hidden sm:flex items-center gap-2 rounded-xl border border-gray-300 px-3 py-1.5 dark:border-gray-700'>
+          <div className='hidden sm:flex items-center gap-2 rounded-xl border border-gray-300 px-3 py-1.5 dark:border-gray-700'>
           <svg width='16' height='16' viewBox='0 0 24 24' fill='none' aria-hidden='true' className='opacity-60'>
             <path
               stroke='currentColor'
@@ -74,7 +74,7 @@ export default function NavHeader({ user }: NavHeaderProps) {
           {/* My Tickets */}
           <Link
             to='/attendee/tickets'
-            className='px-3 py-1.5 rounded-xl text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200'
+            className='px-3 py-1.5 rounded-xl text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400'
           >
             My Tickets
           </Link>
@@ -100,7 +100,7 @@ export default function NavHeader({ user }: NavHeaderProps) {
               </div>
               {/* ========================== */}
 
-              <span className='hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-200'>
+              <span className='hidden sm:block text-sm font-medium text-gray-400'>
                 {getLastName(profile.name)}
               </span>
             </summary>
@@ -115,20 +115,20 @@ export default function NavHeader({ user }: NavHeaderProps) {
             >
               <Link
                 to='/tickets'
-                className='flex items-center justify-between px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                className='flex items-center justify-between px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
               >
                 My Tickets
                 <span className='text-xs text-gray-400'> </span>
               </Link>
               <Link
                 to='/profile'
-                className='block px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                className='block px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
               >
                 My Account
               </Link>
               <button
                 onClick={handleLogout}
-                className='text-left w-full px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-pink-500 hover:bg-gray-100 dark:hover:bg-gray-800'
+                className='text-left w-full px-3 py-2 rounded-lg text-sm text-gray-400 dark:text-pink-500 hover:bg-gray-100 dark:hover:bg-gray-800'
               >
                 Log out
               </button>

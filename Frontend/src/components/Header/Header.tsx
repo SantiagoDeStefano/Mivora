@@ -19,8 +19,10 @@ export default function Header() {
   return (
     <header
       className={[
-        'sticky top-0 z-40 border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-gray-950/70 dark:border-gray-800',
-        scrolled ? 'shadow-sm' : 'shadow-none'
+        'sticky top-0 z-40',
+        // match footer appearance: dark background and border like footer
+        'bg-gray-950 border-b border-gray-800 text-gray-400',
+        scrolled ? 'shadow-md' : 'shadow'
       ].join(' ')}
       role='banner'
     >
@@ -49,7 +51,7 @@ export default function Header() {
               </svg>
               <input
                 placeholder='Search events...'
-                className='w-56 bg-transparent text-sm outline-none'
+                className='w-56 bg-transparent text-sm outline-none placeholder:text-gray-500 dark:placeholder:text-gray-400'
                 aria-label='Search'
               />
             </div>

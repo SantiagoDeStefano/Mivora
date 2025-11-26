@@ -2,7 +2,7 @@ import { useRoutes } from 'react-router-dom'
 import path from '././constants/path'
 
 // --- Public Pages ---
-import ExplorePage from './pages/Explore'
+import ExplorePage from './pages/Home'
 import EventDetailsPage from './pages/EventDetail'
 import TicketsPage from './pages/attendee/Tickets/Tickets'
 import LoginPage from './pages/Users/Login/Login'
@@ -16,10 +16,10 @@ import ResetPasswordModal from './pages/Users/ResetPassword'
 import AttendeeDashboard from './pages/attendee/Dashboard/Dashboard'
 
 // --- Organizer Pages ---
-import OrganizerDashboard from './pages/organizer/dashboard'
-import CreateEventPage from './pages/organizer/create-event'
-import ManageEventPage from './pages/organizer/ManageEvent'
-import QRScannerPage from './pages/organizer/scanner'
+import OrganizerDashboard from './pages/Organzier/dashboard'
+import CreateEventPage from './pages/Organzier/CreateEvent'
+import ManageEventPage from './pages/Organzier/ManageEvent'
+import QRScannerPage from './pages/Organzier/scanner'
 
 // import ProtectedRoute from "./routes/ProtectedRoute";
 // import RejectedRoute from "./routes/RejectedRoute";
