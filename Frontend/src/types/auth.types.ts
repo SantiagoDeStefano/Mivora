@@ -1,5 +1,5 @@
 import { User } from './user.types'
-import { SuccessResponse } from './util.types'
+import { SuccessResponse } from './response.types'
 
 export type GetMeResponse = SuccessResponse<User>
 

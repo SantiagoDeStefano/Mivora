@@ -6,7 +6,6 @@ import { isValidUUIDv4 } from '~/utils/uuid'
 import { Request, Response } from 'express'
 import { NextFunction } from 'express-serve-static-core'
 
-import eventService from '~/services/events.services'
 import ErrorWithStatus from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpStatus'
 import databaseService from '~/services/database.services'

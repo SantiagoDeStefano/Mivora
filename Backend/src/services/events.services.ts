@@ -18,22 +18,39 @@ class EventService {
       price_cents,
       capacity
     })
-    await databaseService.events(
-      `INSERT INTO events(
-        id, 
-        organizer_id, 
-        title, 
-        description, 
-        poster_url, 
-        location_text, 
-        start_at, 
-        end_at, 
-        price_cents, 
-        checked_in,
-        capacity, 
-        status
-        ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+    const newEvent = await databaseService.events(
+      `
+        INSERT INTO events(
+          id, 
+          organizer_id, 
+          title, 
+          description, 
+          poster_url, 
+          location_text, 
+          start_at, 
+          end_at, 
+          price_cents, 
+          checked_in,
+          capacity, 
+          status
+        )
+        VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+        )
+        RETURNING
+          id,
+          organizer_id, 
+          title, 
+          description, 
+          poster_url, 
+          location_text, 
+          start_at, 
+          end_at, 
+          price_cents,
+          checked_in, 
+          capacity, 
+          status
+      `,
       [
         new_event.id,
         new_event.organizer_id,
@@ -48,27 +65,6 @@ class EventService {
         new_event.capacity,
         new_event.status
       ]
-    )
-    const newEvent = await databaseService.events(
-      `
-        SELECT
-          id,
-          organizer_id, 
-          title, 
-          description, 
-          poster_url, 
-          location_text, 
-          start_at, 
-          end_at, 
-          price_cents,
-          checked_in, 
-          capacity, 
-          status
-        FROM
-          events
-        WHERE id=$1
-      `,
-      [new_event.id]
     )
     return newEvent.rows[0]
   }
@@ -122,33 +118,86 @@ class EventService {
 
   async updateEvent(event_id: UUIDv4, body: UpdateEventDetailsBody) {
     const { title, description, poster_url, location_text, start_at, end_at, price_cents, capacity } = body
-    await databaseService.events(
-      `UPDATE events SET title=$1, description=$2, poster_url=$3, location_text=$4, start_at=$5, end_at=$6, price_cents=$7, capacity=$8 WHERE id=$9`,
+    const event = await databaseService.events(
+      `
+        UPDATE events
+        SET
+          title = $1,
+          description = $2,
+          poster_url = $3,
+          location_text = $4,
+          start_at = $5,
+          end_at = $6,
+          price_cents = $7,
+          capacity = $8
+        WHERE id = $9
+        RETURNING
+          id,
+          organizer_id,
+          title,
+          description,
+          poster_url,
+          location_text,
+          start_at,
+          end_at,
+          price_cents,
+          checked_in,
+          capacity,
+          status
+      `,
       [title, description, poster_url, location_text, start_at, end_at, price_cents, capacity, event_id]
     )
-    const eventRow = await databaseService.events(
-      `SELECT id, organizer_id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events WHERE id=$1 LIMIT 1`,
-      [event_id]
-    )
-    return eventRow.rows[0]
+    return event.rows[0]
   }
 
   async publishEvent(event_id: UUIDv4) {
-    await databaseService.events(`UPDATE events SET status='published' WHERE id=$1`, [event_id])
-    const eventRow = await databaseService.events(
-      `SELECT id, organizer_id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events WHERE id=$1 LIMIT 1`,
+    const event = await databaseService.events(
+      `
+        UPDATE events
+        SET status = 'published'
+        WHERE id = $1
+        RETURNING
+          id,
+          organizer_id,
+          title,
+          description,
+          poster_url,
+          location_text,
+          start_at,
+          end_at,
+          price_cents,
+          checked_in,
+          capacity,
+          status
+      `,
       [event_id]
     )
-    return eventRow.rows[0]
+    return event.rows[0]
   }
 
   async cancelEvent(event_id: UUIDv4) {
-    await databaseService.events(`UPDATE events SET status='canceled' WHERE id=$1`, [event_id])
-    const eventRow = await databaseService.events(
-      `SELECT id, organizer_id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events WHERE id=$1 LIMIT 1`,
+    const event = await databaseService.events(
+      `
+        UPDATE events
+        SET status = 'canceled'
+        WHERE id = $1
+        RETURNING
+          id,
+          organizer_id,
+          title,
+          description,
+          poster_url,
+          location_text,
+          start_at,
+          end_at,
+          price_cents,
+          checked_in,
+          capacity,
+          status
+      `,
       [event_id]
     )
-    return eventRow.rows[0]
+    return event.rows[0]
   }
 }
 

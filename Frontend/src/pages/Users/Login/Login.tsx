@@ -10,7 +10,7 @@ import {
   setRefreshTokenToLocalStorage
 } from '../../../utils/auth'
 import { isAxiosUnprocessableEntityError } from '../../../utils/format'
-import { ErrorResponse, ValidationErrorResponse } from '../../../types/util.types'
+import { ErrorResponse, ValidationErrorResponse } from '../../../types/response.types'
 import { loginSchema, LoginSchema } from '../../../utils/rules'
 
 import path from '../../../constants/path'

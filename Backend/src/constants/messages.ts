@@ -139,6 +139,14 @@ export const MEDIAS_MESSAGES = {
 } as const
 
 export const TICKETS_MESSAGES = {
+  TICKET_ALREADY_CHECKED_IN: 'Ticket already checked in',
   BOOK_TICKET_SUCCESS: 'Book ticket successfully',
-  QR_CODE_TOKEN_REQUIRED: 'QR code token is required'
+
+  QR_CODE_TOKEN_REQUIRED: 'QR code token is required',
+
+  TICKET_NOT_FOUND: 'Ticket not found',
+  TICKET_SCANNED_SUCCESS: 'Ticket scanned successfully',
+  TICKET_STATUS_MUST_BE_BOOKED_CHECKED_IN: 'Ticket status must be booked or checked in',
+
+  USER_IS_NOT_EVENT_ORGANIZER: "Current user is not event's organizer"
 }

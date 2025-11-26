@@ -42,7 +42,7 @@ eventsRouter.post(
  * Description: Update event's details
  * Path: /organizer/:event_id
  * Method: PATCH
- * Query: { title: string, description?: string, poster_url?: string, localtion_text: , start_at: , end_at: , price_cents: , capacity: number, status: EventStatus }
+ * Body: { title: string, description?: string, poster_url?: string, localtion_text: , start_at: , end_at: , price_cents: , capacity: number, status: EventStatus }
  */
 eventsRouter.patch(
   '/organizer/:event_id',
