@@ -29,13 +29,21 @@ export default function MePage() {
   const toView = () => setIsEditing(false)
 
   // demo data (UI-only)
-  const me: User = {
-    name: profile.name,
-    email: profile.email,
-    avatar_url: profile.avatar_url,
-    verified: profile.verified,
-    role: profile.role
+  // const me: User = {
+  //   name: profile.name,
+  //   email: profile.email,
+  //   avatar_url: profile.avatar_url,
+  //   verified: profile.verified,
+  //   role: profile.role
+  // }
+    const me: User = {
+    name: '123',
+    email: '123@gmail.com',
+    avatar_url: 'https://mivora-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/avatar-images/tiu7tvddseqens3u2h5pvfnn2.jpg',
+    verified: 'verified',
+    role: ['attendee']
   }
+  
 
   // Hỗ trợ role là string hoặc string[]
   const roles: string[] = Array.isArray(me.role) ? me.role : me.role ? [me.role] : []

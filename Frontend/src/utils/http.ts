@@ -1,10 +1,13 @@
 import axios, { type AxiosInstance } from 'axios'
 import usersApi from '../apis/users.api'
+import { getAccessTokenFromLocalStorage } from './auth';
 
 class Http {
-  instance: AxiosInstance
+  instance: AxiosInstance;
+  private accessToken: string;
 
   constructor() {
+    this.accessToken = getAccessTokenFromLocalStorage();
     this.instance = axios.create({
       baseURL: 'http://26.35.82.76:4000',
       timeout: 10000,
@@ -15,15 +18,12 @@ class Http {
     // Add Authorization: Bearer <token> when authenticated
     this.instance.interceptors.request.use(
       (config) => {
-        const accessToken = localStorage.getItem('access_token')
-        if (accessToken) {
-          config.headers.Authorization = `Bearer ${accessToken}`
+        if (this.accessToken && config.headers) {
+          config.headers.Authorization = `Bearer ${this.accessToken}`
+          return config
         }
         return config
       },
-      (error) => {
-        return Promise.reject(error)
-      }
     )
     // Call /refresh-token to get new access_token and refresh_token
     this.instance.interceptors.response.use(

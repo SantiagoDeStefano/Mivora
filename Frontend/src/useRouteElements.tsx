@@ -16,7 +16,6 @@ import ResetPasswordModal from './pages/Users/ResetPassword'
 import AttendeeDashboard from './pages/attendee/Dashboard/Dashboard'
 
 // --- Organizer Pages ---
-import OrganizerDashboard from './pages/Organzier/dashboard'
 import CreateEventPage from './pages/Organzier/CreateEvent'
 import ManageEventPage from './pages/Organzier/ManageEvent'
 import QRScannerPage from './pages/Organzier/scanner'
@@ -53,7 +52,7 @@ export default function useRouteElements() {
       // element: <ProtectedRoute />,
       children: [
         {
-          path: path.tickets,
+          path: path.my_tickets,
           element: (
             <MainLayout>
               <TicketsPage />
@@ -80,17 +79,6 @@ export default function useRouteElements() {
         },
         // "/profile"
         // element: <ProfilePage /> },
-
-        // Organizer
-        {
-          path: path.organizer_dashboard,
-          element: (
-            <MainLayout>
-              <OrganizerDashboard />
-            </MainLayout>
-          )
-        },
-
         {
           path: path.organizer_create_event,
           element: (
@@ -98,8 +86,15 @@ export default function useRouteElements() {
               <CreateEventPage />
             </MainLayout>
           )
-        }, // "/organizer/create-event"
-        { path: path.organizer_manage_event, element: <ManageEventPage /> },
+        }, 
+        {
+          path: path.organizer_manage_event,
+          element: (
+            <UserLayout>
+              <ManageEventPage />
+            </UserLayout>
+          )
+        }, 
         { path: path.organizer_scanner, element: <QRScannerPage /> }
       ]
     },

@@ -2,190 +2,156 @@ import React from "react";
 import { Link, useParams } from "react-router-dom";
 
 type EventDetails = {
-  id: string;
-  title: string;
-  description: string;
-  date: string;        // e.g. "Fri, May 9 • 7:30 PM"
-  location: string;    // e.g. "Hall A · City Expo Center"
-  price: number;       // e.g. 350000
-  currency: string;    // e.g. "VND" | "USD"
-  posterUrl: string | null;
-  trending?: boolean;
+	id: string;
+	organizer_id?: string;
+	title: string;
+	description?: string;
+	poster_url?: string | null;
+	location_text?: string;
+	start_at?: string;
+	end_at?: string;
+	price_cents?: number;
+	checked_in?: number;
+	capacity?: number;
+	status?: string;
 };
 
 type Props = {
-  event?: EventDetails | null; // có thể truyền từ parent; nếu không có sẽ dùng demo fallback
+	event?: EventDetails | null;
 };
 
 export default function EventDetailsPage({ event }: Props) {
-  const { id } = useParams();
+	const { id } = useParams();
 
-  // Fallback demo để UI không bị trống khi event chưa có
-  const demo: EventDetails = {
-    id: id ?? "demo",
-    title: "Sample Event",
-    description:
-      "This is a demo description for the event details page. Replace it with real data once your API is wired.",
-    date: "Fri, May 9 • 7:30 PM",
-    location: "Hall A · City Expo Center",
-    price: 350000,
-    currency: "VND",
-    posterUrl: null,
-    trending: true,
-  };
+	const demo: EventDetails = {
+		id: id ?? "demo",
+		organizer_id: "unknown",
+		title: "Sample Event",
+		description:
+			"A conference exploring emerging technologies and innovation trends.",
+		start_at: "2025-11-20T09:00:00.000Z",
+		end_at: "2025-11-20T17:00:00.000Z",
+		poster_url: null,
+		location_text: "Hall A · City Expo Center",
+		price_cents: 2500,
+		checked_in: 0,
+		capacity: 150,
+		status: "published",
+	};
 
-  // Luôn dùng `ev` trong JSX để tránh đọc từ `event` (có thể null)
-  const ev = event ?? demo;
+	const ev = event ?? demo;
 
-  // Helper hiển thị giá
-  const formatPrice = (value: number, currency: string) =>
-    new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: currency === "VND" ? "VND" : currency,
-      maximumFractionDigits: currency === "VND" ? 0 : 2,
-    }).format(value);
+	const formatDate = (iso?: string) => {
+		if (!iso) return "TBA";
+		const d = new Date(iso);
+		return d.toLocaleString(undefined, {
+			weekday: "short",
+			month: "short",
+			day: "numeric",
+			hour: "numeric",
+			minute: "2-digit",
+		});
+	};
 
-  return (
-    <section id="event-details" className="py-10 sm:py-14">
-      <div className="max-w-7xl mx-auto px-4">
-        {/* Breadcrumb */}
-        <nav className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-          <Link to="/events" className="hover:underline">
-            Events
-          </Link>
-          <span className="mx-2">/</span>
-          <span className="text-gray-900 dark:text-gray-100 font-medium">
-            {ev.title}
-          </span>
-        </nav>
+	return (
+		<section id="event-details" className="py-10 sm:py-14">
+			<div className="max-w-7xl mx-auto px-4">
+				{/* Breadcrumb */}
+				<nav className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+					<Link to="/events" className="hover:underline">
+						Events
+					</Link>
+					<span className="mx-2">/</span>
+					<span className="text-gray-900 dark:text-gray-100 font-medium">{ev.title}</span>
+				</nav>
 
-        {/* Header / Cover */}
-        <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
-          <div className="relative">
-            {ev.posterUrl ? (
-              <img
-                src={ev.posterUrl}
-                alt={`${ev.title} poster`}
-                className="aspect-[16/9] w-full object-cover"
-                loading="lazy"
-              />
-            ) : (
-              <div className="aspect-[16/9] w-full bg-gradient-to-br from-gray-800 to-gray-900" />
-            )}
-            {ev.trending && (
-              <span className="absolute left-3 top-3 rounded-xl bg-pink-600/90 px-2 py-1 text-xs font-medium text-white">
-                Trending
-              </span>
-            )}
-          </div>
+				{/* Header / Cover */}
+				<div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+					<div className="relative">
+						{ev.poster_url ? (
+							<img
+								src={ev.poster_url}
+								alt={`${ev.title} poster`}
+								className="aspect-[16/9] w-full object-cover"
+								loading="lazy"
+							/>
+						) : (
+							<div className="aspect-[16/9] w-full bg-gradient-to-br from-gray-800 to-gray-900" />
+						)}
+					</div>
 
-          <div className="p-5">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="text-xs font-medium uppercase tracking-wide text-pink-600 dark:text-pink-400">
-                  {ev.date}
-                </div>
-                <h1 className="mt-1 text-2xl sm:text-3xl font-semibold">
-                  {ev.title}
-                </h1>
-                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400 flex flex-wrap items-center gap-2">
-                  <span>{ev.location}</span>
-                </div>
-              </div>
+					<div className="p-5">
+						<div className="flex items-start justify-between gap-4">
+							<div>
+								<div className="text-xs font-medium uppercase tracking-wide text-pink-600 dark:text-pink-400">{formatDate(ev.start_at)}</div>
+								<h1 className="mt-1 text-2xl sm:text-3xl font-semibold">{ev.title}</h1>
+								<div className="mt-1 text-sm text-gray-600 dark:text-gray-400 flex flex-wrap items-center gap-2">
+									<span>{ev.location_text}</span>
+								</div>
+							</div>
+						</div>
 
-              <div className="ml-auto text-sm text-gray-700 dark:text-gray-300 shrink-0">
-                From{" "}
-                <span className="font-semibold text-gray-900 dark:text-gray-100">
-                  {formatPrice(ev.price, ev.currency)}
-                </span>
-              </div>
-            </div>
+						{/* Actions */}
+						<div className="mt-4 flex flex-wrap items-center gap-2">
+							<button className="px-3 py-2 rounded-xl text-sm font-medium bg-pink-600 text-white hover:bg-pink-700">Get tickets</button>
+						</div>
+					</div>
+				</div>
 
-            {/* Actions */}
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <button className="px-3 py-2 rounded-xl text-sm font-medium bg-pink-600 text-white hover:bg-pink-700">
-                Get tickets
-              </button>
-              <a
-                href="#agenda"
-                className="px-3 py-2 rounded-xl text-sm font-medium border border-gray-200 dark:border-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-              >
-                View agenda
-              </a>
-            </div>
-          </div>
-        </div>
+				{/* Content grid */}
+				<div className="mt-6 grid gap-6 lg:grid-cols-3 items-start">
+					{/* Left: About + Organizer stacked */}
+					<div className="lg:col-span-2 space-y-6">
+						{/* About */}
+						<div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+							<div className="p-5">
+								<h2 className="text-lg font-semibold">About this event</h2>
+								<p className="mt-2 text-sm text-gray-700 dark:text-gray-300">{ev.description}</p>
+							</div>
+						</div>
 
-        {/* Content grid */}
-        <div className="mt-6 grid gap-6 lg:grid-cols-3 items-start">
-          {/* Left: About & Agenda */}
-          <div className="lg:col-span-2 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
-            <div className="p-5 space-y-5">
-              <section>
-                <h2 className="text-lg font-semibold">About this event</h2>
-                <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                  {ev.description}
-                </p>
-              </section>
+						{/* Organizer (below About) */}
+						<div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+							<div className="p-5">
+								<h3 className="text-base font-semibold">Organizer</h3>
+								<p className="mt-1 text-sm text-gray-700 dark:text-gray-300">BrandName Team</p>
+							</div>
+						</div>
+					</div>
 
-              <section id="agenda" className="pt-2">
-                <h3 className="text-base font-semibold">Agenda</h3>
-                <ul className="mt-2 list-disc pl-5 text-sm text-gray-700 dark:text-gray-300 space-y-1">
-                  <li>09:00 – Opening keynote</li>
-                  <li>10:30 – Workshops (Track A/B)</li>
-                  <li>12:30 – Lunch & expo</li>
-                  <li>14:00 – Panel: The future of AI tooling</li>
-                </ul>
-              </section>
-            </div>
-          </div>
-
-          {/* Right: Sidebar */}
-          <aside className="space-y-6">
-            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
-              <div className="p-5 space-y-3 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Price</span>
-                  <span className="font-medium">
-                    {formatPrice(ev.price, ev.currency)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Date</span>
-                  <span className="font-medium">{ev.date}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Venue</span>
-                  <span className="font-medium">{ev.location}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
-              <div className="p-5">
-                <h3 className="text-base font-semibold">Organizer</h3>
-                <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
-                  BrandName Team
-                </p>
-                <div className="mt-3 flex items-center gap-2">
-                  <a
-                    href="#contact"
-                    className="px-3 py-1.5 rounded-xl text-sm font-medium border border-gray-200 dark:border-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  >
-                    Contact
-                  </a>
-                  <a
-                    href="#follow"
-                    className="px-3 py-1.5 rounded-xl text-sm font-medium bg-gray-900 text-white dark:bg-white dark:text-gray-900 hover:opacity-90"
-                  >
-                    Follow
-                  </a>
-                </div>
-              </div>
-            </div>
-          </aside>
-        </div>
-      </div>
-    </section>
-  );
+					{/* Right: Details card */}
+					<aside className="space-y-6">
+						<div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+							<div className="p-5 space-y-3 text-sm">
+								<div className="flex items-center justify-between">
+									<span className="text-gray-600 dark:text-gray-400">Price</span>
+									<span className="font-medium">{ev.price_cents}</span>
+								</div>
+								<div className="flex items-center justify-between">
+									<span className="text-gray-600 dark:text-gray-400">Start</span>
+									<span className="font-medium">{formatDate(ev.start_at)}</span>
+								</div>
+								<div className="flex items-center justify-between">
+									<span className="text-gray-600 dark:text-gray-400">End</span>
+									<span className="font-medium">{formatDate(ev.end_at)}</span>
+								</div>
+								<div className="flex items-center justify-between">
+									<span className="text-gray-600 dark:text-gray-400">Location</span>
+									<span className="font-medium">{ev.location_text}</span>
+								</div>
+								<div className="flex items-center justify-between">
+									<span className="text-gray-600 dark:text-gray-400">Capacity</span>
+									<span className="font-medium">{ev.capacity ?? '—'}</span>
+								</div>
+								<div className="flex items-center justify-between">
+									<span className="text-gray-600 dark:text-gray-400">Checked in</span>
+									<span className="font-medium">{ev.checked_in ?? 0}</span>
+								</div>
+							</div>
+						</div>
+					</aside>
+				</div>
+			</div>
+		</section>
+	);
 }

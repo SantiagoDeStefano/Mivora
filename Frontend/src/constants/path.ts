@@ -9,15 +9,16 @@ const path = {
   logout: '/users/logout',
 
   profile: '/users/me',
-  update_profile: '/users/me/update',
+  update_profile: '/users/me',
 
   event_details: '/events/:id',
   attendee_dashboard: '/attendee/dashboard',
-  tickets: '/attendee/tickets',
+  my_tickets: '/attendee/tickets',
 
   organizer_dashboard: '/organizer/dashboard',
+
   organizer_create_event: '/organizer/create-event',
-  organizer_manage_event: '/organizer/events/:eventId',
+  organizer_manage_event: '/events/organizer',
   organizer_scanner: '/organizer/scanner'
 } as const
 
