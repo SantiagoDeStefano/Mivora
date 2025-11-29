@@ -1,14 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import { Surface } from "../../components/Card/Card";
 import Button from "../../components/Button";
 import Badge from "../../components/Badge/Badge";
 import Container from "../../components/Container/Container";
 import { Link, useNavigate } from "react-router-dom";
 
-export type Filter = {
-  when: "any" | "today" | "this-weekend";
-  price: "any" | "lt300" | "300-700" | "gt700";
-};
 
 export type EventItem = {
   id: string | number;
@@ -29,8 +25,6 @@ export type EventItem = {
 type HomePageProps = {
   events?: EventItem[] | null;
   loading?: boolean;
-  filter?: Filter;
-  onFilterChange?: (next: Filter) => void;
   onViewEvent?: (id: string | number) => void;
   onGetTickets?: (id: string | number) => void;
   onApply?: () => void;
@@ -39,12 +33,8 @@ type HomePageProps = {
 export function HomePage({
   events = null,
   loading = false,
-  filter = { when: "any", price: "any" },
-  onFilterChange,
   onGetTickets,
-  onApply,
 }: HomePageProps) {
-  const disabled = !onFilterChange;
 
   const formatDate = (iso?: string) => {
     if (!iso) return ''
@@ -69,45 +59,6 @@ export function HomePage({
       <Container>
         <header className="mb-6 sm:mb-8">
           <h2 className="mt-1 text-2xl sm:text-3xl font-semibold">Explore events</h2>
-
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <div className="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900">
-              <span className="text-gray-600 dark:text-gray-300">When</span>
-              <select
-                className="bg-transparent outline-none disabled:opacity-60"
-                value={filter.when}
-                onChange={(e) =>
-                  onFilterChange?.({ ...filter, when: e.target.value as Filter["when"] })
-                }
-                disabled={disabled}
-              >
-                <option value="any">Anytime</option>
-                <option value="today">Today</option>
-                <option value="this-weekend">This weekend</option>
-              </select>
-            </div>
-
-            <div className="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900">
-              <span className="text-gray-600 dark:text-gray-300">Price</span>
-              <select
-                className="bg-transparent outline-none disabled:opacity-60"
-                value={filter.price}
-                onChange={(e) =>
-                  onFilterChange?.({ ...filter, price: e.target.value as Filter["price"] })
-                }
-                disabled={disabled}
-              >
-                <option value="any">Any</option>
-                <option value="lt300">&lt; 300K</option>
-                <option value="300-700">300K–700K</option>
-                <option value="gt700">&gt; 700K</option>
-              </select>
-            </div>
-
-            <Button className="ml-2" onClick={onApply} disabled={!onApply}>
-              Apply
-            </Button>
-          </div>
         </header>
 
         {/* Loading skeleton */}
@@ -277,11 +228,6 @@ const mockEvents: EventItem[] = [
 // Container: manages state and navigation and passes props to ExplorePage
 export default function Explore() {
   const navigate = useNavigate()
-  const [filter, setFilter] = useState<Filter>({ when: 'any', price: 'any' })
-
-  const handleFilterChange = (nextFilter: Filter) => {
-    setFilter(nextFilter)
-  }
 
   const handleViewEvent = (id: string | number) => {
     navigate(`/events/${id}`)
@@ -291,19 +237,13 @@ export default function Explore() {
     navigate(`/events/${id}`)
   }
 
-  const handleApply = () => {
-    console.log('Applying filters:', filter)
-  }
 
   return (
     <HomePage
       events={mockEvents}
       loading={false}
-      filter={filter}
-      onFilterChange={handleFilterChange}
       onViewEvent={handleViewEvent}
       onGetTickets={handleGetTickets}
-      onApply={handleApply}
     />
   )
 }

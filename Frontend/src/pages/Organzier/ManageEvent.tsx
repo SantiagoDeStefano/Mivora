@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Container from "../../components/Container/Container";
 import Badge from "../../components/Badge/Badge";
-import { Pencil, Eye } from "lucide-react";
+import { Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 type EventStatus = "draft" | "published";
@@ -182,16 +182,6 @@ export default function ManageEventPage() {
                     </td>
                     <td className="px-3 py-3">
                       <div className="flex items-center justify-end gap-2">
-                        <button
-                          type="button"
-                          className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-1 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100 dark:hover:bg-gray-900 dark:focus:ring-gray-700 dark:focus:ring-offset-gray-950"
-                          onClick={() => {
-                            // TODO: navigate to edit page
-                            navigate(`/dashboard/events/${event.id}/edit`);
-                          }}
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </button>
                         <button
                           type="button"
                           className="inline-flex items-center gap-1 rounded-full bg-gray-900 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-1 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200 dark:focus:ring-gray-300 dark:focus:ring-offset-gray-950"

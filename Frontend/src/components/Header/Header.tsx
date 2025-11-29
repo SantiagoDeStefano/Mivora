@@ -22,17 +22,22 @@ export default function Header() {
           <SearchButton />
         </nav>
 
-
         <div className="flex items-center gap-2">
+          <NavLink to = {path.my_tickets}
+            className='px-3 py-1.5 rounded-xl text-sm font-medium border hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400'
+          >
+            My Tickets
+          </NavLink>
+
           <Button
             variant="secondary"
             className="rounded-full cursor-pointer"
             onClick={() => navigate(path.login)}
           >
-            Đăng nhập
+            Log in
           </Button>
           <Button className="rounded-full cursor-pointer" onClick={() => navigate(path.register)}>
-            Đăng ký
+            Register
           </Button>
         </div>
       </div>

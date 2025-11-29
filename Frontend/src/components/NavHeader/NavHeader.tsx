@@ -73,7 +73,7 @@ export default function NavHeader({ user }: NavHeaderProps) {
         <div className='flex items-center gap-2'>
           {/* My Tickets */}
           <NavLink to = {path.my_tickets}
-            className='px-3 py-1.5 rounded-xl text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400'
+            className='px-3 py-1.5 rounded-xl border text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400'
           >
             My Tickets
           </NavLink>
