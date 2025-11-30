@@ -1,9 +1,12 @@
-import { Link } from 'react-router-dom'
+import { NavLink, useNavigate} from 'react-router-dom'
+import Logo from '../Logo/Logo'
+import SearchButton from '../SearchButton'
 import { useContext, useState } from 'react'
 import { AppContext } from '../../contexts/app.context'
 import { useMutation } from '@tanstack/react-query'
 import { clearLocalStorage, getRefreshTokenFromLocalStorage } from '../../utils/auth'
 import usersApi from '../../apis/users.api'
+import path from '../../constants/path'
 
 interface User {
   name?: string
@@ -39,45 +42,41 @@ export default function NavHeader({ user }: NavHeaderProps) {
   const handleLogout = () => {
     logoutMutation.mutate()
   }
+  const navigate = useNavigate();
+  const navLink =
+    "text-sm font-medium text-gray-400 hover:text-pink-400 px-3 py-1.5 rounded-lg";
+
+  // check if current profile contains organizer role (supports string or array)
+  const isOrganizer = (() => {
+    const r = (profile as any)?.role
+    if (!r) return false
+    if (Array.isArray(r)) return r.map((x: string) => x.toLowerCase()).includes('organizer')
+    return String(r).toLowerCase() === 'organizer'
+  })()
 
   return (
-    <header className='sticky top-0 z-40 bg-gray-950 border-b border-gray-800 text-gray-400'>
-      <div className='max-w-7xl mx-auto px-4 py-3 flex items-center gap-3'>
-        {/* Left: Brand */}
-        <Link to='/' className='flex items-center gap-2 group mr-auto'>
-          <img
-            src='/src/assets/Logo.svg'
-            alt='Logo'
-            className='h-8 w-auto object-contain transition-transform group-hover:scale-105'
-          />
-        </Link>
-
-        {/* Search */}
-          <div className='hidden sm:flex items-center gap-2 rounded-xl border border-gray-300 px-3 py-1.5 dark:border-gray-700'>
-          <svg width='16' height='16' viewBox='0 0 24 24' fill='none' aria-hidden='true' className='opacity-60'>
-            <path
-              stroke='currentColor'
-              strokeWidth='2'
-              strokeLinecap='round'
-              d='m21 21-4.3-4.3m-8.7 2a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z'
-            />
-          </svg>
-          <input
-            placeholder='Search events...'
-            className='w-56 bg-transparent text-sm outline-none'
-            aria-label='Search'
-          />
+    <header className="sticky top-0 z-40 border-b border-gray-800 bg-gray-950 text-gray-200">
+      
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
+        <div className="flex items-center gap-2">
+          <Logo className="h-10" />
         </div>
 
+        <nav className="hidden items-center gap-1 md:flex">
+          <NavLink to="/" className={navLink} end>Home</NavLink>
+          {isOrganizer && <NavLink to={path.organizer_manage_event} className={navLink}>Events</NavLink>}
+          <NavLink to="/about" className={navLink}>About</NavLink>
+          <SearchButton />
+        </nav>
+        
         {/* Right: Quick links + Account */}
         <div className='flex items-center gap-2'>
           {/* My Tickets */}
-          <Link
-            to='/attendee/tickets'
-            className='px-3 py-1.5 rounded-xl text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400'
+          <NavLink to = {path.my_tickets}
+            className='px-3 py-1.5 rounded-xl border text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400'
           >
             My Tickets
-          </Link>
+          </NavLink>
 
           {/* Account Dropdown */}
           <details className='relative group'>
@@ -86,8 +85,8 @@ export default function NavHeader({ user }: NavHeaderProps) {
               <div className='size-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 ring-1 ring-gray-200 dark:ring-gray-700 grid place-items-center text-xs font-semibold text-gray-700 dark:text-gray-200'>
                 {!imgError ? (
                   <img
-                    src={profile.avatar_url}
-                    alt={profile.name}
+                    src={'https://mivora-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/avatar-images/tiu7tvddseqens3u2h5pvfnn2.jpg'}
+                    alt={'123'}
                     className='w-full h-full object-cover'
                     loading='lazy'
                     referrerPolicy='no-referrer'
@@ -101,31 +100,31 @@ export default function NavHeader({ user }: NavHeaderProps) {
               {/* ========================== */}
 
               <span className='hidden sm:block text-sm font-medium text-gray-400'>
-                {getLastName(profile.name)}
+                {getLastName('123')}
               </span>
             </summary>
 
             <div
-              className='absolute right-0 mt-2 w-56 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-lg p-1.5'
+              className='absolute right-0 mt-2 w-56 rounded-xl border border-gray-200 dark:border-gray-800 dark:bg-gray-900 shadow-lg p-1.5'
               onClick={(e) => {
                 // đóng dropdown khi chọn item
                 const el = e.currentTarget.parentElement as HTMLDetailsElement
                 if (el?.nodeName === 'DETAILS') el.open = false
               }}
             >
-              <Link
-                to='/tickets'
-                className='flex items-center justify-between px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+              <button
+                onClick={() => navigate(path.my_tickets)}
+                className='text-left w-full px-3 py-2 rounded-lg text-sm text-gray-400 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
               >
                 My Tickets
                 <span className='text-xs text-gray-400'> </span>
-              </Link>
-              <Link
-                to='/profile'
-                className='block px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+              </button>
+              <button
+                onClick={() => navigate(path.profile)}
+                className='text-left w-full px-3 py-2 rounded-lg text-sm text-gray-400 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
               >
                 My Account
-              </Link>
+              </button>
               <button
                 onClick={handleLogout}
                 className='text-left w-full px-3 py-2 rounded-lg text-sm text-gray-400 dark:text-pink-500 hover:bg-gray-100 dark:hover:bg-gray-800'
