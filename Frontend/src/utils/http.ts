@@ -1,8 +1,9 @@
-import axios, { type AxiosInstance } from 'axios'
+import axios, { AxiosError, type AxiosInstance } from 'axios'
 import usersApi from '../apis/users.api'
 import { clearLocalStorage, getAccessTokenFromLocalStorage, getRefreshTokenFromLocalStorage, setAccessTokenToLocalStorage, setProfileToLocalStorage, setRefreshTokenToLocalStorage } from './auth';
 import path from '../constants/path';
 import { AuthResponse } from '../types/auth.types';
+import { HttpStatusCode } from 'axios';
 
 class Http {
   instance: AxiosInstance;
@@ -48,6 +49,13 @@ class Http {
           clearLocalStorage()
         }
         return response
+      },
+      function onRejected(error: AxiosError) {
+        if(error.response?.status == HttpStatusCode.Unauthorized) {
+          clearLocalStorage()
+          window.location.reload()
+        }
+        return Promise.reject(error)
       }
     )
 
@@ -57,18 +65,18 @@ class Http {
       async (error) => {
         const originalRequest = error.config
 
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if (error.response?.status === HttpStatusCode.Unauthorized && !originalRequest._retry) {
           originalRequest._retry = true
 
           const refreshToken = localStorage.getItem('refresh_token')
 
-          // Call refresh-token endpoint
           const res = await usersApi.refreshToken({ refresh_token: refreshToken })
 
           const newAccessToken = res.data.result.access_token
-
-          // Save new access token
+          const newRefreshToken = res.data.result.refresh_token
+        
           localStorage.setItem('access_token', newAccessToken)
+          localStorage.setItem('refresh_token', newRefreshToken)
 
           // Retry original request
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`

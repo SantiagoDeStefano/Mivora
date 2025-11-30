@@ -50,9 +50,24 @@ export default function TicketSuccess({ response, onViewEvent, onGoToMyTickets }
   const { message, result } = resp;
   const ticket = result.ticket;
 
+  // Event title: prefer `resp.result.event.title` if present, then location.state.eventTitle, otherwise a sample title
+  const eventTitle = (result as any).event?.title ?? (location.state as any)?.eventTitle ?? "Sample Event Title";
+
   const priceLabel = ticket.price_cents
     ? `$${(ticket.price_cents / 100).toFixed(2)}`
     : "Free ticket";  
+
+  const isCheckedIn = Boolean(ticket.checked_in_at);
+
+  const formatCheckedIn = (iso: string | null) => {
+    if (!iso) return "Not checked in yet";
+    try {
+      const d = new Date(iso);
+      return d.toLocaleString();
+    } catch {
+      return iso;
+    }
+  };
 
   const handleViewEventInternal = (eventId: string) => {
     if (onViewEvent) return onViewEvent(eventId);
@@ -105,12 +120,10 @@ export default function TicketSuccess({ response, onViewEvent, onGoToMyTickets }
                 <div>
 
                   <div className="mt-4">
-                    <div className="text-xs uppercase tracking-wide text-gray-400">
-                      Ticket price
-                    </div>
-                    <div className="mt-1 text-3xl font-semibold text-gray-300">
-                      {priceLabel}
-                    </div>
+                    <div className="text-xm uppercase tracking-wide text-gray-400">Ticket price</div>
+                    <div className="mt-1 text-4xl font-semibold text-gray-100">{priceLabel}</div>
+                    <div className="mt-2 text-xm text-gray-300">Event: <span className="font-medium">{eventTitle}</span></div>
+                    <div className="mt-2 text-sm text-gray-500">{isCheckedIn ? `Checked in at ${formatCheckedIn(ticket.checked_in_at)}` : "Not checked in yet"}</div>
                   </div>
                 </div>
 
@@ -120,7 +133,7 @@ export default function TicketSuccess({ response, onViewEvent, onGoToMyTickets }
                   <button
                     type="button"
                     onClick={() => handleViewEventInternal(ticket.event_id)}
-                    className="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition"
+                    className="mt-4 inline-flex items-center justify-center rounded-full border border-gray-200 bg-gray-900 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-black active:bg-black/90 transition"
                   >
                     View event
                   </button>
@@ -128,7 +141,7 @@ export default function TicketSuccess({ response, onViewEvent, onGoToMyTickets }
                   <button
                     type="button"
                     onClick={handleGoToMyTicketsInternal}
-                    className="inline-flex items-center justify-center rounded-full border border-transparent bg-pink-900 px-4 py-2 text-sm font-medium text-white hover:bg-black active:bg-black/90 transition"
+                    className="mt-4 inline-flex items-center justify-center rounded-full border border-transparent bg-pink-900 px-4 py-2 text-sm font-medium text-white hover:bg-black active:bg-black/90 transition"
                   >
                     My tickets
                   </button>

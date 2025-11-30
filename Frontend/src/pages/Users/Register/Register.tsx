@@ -4,9 +4,7 @@ import { AppContext } from '../../../contexts/app.context'
 import { registerSchema, RegisterSchema } from '../../../utils/rules'
 import { useMutation } from '@tanstack/react-query'
 import {
-  setAccessTokenToLocalStorage,
-  setProfileToLocalStorage,
-  setRefreshTokenToLocalStorage
+  getProfileFromLocalStorage,
 } from '../../../utils/auth'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -42,13 +40,9 @@ export default function RegisterPage() {
 
   const onSubmit = handleSubmit((data) => {
     registerAccountMutation.mutate(data, {
-      onSuccess: async (data) => {
+      onSuccess: () => {
         setIsAuthenticated(true)
-        setAccessTokenToLocalStorage(data.data.result.access_token)
-        setRefreshTokenToLocalStorage(data.data.result.refresh_token)
-        const getMeResponse = await usersApi.getMe()
-        setProfile(getMeResponse.data.result)
-        setProfileToLocalStorage(getMeResponse.data.result)
+        setProfile(getProfileFromLocalStorage())
         navigate(path.profile)
       },
       onError: (error) => {
