@@ -22,8 +22,10 @@ const PORT = Number(envConfig.port)
 const app = express()
 app.use(
   cors({
-    origin: ['http://localhost:4000', 'http://localhost:5174', 'http://26.35.82.76:4000', 'http://26.73.34.56:5174'],
-    credentials: true
+    origin: ['http://localhost:4000', 'http://localhost:5173', 'http://26.35.82.76:4000', 'http://26.73.34.56:5173'],
+    credentials: true,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
   })
 )
 // Create upload folder

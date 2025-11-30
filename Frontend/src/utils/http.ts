@@ -14,7 +14,7 @@ class Http {
     this.accessToken = getAccessTokenFromLocalStorage();
     this.refreshToken = getRefreshTokenFromLocalStorage();
     this.instance = axios.create({
-      baseURL: 'http://localhost:4000', 
+      baseURL: 'http://26.35.82.76:4000', 
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json'
