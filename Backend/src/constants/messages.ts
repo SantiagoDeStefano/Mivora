@@ -142,8 +142,10 @@ export const MEDIAS_MESSAGES = {
 } as const
 
 export const TICKETS_MESSAGES = {
-  TICKET_ALREADY_CHECKED_IN: 'Ticket already checked in',
   BOOK_TICKET_SUCCESS: 'Book ticket successfully',
+  GET_TICKETS_SUCCESSFULLY: 'Get tickets successfully',
+
+  TICKET_ALREADY_CHECKED_IN: 'Ticket already checked in',
 
   QR_CODE_TOKEN_REQUIRED: 'QR code token is required',
 

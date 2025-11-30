@@ -39,7 +39,7 @@ export const scanTicketController = async (
   })
 }
 
-export const searchTicketWithStatusController = async (
+export const getOrSearchTicketWithStatusController = async (
   req: Request<ParamsDictionary, unknown, unknown, SearchTicketWithStatus>,
   res: Response
 ): Promise<void> => {
@@ -47,9 +47,9 @@ export const searchTicketWithStatusController = async (
   const page = Number(req.query.page)
   const status = req.query.status
   const search = req.query.q
-  const result = await ticketsService.searchTicketWithStatus(limit, page, search, status)
+  const result = await ticketsService.getOrSearchTicketWithStatus(limit, page, search, status)
   res.json({
-    message: TICKETS_MESSAGES.BOOK_TICKET_SUCCESS,
+    message: TICKETS_MESSAGES.GET_TICKETS_SUCCESSFULLY,
     result: {
       tickets: result.tickets,
       limit,

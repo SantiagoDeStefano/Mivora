@@ -3,8 +3,8 @@ import {
   cancelEventController,
   createEventController,
   getEventDetailsController,
-  getEventsController,
-  getEventsWithStatusController,
+  getOrSearchEventsController,
+  getOrSearchEventsWithStatusController,
   publishEventController,
   updateEventDetailsController
 } from '~/controllers/events.controllers'
@@ -56,15 +56,15 @@ eventsRouter.patch(
 )
 
 /**
- * Description: Get and search all published event
+ * Description: Get or search all published event
  * Path: /
  * Method: GET
  * Query: { limit: number, page: number, q?: string }
  */
-eventsRouter.get('/', searchValidator, paginationValidator, wrapRequestHandler(getEventsController))
+eventsRouter.get('/', paginationValidator, searchValidator, wrapRequestHandler(getOrSearchEventsController))
 
 /**
- * Description: Get event with status
+ * Description: Get or search event with status
  * Path: /
  * Method: GET
  * Header: { Authorization: Bearer <access_token> }
@@ -75,9 +75,9 @@ eventsRouter.get(
   accessTokenValidator,
   organizerValidator,
   getEventStatusValidator,
-  searchValidator,
   paginationValidator,
-  wrapRequestHandler(getEventsWithStatusController)
+  searchValidator,
+  wrapRequestHandler(getOrSearchEventsWithStatusController)
 )
 
 /**

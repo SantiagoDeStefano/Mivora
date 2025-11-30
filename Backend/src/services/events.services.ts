@@ -69,7 +69,7 @@ class EventService {
     return newEvent.rows[0]
   }
 
-  async getPublishedEvents(search: string, limit: number, page: number, status: EventStatus) {
+  async getOrSearchPublishedEvents(search: string, limit: number, page: number, status: EventStatus) {
     const eventsResult = !search
       ? await databaseService.events(
           `
@@ -81,7 +81,19 @@ class EventService {
         )
       : await databaseService.events(
           `
-          SELECT id, title, status
+          SELECT
+            id,
+            organizer_id,
+            title,
+            description,
+            poster_url,
+            location_text,
+            start_at,
+            end_at,
+            price_cents,
+            checked_in,
+            capacity,
+            status
           FROM events 
           WHERE title ILIKE '%' || $1 || '%' AND status = $2
           ORDER BY similarity(title, $1) DESC, title
@@ -97,7 +109,7 @@ class EventService {
       totalEvents
     }
   }
-  async getEventsWithStatus(organizer_id: UUIDv4, limit: number, page: number, search?: string, status?: EventStatus) {
+  async getOrSearchEventsWithStatus(organizer_id: UUIDv4, limit: number, page: number, search?: string, status?: EventStatus) {
     const statusParam = status ?? null // null = "all statuses"
     const searchParam = search ?? null // null = "no search"
     const eventsResult = await databaseService.events(

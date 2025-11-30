@@ -88,7 +88,6 @@ export const scanTicketValidator = validate(
 
 export const eventCreatorValidator = async (req: Request, res: Response, next: NextFunction) => {
   const { id: event_id } = (req.ticket as Ticket[])[0]
-  console.log(req.ticket)
   const { user_id } = req.decoded_authorization as TokenPayload
   const events = await databaseService.events(
     `

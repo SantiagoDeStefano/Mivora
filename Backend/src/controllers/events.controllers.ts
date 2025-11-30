@@ -26,7 +26,7 @@ export const createEventController = async (
   })
 }
 
-export const getEventsController = async (
+export const getOrSearchEventsController = async (
   req: Request<ParamsDictionary, unknown, unknown, SearchEvents>,
   res: Response
 ): Promise<void> => {
@@ -35,7 +35,7 @@ export const getEventsController = async (
   const search = req.query.q
   // Easier postman uses, change to published on production
   const eventStatus = 'draft' as EventStatus
-  const result = await eventService.getPublishedEvents(search, limit, page, eventStatus)
+  const result = await eventService.getOrSearchPublishedEvents(search, limit, page, eventStatus)
   res.json({
     message: EVENTS_MESSAGES.GET_EVENTS_SUCCESSFULLY,
     result: {
@@ -47,7 +47,7 @@ export const getEventsController = async (
   })
 }
 
-export const getEventsWithStatusController = async (
+export const getOrSearchEventsWithStatusController = async (
   req: Request<ParamsDictionary, unknown, unknown, SearchEventWithStatus>,
   res: Response
 ): Promise<void> => {
@@ -56,7 +56,7 @@ export const getEventsWithStatusController = async (
   const status = req.query.status
   const search = req.query.q
   const organizer_id = req.decoded_authorization?.user_id as UUIDv4
-  const result = await eventService.getEventsWithStatus(organizer_id, limit, page, search, status)
+  const result = await eventService.getOrSearchEventsWithStatus(organizer_id, limit, page, search, status)
   res.json({
     message: EVENTS_MESSAGES.GET_EVENTS_SUCCESSFULLY,
     result: {

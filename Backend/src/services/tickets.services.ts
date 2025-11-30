@@ -57,7 +57,7 @@ class TicketsService {
   }
 
   async scanTicket(ticket_id: UUIDv4) {
-    const ticket = await databaseService.tickets(
+    const ticketResult = await databaseService.tickets(
       `
         UPDATE tickets
         SET status = $1,
@@ -73,9 +73,18 @@ class TicketsService {
       `,
       ['checked_in', new Date(), ticket_id]
     )
-    return { ticket: ticket.rows[0] }
+    const ticket = ticketResult.rows[0]
+    await databaseService.events(
+      `
+        UPDATE events
+        SET checked_in = checked_in + 1
+        WHERE id = $1
+      `,
+      [ticket.event_id]
+    )
+    return { ticket }
   }
-  async searchTicketWithStatus(limit: number, page: number, search?: string, status?: TicketStatus) {
+  async getOrSearchTicketWithStatus(limit: number, page: number, search?: string, status?: TicketStatus) {
     const statusParam = status ?? null // null = "all statuses"
     const searchParam = search ?? null // null = "no search"
     const ticketsResult = await databaseService.tickets(

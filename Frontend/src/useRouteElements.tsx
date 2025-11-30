@@ -29,6 +29,14 @@ import UserLayout from './layouts/UserLayout'
 
 export default function useRouteElements() {
   const routeElements = useRoutes([
+    {
+      path: 'chat', // "/"
+      element: (
+        <MainLayout>
+          <ExplorePage />
+        </MainLayout>
+      )
+    },
     // Public
     {
       path: path.home, // "/"
