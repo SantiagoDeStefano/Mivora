@@ -6,6 +6,7 @@ import Container from "../../components/Container/Container";
 import { Link, useNavigate } from "react-router-dom";
 
 
+
 export type EventItem = {
   id: string | number;
   organizer_id?: string;
@@ -26,14 +27,12 @@ type HomePageProps = {
   events?: EventItem[] | null;
   loading?: boolean;
   onViewEvent?: (id: string | number) => void;
-  onGetTickets?: (id: string | number) => void;
   onApply?: () => void;
 };
 
 export function HomePage({
   events = null,
   loading = false,
-  onGetTickets,
 }: HomePageProps) {
 
   const formatDate = (iso?: string) => {
@@ -108,18 +107,10 @@ export function HomePage({
 
                   <div className="mt-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        aria-label={`Get tickets for ${e.title}`}
-                        onClick={() => onGetTickets?.(e.id)}
-                        disabled={!onGetTickets}
-                      >
-                        Get tickets
-                      </Button>
                       
                       <Link
                         to={`/events/${e.id}`}
-                        className="inline-flex items-center justify-center px-3 py-1.5 rounded-xl text-sm font-medium bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+                        className="inline-flex items-center justify-center px-3 py-1.5 rounded-xl text-sm font-medium bg-pink-500 hover:bg-gray-200 -800 dark:hover:bg-gray-700"
                       >
                         View event
                       </Link>
@@ -232,10 +223,7 @@ export default function Explore() {
   const handleViewEvent = (id: string | number) => {
     navigate(`/events/${id}`)
   }
-
-  const handleGetTickets = (id: string | number) => {
-    navigate(`/events/${id}`)
-  }
+  
 
 
   return (
@@ -243,7 +231,6 @@ export default function Explore() {
       events={mockEvents}
       loading={false}
       onViewEvent={handleViewEvent}
-      onGetTickets={handleGetTickets}
     />
   )
 }

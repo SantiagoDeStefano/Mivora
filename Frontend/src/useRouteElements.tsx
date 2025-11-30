@@ -4,7 +4,6 @@ import path from '././constants/path'
 // --- Public Pages ---
 import ExplorePage from './pages/Home'
 import EventDetailsPage from './pages/EventDetail'
-import TicketsPage from './pages/attendee/Tickets/Tickets'
 import LoginPage from './pages/Users/Login/Login'
 import RegisterPage from './pages/Users/Register/Register'
 
@@ -12,19 +11,20 @@ import MePage from './pages/Users/Me'
 import ForgotPasswordModal from './pages/Users/ForgotPassword'
 import ResetPasswordModal from './pages/Users/ResetPassword'
 
-// -- Attendee Pages ---
-import AttendeeDashboard from './pages/attendee/Dashboard/Dashboard'
-
 // --- Organizer Pages ---
-import CreateEventPage from './pages/Organzier/CreateEvent'
-import ManageEventPage from './pages/Organzier/ManageEvent'
-import QRScannerPage from './pages/Organzier/scanner'
+import CreateEventPage from './pages/Organzier/CreateEvent/CreateEvent'
+import ManageEventPage from './pages/Organzier/ManageEvent/ManageEvent'
+import CreatedEventDetailsPage from './pages/Organzier/CreatedEventDetails/CreatedEventDetails'
+import UpdateEventPage from './pages/Organzier/UpdateEvent/UpdateEvent'
+
+import BookTicketPage from './pages/BookTickets/BookTickets'
 
 // import ProtectedRoute from "./routes/ProtectedRoute";
 // import RejectedRoute from "./routes/RejectedRoute";
 import MainLayout from './layouts/MainLayout'
 import RegisterLayout from './layouts/RegisterLayout'
 import UserLayout from './layouts/UserLayout'
+
 
 export default function useRouteElements() {
   const routeElements = useRoutes([
@@ -51,14 +51,6 @@ export default function useRouteElements() {
       path: '/',
       // element: <ProtectedRoute />,
       children: [
-        {
-          path: path.my_tickets,
-          element: (
-            <MainLayout>
-              <TicketsPage />
-            </MainLayout>
-          )
-        }, // "/tickets"<TicketsPage /> },
 
         {
           path: path.profile,
@@ -69,22 +61,14 @@ export default function useRouteElements() {
           )
         },
 
-        {
-          path: path.attendee_dashboard,
-          element: (
-            <UserLayout>
-              <AttendeeDashboard user={undefined} events={[]} tickets={[]} />
-            </UserLayout>
-          )
-        },
         // "/profile"
         // element: <ProfilePage /> },
         {
           path: path.organizer_create_event,
           element: (
-            <MainLayout>
+            <UserLayout>
               <CreateEventPage />
-            </MainLayout>
+            </UserLayout>
           )
         }, 
         {
@@ -94,8 +78,31 @@ export default function useRouteElements() {
               <ManageEventPage />
             </UserLayout>
           )
-        }, 
-        { path: path.organizer_scanner, element: <QRScannerPage /> }
+        },
+        {
+          path: path.organizer_created_event_details,
+          element: (
+            <UserLayout>
+              <CreatedEventDetailsPage />
+            </UserLayout>
+          )
+        },
+        {
+          path: path.organizer_update_event,
+          element: (
+            <UserLayout>
+              <UpdateEventPage />
+            </UserLayout>
+          )
+        },
+        {
+          path: path.book_ticket,
+          element: (
+            <UserLayout>
+              <BookTicketPage />
+            </UserLayout>
+          )
+        }
       ]
     },
 

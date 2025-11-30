@@ -1,13 +1,17 @@
 import axios, { type AxiosInstance } from 'axios'
 import usersApi from '../apis/users.api'
-import { getAccessTokenFromLocalStorage } from './auth';
+import { clearLocalStorage, getAccessTokenFromLocalStorage, getRefreshTokenFromLocalStorage, setAccessTokenToLocalStorage, setProfileToLocalStorage, setRefreshTokenToLocalStorage } from './auth';
+import path from '../constants/path';
+import { AuthResponse } from '../types/auth.types';
 
 class Http {
   instance: AxiosInstance;
   private accessToken: string;
-
+  private refreshToken: string;
+  
   constructor() {
     this.accessToken = getAccessTokenFromLocalStorage();
+    this.refreshToken = getRefreshTokenFromLocalStorage();
     this.instance = axios.create({
       baseURL: 'http://26.35.82.76:4000',
       timeout: 10000,
@@ -25,6 +29,28 @@ class Http {
         return config
       },
     )
+    
+    // Handle login, logout, register
+    this.instance.interceptors.response.use(
+      async (response) => {
+        const {url} = response.config
+        if (url === path.login || url === path.register) {
+          const data = response.data as AuthResponse
+          this.accessToken = data.result.access_token
+          this.refreshToken = data.result.refresh_token 
+          setAccessTokenToLocalStorage(this.accessToken)
+          setRefreshTokenToLocalStorage(this.refreshToken)
+          const getMeResponse = await usersApi.getMe()
+          setProfileToLocalStorage(getMeResponse.data.result)
+        } else if (url === path.logout) {
+          this.accessToken = "";
+          this.refreshToken = "";
+          clearLocalStorage()
+        }
+        return response
+      }
+    )
+
     // Call /refresh-token to get new access_token and refresh_token
     this.instance.interceptors.response.use(
       (response) => response,

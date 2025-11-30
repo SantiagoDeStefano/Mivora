@@ -6,7 +6,7 @@ import React from 'react'
 
 interface AppContextInterface {
   isAuthenticated: boolean
-  setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>
+  setIsAuthenticated: React.Dispatch<React.SetStateAction <boolean>>
   profile: User | null
   setProfile: React.Dispatch<React.SetStateAction<User | null>>
   reset: () => void

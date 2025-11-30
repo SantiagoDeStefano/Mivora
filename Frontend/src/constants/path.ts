@@ -13,13 +13,17 @@ const path = {
 
   event_details: '/events/:id',
   attendee_dashboard: '/attendee/dashboard',
-  my_tickets: '/attendee/tickets',
-
-  organizer_dashboard: '/organizer/dashboard',
 
   organizer_create_event: '/organizer/create-event',
+  organizer_created_event_details: '/events/organizer/:id',
   organizer_manage_event: '/events/organizer',
-  organizer_scanner: '/organizer/scanner'
+  organizer_update_event: '/events/organizer/:id/edit',
+  organizer_publish_event: '/events/organizer/:id/publish',
+  organizer_cancel_event: '/events/organizer/:id/cancel',
+
+  my_tickets: '/attendee/tickets',
+  book_ticket: '/tickets/book',
+  scan_ticket: '/tickets/scan'
 } as const
 
 export default path

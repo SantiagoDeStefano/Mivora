@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import Container from "../../components/Container/Container";
-import Badge from "../../components/Badge/Badge";
+import Container from "../../../components/Container/Container";
+import Badge from "../../../components/Badge/Badge";
 import { Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import path from "../../../constants/path";
 
-type EventStatus = "draft" | "published";
+
+type EventStatus = "draft" | "published" | "canceled";
 
 interface EventItem {
   id: string;
@@ -18,6 +20,7 @@ const sampleEvents: EventItem[] = [
   { id: "evt_2", name: "Summer Jam", date: "2025-08-15", status: "draft" },
   { id: "evt_3", name: "Tech Expo 2025", date: "2025-09-20", status: "published" },
   { id: "evt_4", name: "Indie Film Fest", date: "2025-10-05", status: "draft" },
+  { id: "evt_5", name: "Canceled Gala", date: "2025-07-01", status: "canceled" },
 ];
 
 export default function ManageEventPage() {
@@ -55,6 +58,7 @@ export default function ManageEventPage() {
   const total = events.length;
   const totalDraft = events.filter((e) => e.status === "draft").length;
   const totalPublished = events.filter((e) => e.status === "published").length;
+  const totalCanceled = events.filter((e) => e.status === "canceled").length;
 
   return (
     <section className="py-10 sm:py-14">
@@ -66,9 +70,10 @@ export default function ManageEventPage() {
               Manage Events
             </h2>
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <Badge tone="neutral">Total: {total}</Badge>
+              <Badge tone="pink">Total: {total}</Badge>
               <Badge tone="neutral">Draft: {totalDraft}</Badge>
               <Badge tone="success">Published: {totalPublished}</Badge>
+              <Badge tone="warn">Canceled: {totalCanceled}</Badge>
             </div>
           </div>
 
@@ -77,7 +82,7 @@ export default function ManageEventPage() {
             className="inline-flex items-center justify-center rounded-full bg-pink-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2 dark:focus:ring-offset-gray-950"
             onClick={() => {
               // TODO: navigate to create event page
-              navigate("/dashboard/events/create");
+              navigate(path.organizer_create_event);
             }}
           >
             Create event
@@ -107,6 +112,7 @@ export default function ManageEventPage() {
                 { label: "All", value: "all" as const },
                 { label: "Draft", value: "draft" as const },
                 { label: "Published", value: "published" as const },
+                { label: "Canceled", value: "canceled" as const },
               ].map((opt) => {
                 const active = statusFilter === opt.value;
                 return (
@@ -176,18 +182,20 @@ export default function ManageEventPage() {
                     <td className="px-3 py-3">
                       {event.status === "published" ? (
                         <Badge tone="success">Published</Badge>
+                      ) : event.status === "canceled" ? (
+                        <Badge tone="warn">Canceled</Badge>
                       ) : (
                         <Badge tone="neutral">Draft</Badge>
                       )}
                     </td>
                     <td className="px-3 py-3">
                       <div className="flex items-center justify-end gap-2">
-                        <button
+                        <button 
                           type="button"
                           className="inline-flex items-center gap-1 rounded-full bg-gray-900 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-1 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200 dark:focus:ring-gray-300 dark:focus:ring-offset-gray-950"
                           onClick={() => {
                             // TODO: navigate to event details
-                            navigate(`/dashboard/events/${event.id}`);
+                            navigate(path.organizer_created_event_details.replace(":id", event.id));
                           }}
                         >
                           <Eye className="h-3.5 w-3.5" />
