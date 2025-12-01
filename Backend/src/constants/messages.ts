@@ -41,6 +41,8 @@ export const USERS_MESSAGES = {
   INVALID_USER_ID: 'Invalid user ID',
   INVALID_USERNAME: 'Username must be between 4-15 characters and contain only letters, numbers, underscore',
   INVALID_EMAIL_VERIFY_TOKEN: 'Invalid email verification token',
+  IMAGE_IS_REQUIRED: 'Image is required',
+  IMAGE_TOO_LARGE: 'Image size must be less than 1MB',
 
   LOGIN_SUCCESS: 'Login successfully',
   LOGOUT_SUCCESS: 'Logout successfully',
