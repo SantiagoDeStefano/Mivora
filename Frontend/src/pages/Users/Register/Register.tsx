@@ -3,9 +3,7 @@ import { useContext } from 'react'
 import { AppContext } from '../../../contexts/app.context'
 import { registerSchema, RegisterSchema } from '../../../utils/rules'
 import { useMutation } from '@tanstack/react-query'
-import {
-  getProfileFromLocalStorage,
-} from '../../../utils/auth'
+import { getProfileFromLocalStorage } from '../../../utils/auth'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { isAxiosUnprocessableEntityError } from '../../../utils/format'

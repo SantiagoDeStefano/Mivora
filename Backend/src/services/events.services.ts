@@ -73,8 +73,23 @@ class EventService {
     const eventsResult = !search
       ? await databaseService.events(
           `
-          SELECT id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events WHERE status=$1
-          ORDER BY created_at DESC, id DESC 
+          SELECT 
+            events.id,
+            users.name,
+            events.title,
+            events.description,
+            events.poster_url,
+            events.location_text,
+            events.start_at,
+            events.end_at,
+            events.price_cents,
+            events.checked_in,
+            events.capacity,
+            events.status
+          FROM events 
+          JOIN users ON events.organizer_id = users.id
+          WHERE status=$1
+          ORDER BY events.created_at DESC, events.id DESC 
           LIMIT $2 OFFSET $3
         `,
           [status, limit, limit * (page - 1)]
@@ -82,21 +97,22 @@ class EventService {
       : await databaseService.events(
           `
           SELECT
-            id,
-            organizer_id,
-            title,
-            description,
-            poster_url,
-            location_text,
-            start_at,
-            end_at,
-            price_cents,
-            checked_in,
-            capacity,
-            status
+            events.id,
+            users.name,
+            events.title,
+            events.description,
+            events.poster_url,
+            events.location_text,
+            events.start_at,
+            events.end_at,
+            events.price_cents,
+            events.checked_in,
+            events.capacity,
+            events.status
           FROM events 
-          WHERE title ILIKE '%' || $1 || '%' AND status = $2
-          ORDER BY similarity(title, $1) DESC, title
+          JOIN users ON events.organizer_id = users.id
+          WHERE events.title ILIKE '%' || $1 || '%' AND events.status = $2
+          ORDER BY similarity(events.title, $1) DESC, events.title
           LIMIT $3 OFFSET $4
         `,
           [search, status, limit, limit * (page - 1)]
@@ -109,7 +125,13 @@ class EventService {
       totalEvents
     }
   }
-  async getOrSearchEventsWithStatus(organizer_id: UUIDv4, limit: number, page: number, search?: string, status?: EventStatus) {
+  async getOrSearchEventsWithStatus(
+    organizer_id: UUIDv4,
+    limit: number,
+    page: number,
+    search?: string,
+    status?: EventStatus
+  ) {
     const statusParam = status ?? null // null = "all statuses"
     const searchParam = search ?? null // null = "no search"
     const eventsResult = await databaseService.events(
