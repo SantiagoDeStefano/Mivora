@@ -64,75 +64,80 @@ export default function NavHeader({ user }: NavHeaderProps) {
 
         <nav className="hidden items-center gap-1 md:flex">
           <NavLink to="/" className={navLink} end>Home</NavLink>
-          {isOrganizer && <NavLink to={path.organizer_manage_event} className={navLink}>Events</NavLink>}
+          {isOrganizer ? (
+            <NavLink to={path.organizer_manage_event} className={navLink}>Events</NavLink>
+          ) : (
+            <NavLink to={path.home} className={navLink}>Events</NavLink>
+          )}
           <NavLink to="/about" className={navLink}>About</NavLink>
           <SearchButton />
         </nav>
         
         {/* Right: Quick links + Account */}
         <div className='flex items-center gap-2'>
-          {/* My Tickets */}
-          <NavLink to = {path.my_tickets}
-            className='px-3 py-1.5 rounded-xl border text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400'
-          >
-            My Tickets
-          </NavLink>
-
-          {/* Account Dropdown */}
-          <details className='relative group'>
-            <summary className='list-none flex items-center gap-2 px-1.5 py-1.5 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800'>
-              {/* ==== AVATAR (đã chèn) ==== */}
-              <div className='size-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 ring-1 ring-gray-200 dark:ring-gray-700 grid place-items-center text-xs font-semibold text-gray-700 dark:text-gray-200'>
-                {!imgError ? (
-                  <img
-                    src={'https://mivora-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/avatar-images/tiu7tvddseqens3u2h5pvfnn2.jpg'}
-                    alt={'123'}
-                    className='w-full h-full object-cover'
-                    loading='lazy'
-                    referrerPolicy='no-referrer'
-                    onError={() => setImgError(true)}
-                  />
-                ) : (
-                  getInitials(user?.name)
-                )}
-                +
-              </div>
-              {/* ========================== */}
-
-              <span className='hidden sm:block text-sm font-medium text-gray-400'>
-                {getLastName('123')}
-              </span>
-            </summary>
-
-            <div
-              className='absolute right-0 mt-2 w-56 rounded-xl border border-gray-200 dark:border-gray-800 dark:bg-gray-900 shadow-lg p-1.5'
-              onClick={(e) => {
-                // đóng dropdown khi chọn item
-                const el = e.currentTarget.parentElement as HTMLDetailsElement
-                if (el?.nodeName === 'DETAILS') el.open = false
-              }}
-            >
-              <button
-                onClick={() => navigate(path.my_tickets)}
-                className='text-left w-full px-3 py-2 rounded-lg text-sm text-gray-400 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+          {isAuthenticated ? (
+            <>
+              {/* My Tickets (only visible when authenticated) */}
+              <NavLink
+                to={path.my_tickets}
+                className='px-3 py-1.5 rounded-xl border text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400'
               >
                 My Tickets
-                <span className='text-xs text-gray-400'> </span>
-              </button>
-              <button
-                onClick={() => navigate(path.profile)}
-                className='text-left w-full px-3 py-2 rounded-lg text-sm text-gray-400 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
-              >
-                My Account
-              </button>
-              <button
-                onClick={handleLogout}
-                className='text-left w-full px-3 py-2 rounded-lg text-sm text-gray-400 dark:text-pink-500 hover:bg-gray-100 dark:hover:bg-gray-800'
-              >
-                Log out
-              </button>
-            </div>
-          </details>
+              </NavLink>
+
+              {/* Account Dropdown */}
+              <details className='relative group'>
+                <summary className='list-none flex items-center gap-2 px-1.5 py-1.5 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800'>
+                  <div className='size-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 ring-1 ring-gray-200 dark:ring-gray-700 grid place-items-center text-xs font-semibold text-gray-700 dark:text-gray-200'>
+                    {!imgError ? (
+                      <img
+                        src={'https://mivora-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/avatar-images/tiu7tvddseqens3u2h5pvfnn2.jpg'}
+                        alt={'avatar'}
+                        className='w-full h-full object-cover'
+                        loading='lazy'
+                        referrerPolicy='no-referrer'
+                        onError={() => setImgError(true)}
+                      />
+                    ) : (
+                      getInitials(user?.name)
+                    )}
+                  </div>
+
+                  <span className='hidden sm:block text-sm font-medium text-gray-400'>
+                    {getLastName((profile as any)?.name ?? '')}
+                  </span>
+                </summary>
+
+                <div
+                  className='absolute right-0 mt-2 w-56 rounded-xl border border-gray-200 dark:border-gray-800 dark:bg-gray-900 shadow-lg p-1.5'
+                  onClick={(e) => {
+                    const el = e.currentTarget.parentElement as HTMLDetailsElement
+                    if (el?.nodeName === 'DETAILS') el.open = false
+                  }}
+                >
+                  <button
+                    onClick={() => navigate(path.my_tickets)}
+                    className='text-left w-full px-3 py-2 rounded-lg text-sm text-gray-400 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  >
+                    My Tickets
+                    <span className='text-xs text-gray-400'> </span>
+                  </button>
+                  <button
+                    onClick={() => navigate(path.profile)}
+                    className='text-left w-full px-3 py-2 rounded-lg text-sm text-gray-400 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  >
+                    My Account
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className='text-left w-full px-3 py-2 rounded-lg text-sm text-gray-400 dark:text-pink-500 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  >
+                    Log out
+                  </button>
+                </div>
+              </details>
+            </>
+          ) : null}
         </div>
       </div>
 

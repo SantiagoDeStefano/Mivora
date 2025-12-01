@@ -1,13 +1,11 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useContext } from 'react'
 import { AppContext } from '../../../contexts/app.context'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useMutation } from '@tanstack/react-query'
 import {
-  setAccessTokenToLocalStorage,
-  setProfileToLocalStorage,
-  setRefreshTokenToLocalStorage
+  getProfileFromLocalStorage
 } from '../../../utils/auth'
 import { isAxiosUnprocessableEntityError } from '../../../utils/format'
 import { ErrorResponse, ValidationErrorResponse } from '../../../types/response.types'
@@ -23,7 +21,6 @@ import usersApi from '../../../apis/users.api'
 
 export default function Login() {
   const { setIsAuthenticated, setProfile } = useContext(AppContext)
-  const navigate = useNavigate()
 
   const {
     register,
@@ -42,19 +39,15 @@ export default function Login() {
 
   const onSubmit = handleSubmit((data) => {
     loginAccountMutation.mutate(data, {
-      onSuccess: async (data) => {
+      onSuccess: () => {
         setIsAuthenticated(true)
-        setAccessTokenToLocalStorage(data.data.result.access_token)
-        setRefreshTokenToLocalStorage(data.data.result.refresh_token)
-        const getMeResponse = await usersApi.getMe()
-        setProfile(getMeResponse.data.result)
-        setProfileToLocalStorage(getMeResponse.data.result)
-        navigate(path.profile)
+        setProfile(getProfileFromLocalStorage())
       },
       onError: (error) => {
         if (isAxiosUnprocessableEntityError<ErrorResponse<ValidationErrorResponse>>(error)) {
           const formError = error.response?.data.errors
           if (formError) {
+            console.log('formError', formError)
             Object.keys(formError).forEach((key) => {
               setError(key as keyof LoginSchema, {
                 message: formError[key].msg,
@@ -86,7 +79,7 @@ export default function Login() {
                   register={register}
                   placeHolder='you@email.com'
                   className='mt-1'
-                  errorMessages={errors.password?.message}
+                  errorMessages={errors.email?.message}
                 />
               </div>
 

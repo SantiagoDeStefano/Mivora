@@ -1,25 +1,98 @@
 // src/pages/Users/Profile/UpdateProfile.tsx
 import React from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import Container from '../../../components/Container'
 import Button from '../../../components/Button'
 import Badge from '../../../components/Badge'
-import type { Profile } from '../../../types/user.types'
+import { useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
 import { Pencil } from 'lucide-react'
+import { useContext } from 'react'
+import { AppContext } from '../../../contexts/app.context'
+import type { User } from '../../../types/user.types'
+import { updateMe, UpdateMeSchema } from '../../../utils/rules'
+import { useMutation } from '@tanstack/react-query'
+import usersApi from '../../../apis/users.api'
+import { setProfileToLocalStorage } from '../../../utils/auth'
+import { isAxiosUnprocessableEntityError } from '../../../utils/format'
+import { ErrorResponse, ValidationErrorResponse } from '../../../types/response.types'
+import Input from '../../../components/Input/Input'
+import path from '../../../constants/path'
 
-interface Props {
-  profile: Profile
-  onCancel: () => void // UI-only: gắn logic điều hướng sau
-  onSaved: () => void // UI-only: gắn logic lưu sau
+type UpdateProfileProps = {
+  profile?: User | null
+  onCancel?: () => void
+  onSaved?: () => void
 }
 
-export default function UpdateProfile({ profile, onCancel, onSaved }: Props) {
-  const me = profile
-  const isVerified = me.verified === 'verified'
+export default function UpdateProfile({ profile: propProfile, onCancel: onCancelProp, onSaved }: UpdateProfileProps) {
+  const { profile: ctxProfile, setProfile } = useContext(AppContext)
+  const navigate = useNavigate()
 
-  // Hỗ trợ role là string hoặc string[]
-  const roles: string[] = Array.isArray(me.role) ? me.role : me.role ? [me.role] : []
-  const isAttendee = roles.map((r) => r.toLowerCase()).includes('attendee')
+  // prefer prop profile when provided (Me page passes it), otherwise use context
+  const sourceProfile = propProfile ?? ctxProfile
+
+  // provide a safe fallback for `profile` to avoid null checks throughout the component
+  const me: User =
+    sourceProfile ??
+    ({
+      name: '',
+      email: '',
+      avatar_url: '',
+      verified: 'unverified',
+      role: ['attendee']
+    } as User)
+
+  const isVerified = me.verified === 'verified'
+  const isAttendee = Array.isArray(me.role) ? me.role.includes('attendee') : me.role === 'attendee'
+
+  const onCancel = onCancelProp ?? (() => navigate(path.profile))
+
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors }
+  } = useForm<UpdateMeSchema>({
+    resolver: yupResolver(updateMe) as any,
+    defaultValues: {
+      name: me.name,
+      role: Array.isArray(me.role) && me.role.includes('organizer') ? 'organizer' : 'attendee'
+    }
+  })
+
+  const updateMeMutation = useMutation({
+    mutationFn: (body: UpdateMeSchema) => {
+      return usersApi.updateMe(body)
+    }
+  })
+
+  const onSubmitUpdateMe = handleSubmit((data) => {
+    updateMeMutation.mutate(data, {
+      onSuccess: (response) => {
+        setProfileToLocalStorage(response.data.result)
+        setProfile(response.data.result)
+        // notify parent if provided (Me page passes onSaved)
+        if (typeof onSaved === 'function') onSaved()
+        // navigate to profile page after successful update
+        navigate(path.profile)
+      },
+      onError: (error) => {
+        if (isAxiosUnprocessableEntityError<ErrorResponse<ValidationErrorResponse>>(error)) {
+          const formError = error.response?.data.errors
+          if (formError) {
+            console.log('formError', formError)
+            Object.keys(formError).forEach((key) => {
+              setError(key as keyof UpdateMeSchema, {
+                message: formError[key].msg,
+                type: 'Server'
+              })
+            })
+          }
+        }
+      }
+    })
+  })
 
   return (
     <section id='profile' className='py-10 sm:py-14'>
@@ -35,8 +108,8 @@ export default function UpdateProfile({ profile, onCancel, onSaved }: Props) {
             <Button type='button' variant='secondary' onClick={onCancel}>
               Cancel
             </Button>
-            <Button type='button' onClick={onSaved}>
-              Save changes
+            <Button type='button' onClick={onSubmitUpdateMe} disabled={updateMeMutation.status === 'pending'}>
+              {updateMeMutation.status === 'pending' ? 'Saving...' : 'Save changes'}
             </Button>
           </div>
         </div>
@@ -126,17 +199,17 @@ export default function UpdateProfile({ profile, onCancel, onSaved }: Props) {
             <div className='mt-6'>
               <h2 className='text-lg font-semibold mb-4 text-center'>Account Information</h2>
 
-              {/* UI-only: không gắn submit, không state */}
-              <form className='flex flex-col items-center gap-5'>
+              <form className='flex flex-col items-center gap-5' onSubmit={onSubmitUpdateMe} noValidate>
                 <div className='w-full max-w-sm'>
                   <label htmlFor='pf-name' className='block text-sm font-medium mb-1 text-center sm:text-left'>
                     Full name
                   </label>
-                  <input
+                  <Input<UpdateMeSchema>
                     id='pf-name'
                     type='text'
-                    defaultValue={me.name}
-                    className='w-full max-w-sm rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-pink-500/60'
+                    className='...'
+                    errorMessages={errors.name?.message}
+                    {...register('name')}
                   />
                 </div>
 
@@ -144,7 +217,7 @@ export default function UpdateProfile({ profile, onCancel, onSaved }: Props) {
                   <label htmlFor='pf-email' className='block text-sm font-medium mb-1 text-center sm:text-left'>
                     Email
                   </label>
-                  <input
+                  <Input<UpdateMeSchema>
                     id='pf-email'
                     type='email'
                     defaultValue={me.email}
@@ -157,7 +230,7 @@ export default function UpdateProfile({ profile, onCancel, onSaved }: Props) {
                   <label htmlFor='pf-verified' className='block text-sm font-medium mb-1 text-center sm:text-left'>
                     Verification
                   </label>
-                  <input
+                  <Input<UpdateMeSchema>
                     id='pf-verified'
                     type='text'
                     defaultValue={isVerified ? 'Verified' : 'Unverified'}
@@ -172,19 +245,18 @@ export default function UpdateProfile({ profile, onCancel, onSaved }: Props) {
                     Role
                   </label>
 
-                  <select
-                    id='pf-role'
-                    defaultValue={me.role}
-                    className='w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:ring-2 focus:ring-pink-500/60'
-                  >
-                    <option value='attendee'>Attendee</option>
-                    <option value='organizer'>Organizer</option>
-                  </select>
+              <select {...register("role")} className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:ring-2 focus:ring-pink-500/60" defaultValue="organizer">
+                <option value="organizer">Organizer</option>
+              </select>
+
+                  {errors.role && (
+                    <p className='mt-1 text-xs text-red-500 text-center sm:text-left'>
+                      {errors.role.message}
+                    </p>
+                  )}
 
                   <p className='mt-1 text-xs text-gray-500 text-center sm:text-left'>Choose your role.</p>
                 </div>
-
-                {/* Nếu cần thêm fields khác, thêm ở đây theo cùng style */}
               </form>
             </div>
           </div>

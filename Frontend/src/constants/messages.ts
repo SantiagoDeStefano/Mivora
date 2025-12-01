@@ -41,6 +41,7 @@ export const USERS_MESSAGES = {
   INVALID_USER_ID: 'Invalid user ID',
   INVALID_USERNAME: 'Username must be between 4-15 characters and contain only letters, numbers, underscore',
   INVALID_EMAIL_VERIFY_TOKEN: 'Invalid email verification token',
+  INVALID_IMAGE: 'Invalid image',
 
   LOGIN_SUCCESS: 'Login successfully',
   LOGOUT_SUCCESS: 'Logout successfully',
@@ -52,6 +53,7 @@ export const USERS_MESSAGES = {
   NAME_MUST_BE_A_STRING: 'Name must be a string',
 
   OLD_PASSWORD_DOES_NOT_MATCH: 'Old password does not match',
+  ONE_USER_PER_EVENT_ONLY: 'One user per event only',
 
   PASSWORD_IS_REQUIRED: 'Password is required',
   PASSWORD_MUST_BE_A_STRING: 'Password must be a string',
@@ -122,9 +124,12 @@ export const EVENTS_MESSAGES = {
   GET_CREATED_EVENTS_SUCCESSFULLY: 'Get created events successfully',
   GET_EVENT_DETAILS_IS_ONLY_ON_PUBLISHED: "Get event's details is only on published",
 
+  SEARCH_MUST_BE_STRING: 'Search values must be string',
+
   INVALID_EVENT_ID: 'Invalid EventID',
 
-  MAXIMUM_EVENTS_PER_PAGE_IS_BETWEEN_1_AND_50: 'Maximum events per page is between 1 and 50',
+  EVENTS_LENGTH_PER_PAGE_IS_BETWEEN_1_AND_50: 'Maximum events per page is between 1 and 50',
+  MAXIMUM_SEARCH_LENGTH_MUST_BE_BETWEEN_3_AND_20: 'Search length must be between 3 and 20',
   NUMBER_OF_PAGE_MUST_BE_GREATER_THAN_0: 'Number of page must be greater than 0',
 
   PUBLISH_EVENT_SUCCESS: 'Publish event successfully',
@@ -138,5 +143,16 @@ export const MEDIAS_MESSAGES = {
 } as const
 
 export const TICKETS_MESSAGES = {
-  BOOK_TICKET_SUCCESS: 'Book ticket successfully'
+  BOOK_TICKET_SUCCESS: 'Book ticket successfully',
+  GET_TICKETS_SUCCESSFULLY: 'Get tickets successfully',
+
+  TICKET_ALREADY_CHECKED_IN: 'Ticket already checked in',
+
+  QR_CODE_TOKEN_REQUIRED: 'QR code token is required',
+
+  TICKET_NOT_FOUND: 'Ticket not found',
+  TICKET_SCANNED_SUCCESS: 'Ticket scanned successfully',
+  TICKET_STATUS_MUST_BE_BOOKED_CHECKED_IN: 'Ticket status must be booked or checked in',
+
+  USER_IS_NOT_EVENT_ORGANIZER: "Current user is not event's organizer"
 }

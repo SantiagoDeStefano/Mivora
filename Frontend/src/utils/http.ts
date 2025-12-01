@@ -18,7 +18,7 @@ class Http {
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json'
-      }
+      },  
     })
     // Add Authorization: Bearer <token> when authenticated
     this.instance.interceptors.request.use(

@@ -7,7 +7,8 @@ const path = {
   forgot_password: '/users/forgot-password',
   reset_password: '/users/reset-password',
   logout: '/users/logout',
-
+  about: '/about',
+  
   profile: '/users/me',
   update_profile: '/users/me',
 
@@ -21,7 +22,8 @@ const path = {
   organizer_publish_event: '/events/organizer/:id/publish',
   organizer_cancel_event: '/events/organizer/:id/cancel',
 
-  my_tickets: '/attendee/tickets',
+  my_tickets: '/tickets',
+  my_ticket_details: '/tickets/:id',
   book_ticket: '/tickets/book',
   scan_ticket: '/tickets/scan'
 } as const

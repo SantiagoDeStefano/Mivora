@@ -23,22 +23,25 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <NavLink to = {path.my_tickets}
-            className='px-3 py-1.5 rounded-xl text-sm font-medium border hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400'
-          >
-            My Tickets
-          </NavLink>
+            <>
+              <NavLink
+                to={path.my_tickets}
+                className='px-3 py-1.5 rounded-xl text-sm font-medium border hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400'
+              >
+                My Tickets
+              </NavLink>
 
-          <Button
-            variant="secondary"
-            className="rounded-full cursor-pointer"
-            onClick={() => navigate(path.login)}
-          >
-            Log in
-          </Button>
-          <Button className="rounded-full cursor-pointer" onClick={() => navigate(path.register)}>
-            Register
-          </Button>
+              <Button
+                variant="secondary"
+                className="rounded-full cursor-pointer"
+                onClick={() => navigate(path.login)}
+              >
+                Log in
+              </Button>
+              <Button className="rounded-full cursor-pointer" onClick={() => navigate(path.register)}>
+                Register
+              </Button>
+            </>
         </div>
       </div>
     </header>

@@ -75,6 +75,20 @@ export const loginSchema = yup.object({
     .max(LIMIT_MIN_MAX.PASSWORD_LENGTH_MAX, USERS_MESSAGES.PASSWORD_MUST_BE_FROM_8_TO_24)
 })
 
+export const updateMe = yup.object({
+  name: yup
+    .string()
+    .required(USERS_MESSAGES.NAME_IS_REQUIRED)
+    .min(LIMIT_MIN_MAX.NAME_LENGTH_MIN, USERS_MESSAGES.NAME_LENGTH_MUST_BE_FROM_3_TO_100)
+    .max(LIMIT_MIN_MAX.NAME_LENGTH_MAX, USERS_MESSAGES.NAME_LENGTH_MUST_BE_FROM_3_TO_100)
+    .trim(),
+  role: yup.string().oneOf(['organizer'], USERS_MESSAGES.UPDATE_ROLE_MUST_BE_ORGANIZER),
+})
+
+export const updateAvatar = yup.object({
+  image: yup.mixed().required(USERS_MESSAGES.INVALID_IMAGE)
+})
+
 export const eventTitleSchema = yup.object({
   title: yup
     .string()
@@ -89,3 +103,5 @@ export type RegisterSchema = Required<yup.InferType<typeof registerSchema>>
 export type LoginSchema = Required<yup.InferType<typeof loginSchema>>
 
 export type EventTitleSchema = yup.InferType<typeof eventTitleSchema>
+export type UpdateMeSchema = yup.InferType<typeof updateMe>
+export type UpdateAvatarSchema = yup.InferType<typeof updateAvatar>

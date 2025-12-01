@@ -28,27 +28,21 @@ export default function MePage() {
   const toEdit = () => setIsEditing(true)
   const toView = () => setIsEditing(false)
 
-  // demo data (UI-only)
-  // const me: User = {
-  //   name: profile.name,
-  //   email: profile.email,
-  //   avatar_url: profile.avatar_url,
-  //   verified: profile.verified,
-  //   role: profile.role
-  // }
-    const me: User = {
-    name: '123',
-    email: '123@gmail.com',
-    avatar_url: 'https://mivora-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/avatar-images/tiu7tvddseqens3u2h5pvfnn2.jpg',
-    verified: 'verified',
-    role: ['attendee']
-  }
-  
+  const me: User =
+    profile ??
+    ({
+      name: '',
+      email: '',
+      avatar_url: '',
+      verified: 'unverified',
+      role: ['attendee']
+    } as User)
 
   // Hỗ trợ role là string hoặc string[]
   const roles: string[] = Array.isArray(me.role) ? me.role : me.role ? [me.role] : []
   const isVerified = me.verified === 'verified'
-  const isAttendee = roles.map((r) => r.toLowerCase()).includes('attendee')
+  const isOrganizer = roles.map((r) => r.toLowerCase()).includes('organizer')
+  const isAttendee = !isOrganizer && roles.map((r) => r.toLowerCase()).includes('attendee')
 
   // Edit mode: show UpdateProfile
   if (isEditing) {
@@ -150,7 +144,7 @@ export default function MePage() {
                   </div>
 
                   <div className='mt-2 flex flex-wrap items-center gap-2'>
-                    {isAttendee ? <Badge tone='pink'>Attendee</Badge> : <Badge tone='neutral'>Organizer</Badge>}
+                    {isOrganizer ? <Badge tone='neutral'>Organizer</Badge> : <Badge tone='pink'>Attendee</Badge>}
                   </div>
                 </div>
               </div>
@@ -207,7 +201,7 @@ export default function MePage() {
                   <input
                     id='pf-role'
                     type='text'
-                    defaultValue={isAttendee ? 'Attendee' : 'Organizer'}
+                    defaultValue={isOrganizer ? 'Organizer' : 'Attendee'}
                     className='w-full max-w-sm rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-gray-50 dark:bg-gray-950/60 cursor-not-allowed'
                     readOnly
                   />

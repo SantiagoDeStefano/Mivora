@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useParams } from "react-router-dom";
-
+import path from "../../constants/path";
 type EventDetails = {
 	id: string;
 	organizer_id?: string;
@@ -93,7 +93,11 @@ export default function EventDetailsPage({ event }: Props) {
 
 						{/* Actions */}
 						<div className="mt-4 flex flex-wrap items-center gap-2">
-							<button className="px-3 py-2 rounded-xl text-sm font-medium bg-pink-600 text-white hover:bg-pink-700">Get tickets</button>
+							<button className="px-3 py-2 rounded-xl text-sm font-medium bg-pink-600 text-white hover:bg-pink-700">
+              <Link to={path.book_ticket} className="hover:underline">
+						    Get tickets
+					      </Link> 
+            </button>
 						</div>
 					</div>
 				</div>

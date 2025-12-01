@@ -1,27 +1,16 @@
+import { LoginSchema, RegisterSchema, UpdateMeSchema } from '../utils/rules'
 import type { AuthResponse, GetMeResponse, MessageOnly } from '../types/auth.types'
 import http from '../utils/http'
-
-export interface RegisterRequest {
-  name: string
-  email: string
-  password: string
-  confirm_password: string
-}
-
-export interface LoginRequest {
-  email: string
-  password: string
-}
 
 export interface RefreshTokenRequest {
   refresh_token: string
 }
 
 const usersApi = {
-  registerAccount: (body: RegisterRequest) => {
+  registerAccount: (body: RegisterSchema) => {
     return http.post<AuthResponse>('/users/register', body)
   },
-  loginAccount: (body: LoginRequest) => {
+  loginAccount: (body: LoginSchema) => {
     return http.post<AuthResponse>('/users/login', body)
   },
   logout: (body: RefreshTokenRequest) => {
@@ -32,6 +21,9 @@ const usersApi = {
   },
   getMe: () => {
     return http.get<GetMeResponse>('/users/me')
+  },
+  updateMe: (body: Omit<UpdateMeSchema, 'image'>) => {
+    return http.patch<GetMeResponse>('/users/me', body)
   }
 }
 
