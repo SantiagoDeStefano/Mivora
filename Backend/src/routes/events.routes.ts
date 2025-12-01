@@ -120,21 +120,5 @@ eventsRouter.patch(
   cancelEventStatusValidator,
   wrapRequestHandler(cancelEventController)
 )
-/**
- * Description: Get conversation
- * (we already have senderId through access_token, so we just need to send receiver_id)
- * Path: /events/:event_id/messages
- * Method: GET
- * Header: { Authorization: Bearer <access_token> }
- * Query params:
- *   - ?page=1
- *   - ?limit=20
- */
-eventsRouter.get(
-  '/:event_id/messages',
-  accessTokenValidator,
-  eventIdValidator,
-  paginationValidator,
-)
 
 export default eventsRouter
