@@ -259,10 +259,35 @@ class UserService {
 
   async getMe(user_id: UUIDv4) {
     const user = await databaseService.users(
-      `SELECT users.name, users.email, users.avatar_url, users.verified, ARRAY_AGG(user_roles.role) AS role FROM users JOIN user_roles ON users.id = user_roles.user_id WHERE id=$1 GROUP BY users.id, users.name, users.email, users.avatar_url;`,
+      `SELECT 
+        users.name, 
+        users.email, 
+        users.avatar_url, 
+        users.verified, 
+        ARRAY_AGG(user_roles.role) AS role 
+        FROM users 
+      JOIN user_roles ON users.id = user_roles.user_id 
+      WHERE id=$1 GROUP BY users.id, users.name, users.email, users.avatar_url;`,
       [user_id]
     )
     user.rows[0].role = parsePgArray(user.rows[0].role)
+
+    if (user.rows[0].role.includes('organizer')) {
+      const revenueRes = await databaseService.users(
+        `
+          SELECT 
+            SUM(tickets.price_cents) AS total_revenue_cents
+          FROM tickets
+          JOIN events ON tickets.event_id = events.id
+          WHERE events.organizer_id = $1
+        `,
+        [user_id]
+      )
+      const totalRevenueCents = Number(revenueRes.rows[0]?.total_revenue_cents ?? 0)
+      const userRow = user.rows[0]
+      userRow.revenue_cents = totalRevenueCents
+    }
+
     return user.rows[0]
   }
 
