@@ -18,7 +18,6 @@ import ErrorWithStatus from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpStatus'
 import LIMIT_MIN_MAX from '~/constants/limits'
 
-
 // Allowed user roles
 const user_roles: UserRole[] = ['attendee', 'organizer']
 
@@ -331,6 +330,47 @@ export const updateMeValidator = validate(
             if (isExistRole) {
               throw new Error(USERS_MESSAGES.USER_ALREADY_HAVE_THIS_ROLE)
             }
+            return true
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)
+
+// Validator for uploaded image files (expects an upload middleware to attach `uploadedFiles` to `req`)
+export const uploadImageValidator = validate(
+  checkSchema(
+    {
+      image: {
+        custom: {
+          options: (value: unknown, { req }) => {
+            type UploadFileLike = { mimetype?: string; size?: number }
+            type UploadReq = {
+              uploadedFiles?: UploadFileLike[]
+              files?: { image?: UploadFileLike | UploadFileLike[] }
+              uploadError?: { code?: string; message?: string }
+            }
+            const r = req as unknown as UploadReq
+            const files = r.uploadedFiles || r.files?.image
+            const imgs = files ? (Array.isArray(files) ? files : [files]) : []
+            const file = imgs[0]
+
+            // One combined check — return a generic message to avoid leaking details
+            if (
+              !files ||
+              imgs.length === 0 ||
+              imgs.length > 1 ||
+              !file ||
+              !file.mimetype ||
+              !file.mimetype.includes('image/') ||
+              (typeof file.size === 'number' && file.size > 1000 * 1024) ||
+              Boolean(r.uploadError)
+            ) {
+              throw new Error(USERS_MESSAGES.INVALID_IMAGE)
+            }
+
             return true
           }
         }

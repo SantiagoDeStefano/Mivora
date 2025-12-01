@@ -23,6 +23,7 @@ import {
   resetPasswordValidator,
   sendEmailValidator,
   updateMeValidator,
+  uploadImageValidator,
   verifyForgotPasswordTokenValidator
 } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
@@ -84,7 +85,7 @@ usersRouter.patch('/me', accessTokenValidator, updateMeValidator, wrapRequestHan
  * Method: PUT
  * Headers: { Authorization: Bearer <access_token> }
  */
-usersRouter.put('/me/avatar', accessTokenValidator, wrapRequestHandler(updateAvatarController))
+usersRouter.put('/me/avatar', accessTokenValidator, uploadImageValidator, wrapRequestHandler(updateAvatarController))
 
 /**
  * Description: Send email verification token to current user's email

@@ -283,7 +283,7 @@ class UserService {
         `,
         [user_id]
       )
-      const totalRevenueCents = Number(revenueRes.rows[0]?.total_revenue_cents ?? 0)
+      const totalRevenueCents = Number(revenueRes.rows[0].total_revenue_cents ?? 0)
       const userRow = user.rows[0]
       userRow.revenue_cents = totalRevenueCents
     }
@@ -296,9 +296,9 @@ class UserService {
 
     await databaseService.users(
       `
-      UPDATE users
-      SET name = $1
-      WHERE id = $2
+        UPDATE users
+        SET name = $1
+        WHERE id = $2
       `,
       [name, user_id]
     )
