@@ -113,7 +113,7 @@ export const sendEmailController = async (req: Request, res: Response, next: Nex
   const user_email = user.email
   await userService.sendEmailVerifyToken(user_id, user_email)
   res.json({
-    message: USERS_MESSAGES.SEND_VERIFY_EMAIL_SUCCESS
+    message: USERS_MESSAGES.CHECK_YOUR_EMAIL_FOR_VERIFICATION_LINK
   })
   return
 }
