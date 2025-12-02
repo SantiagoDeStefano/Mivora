@@ -12,7 +12,7 @@ const path = {
   profile: '/users/me',
   update_profile: '/users/me',
 
-  event_details: '/events/:id',
+  event_details: '/events/:event_id',
   email_verification: '/users/verify-email',
   forgot_password_verification: '/users/verify-forgot-password',
 

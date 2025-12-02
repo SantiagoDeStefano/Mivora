@@ -108,7 +108,7 @@ export default function useRouteElements() {
         {
           path: path.forgot_password_verification,
           element: <ForgotPasswordVerification />
-        },
+        }
       ]
     },
 
@@ -189,14 +189,6 @@ export default function useRouteElements() {
             </UserLayout>
           )
         }
-      ]
-    },
-
-    // Guests-only
-    {
-      path: '/',
-      children: [
-        // "/signup"
       ]
     }
   ])

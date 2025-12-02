@@ -10,10 +10,9 @@ export default function VerifyForgotPasswordToken() {
   useEffect(() => {
     const token = searchParams.get('token')
     if (!token) return
-
     ;(async () => {
-        await userApi.verifyForgotPassword({forgot_password_token: token})
-        navigate(path.reset_password)
+      await userApi.verifyForgotPassword({ forgot_password_token: token })
+      navigate(path.reset_password, { state: { forgot_password_token: token } })
     })()
   }, [searchParams, navigate])
 
