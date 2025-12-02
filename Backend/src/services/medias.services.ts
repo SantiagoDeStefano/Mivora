@@ -3,7 +3,7 @@ import { getNameFromFullname, handleUploadImage } from '~/utils/file'
 import { UPLOAD_IMAGE_DIR } from '~/constants/dir'
 import { Request } from 'express'
 
-import fsPromise from 'fs/promises'
+import fsPromise, { unlink } from 'fs/promises'
 import path from 'path'
 import sharp from 'sharp'
 
@@ -28,7 +28,17 @@ class MediasService {
           contentType: 'image/jpeg'
         })
 
-        await Promise.all([fsPromise.unlink(file.filepath), fsPromise.unlink(newPath)])
+        try {
+          await unlink(file.filepath)
+        } catch (err) {
+          console.error('Failed to unlink temp file:', file.filepath, err)
+        }
+
+        try {
+          await unlink(newPath)
+        } catch (err) {
+          console.error('Failed to unlink processed file:', newPath, err)
+        }
 
         return {
           url: s3Result.Location as string
