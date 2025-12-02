@@ -1,6 +1,5 @@
-import { NavLink, useNavigate} from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import Logo from '../Logo/Logo'
-import SearchButton from '../SearchButton'
 import { useContext, useState } from 'react'
 import { AppContext } from '../../contexts/app.context'
 import { useMutation } from '@tanstack/react-query'
@@ -20,6 +19,9 @@ const getLastName = (fullName: string) => {
 export default function NavHeader() {
   const { setIsAuthenticated, setProfile, profile, isAuthenticated } = useContext(AppContext)
   const [imgError, setImgError] = useState(false)
+  const [searchValue, setSearchValue] = useState('')
+
+  const navigate = useNavigate()
 
   const logoutMutation = useMutation({
     mutationFn: () => usersApi.logout({ refresh_token: getRefreshTokenFromLocalStorage() }),
@@ -29,14 +31,23 @@ export default function NavHeader() {
       setProfile(null)
     }
   })
+
   const handleLogout = () => {
     logoutMutation.mutate()
   }
-  const navigate = useNavigate();
-  const navLink =
-    "text-sm font-medium text-gray-400 hover:text-pink-400 px-3 py-1.5 rounded-lg";
 
-  // check if current profile contains organizer role (supports string or array)
+  const handleSearchSubmit = (value: string) => {
+    const q = value.trim()
+    if (!q) return
+    navigate({
+      pathname: '/search',
+      search: `?q=${encodeURIComponent(q)}`
+    })
+  }
+
+  const navLink =
+    'text-sm font-medium text-gray-400 hover:text-pink-400 px-3 py-1.5 rounded-lg'
+
   const isOrganizer = (() => {
     const r = (profile as any)?.role
     if (!r) return false
@@ -45,27 +56,55 @@ export default function NavHeader() {
   })()
 
   return (
-    <header className="sticky top-0 z-40 border-b border-gray-800 bg-gray-950 text-gray-200">
-      
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-2">
-          <Logo className="h-10" />
+    <header className='sticky top-0 z-40 border-b border-gray-800 bg-gray-950 text-gray-200'>
+      <div className='mx-auto flex max-w-7xl items-center justify-between px-4 py-3'>
+        <div className='flex items-center gap-2'>
+          <Logo className='h-10' />
         </div>
 
-        <nav className="hidden items-center gap-1 md:flex">
-          <NavLink to="/" className={navLink} end>Home</NavLink>
+        {/* Desktop nav + search */}
+        <nav className='hidden items-center gap-1 md:flex'>
+          <NavLink to='/' className={navLink} end>
+            Home
+          </NavLink>
+
           {isOrganizer && (
-            <NavLink to={path.organizer_manage_event} className={navLink}>Events</NavLink>
+            <NavLink to={path.organizer_manage_event} className={navLink}>
+              Events
+            </NavLink>
           )}
-          <NavLink to="/about" className={navLink}>About</NavLink>
-          <SearchButton />
+
+          <NavLink to='/about' className={navLink}>
+            About
+          </NavLink>
+
+          {/* Desktop search */}
+          <form
+            className='ml-2 flex items-center gap-2'
+            onSubmit={(e) => {
+              e.preventDefault()
+              handleSearchSubmit(searchValue)
+            }}
+            role='search'
+          >
+            <label htmlFor='global-search-desktop' className='sr-only'>
+              Search events
+            </label>
+            <input
+              id='global-search-desktop'
+              type='search'
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              placeholder='Search events…'
+              className='w-56 rounded-xl border border-gray-800 bg-gray-900 px-3 py-1.5 text-sm text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500/60'
+            />
+          </form>
         </nav>
-        
-        {/* Right: Quick links + Account */}
+
+        {/* Right: tickets + account */}
         <div className='flex items-center gap-2'>
           {isAuthenticated ? (
             <>
-              {/* My Tickets (only visible when authenticated) */}
               <NavLink
                 to={path.my_tickets}
                 className='px-3 py-1.5 rounded-xl border border-gray-800 text-sm font-medium hover:bg-gray-800 text-gray-400'
@@ -73,26 +112,25 @@ export default function NavHeader() {
                 My Tickets
               </NavLink>
 
-              {/* Account Dropdown */}
               <details className='relative group'>
                 <summary className='list-none flex items-center gap-2 px-1.5 py-1.5 rounded-xl cursor-pointer hover:bg-gray-800'>
                   <div className='size-8 rounded-full overflow-hidden bg-gray-700 ring-1 ring-gray-700 grid place-items-center text-xs font-semibold text-gray-200'>
                     {!imgError ? (
                       <img
-                        src={profile.avatar_url}
-                        alt={'avatar'}
+                        src={profile?.avatar_url}
+                        alt='avatar'
                         className='w-full h-full object-cover'
                         loading='lazy'
                         referrerPolicy='no-referrer'
                         onError={() => setImgError(true)}
                       />
                     ) : (
-                      getInitials(profile.name)
+                      getInitials(profile?.name)
                     )}
                   </div>
 
                   <span className='hidden sm:block text-sm font-medium text-gray-400'>
-                    {getLastName(profile.name ?? '')}
+                    {getLastName(profile?.name ?? '')}
                   </span>
                 </summary>
 
@@ -108,7 +146,6 @@ export default function NavHeader() {
                     className='text-left w-full px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-gray-800'
                   >
                     My Tickets
-                    <span className='text-xs text-gray-400'> </span>
                   </button>
                   <button
                     onClick={() => navigate(path.profile)}
@@ -134,10 +171,9 @@ export default function NavHeader() {
         <form
           onSubmit={(e) => {
             e.preventDefault()
-            const q = new FormData(e.currentTarget).get('q')
-            if (q) {
-              // ví dụ: navigate(`/search?q=${encodeURIComponent(q as string)}`)
-            }
+            const formData = new FormData(e.currentTarget)
+            const q = (formData.get('q') as string) ?? ''
+            handleSearchSubmit(q)
           }}
           role='search'
         >
