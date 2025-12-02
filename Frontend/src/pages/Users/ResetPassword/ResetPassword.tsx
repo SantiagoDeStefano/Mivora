@@ -32,19 +32,16 @@ export default function ResetPasswordModal() {
 
       {/* Panel */}
       <div className="absolute inset-0 grid place-items-center px-4">
-        <div className="w-full max-w-md rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-xl">
+        <div className="w-full max-w-md rounded-2xl border border-gray-800 bg-gray-900 shadow-xl">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800">
-            <h2
-              id="rp-title"
-              className="text-lg font-semibold text-gray-900 dark:text-gray-50"
-            >
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+            <h2 id="rp-title" className="text-lg font-semibold text-gray-50">
               Reset your password
             </h2>
             <button
               onClick={onClose}
               aria-label="Close"
-              className="inline-flex size-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300"
+              className="inline-flex size-8 items-center justify-center rounded-lg hover:bg-gray-800 text-gray-300"
             >
               ×
             </button>
@@ -52,7 +49,7 @@ export default function ResetPasswordModal() {
 
           {/* Body */}
           <form onSubmit={onSubmit} className="px-4 py-4 grid gap-3" noValidate>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="text-sm text-gray-400">
               Enter a new password for your account.
             </div>
 
@@ -89,7 +86,7 @@ export default function ResetPasswordModal() {
             </div>
 
             {/* Gợi ý nhỏ */}
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-400 mt-1">
               Use at least 8 characters with a mix of letters and numbers.
             </p>
           </form>

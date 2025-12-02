@@ -22,8 +22,15 @@ const usersApi = {
   getMe: () => {
     return http.get<GetMeResponse>('/users/me')
   },
-  updateMe: (body: Omit<UpdateMeSchema, 'image'>) => {
+  updateMe: (body: UpdateMeSchema) => {
     return http.patch<GetMeResponse>('/users/me', body)
+  },
+  updateAvatar: (formData: FormData) => {
+    return http.put<GetMeResponse>('/users/me/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
   }
 }
 

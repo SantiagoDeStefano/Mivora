@@ -24,19 +24,16 @@ export default function ForgotPasswordModal() {
 
       {/* Panel */}
       <div className="absolute inset-0 grid place-items-center px-4">
-        <div className="w-full max-w-md rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-xl">
+        <div className="w-full max-w-md rounded-2xl border border-gray-800 bg-gray-900 shadow-xl">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800">
-            <h2
-              id="fp-title"
-              className="text-lg font-semibold text-gray-900 dark:text-gray-50"
-            >
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+            <h2 id="fp-title" className="text-lg font-semibold text-gray-50">
               Forgot your password?
             </h2>
             <button
               onClick={onClose}
               aria-label="Close"
-              className="inline-flex size-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300"
+              className="inline-flex size-8 items-center justify-center rounded-lg hover:bg-gray-800 text-gray-300"
             >
               ×
             </button>
@@ -44,9 +41,7 @@ export default function ForgotPasswordModal() {
 
           {/* Body */}
           <form className="px-4 py-4 grid gap-3" noValidate>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              Enter your email address and we'll send you a reset link.
-            </div>
+            <div className="text-sm text-gray-400">Enter your email address and we'll send you a reset link.</div>
 
             <div>
               <Label htmlFor="fp-email">Email address</Label>

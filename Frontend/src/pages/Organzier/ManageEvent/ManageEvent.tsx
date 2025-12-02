@@ -79,7 +79,7 @@ export default function ManageEventPage() {
 
           <button
             type="button"
-            className="inline-flex items-center justify-center rounded-full bg-pink-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2 dark:focus:ring-offset-gray-950"
+            className="inline-flex items-center justify-center rounded-full bg-pink-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2 focus:ring-offset-gray-900"
             onClick={() => {
               // TODO: navigate to create event page
               navigate(path.organizer_create_event);
@@ -92,11 +92,9 @@ export default function ManageEventPage() {
         {/* Controls: search + filter */}
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
-              Search events
-            </label>
+            <label className="block text-xs font-medium text-gray-300 mb-1">Search events</label>
             <input
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 shadow-sm outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-300 dark:border-gray-800 bg-gray-100 dark:text-gray-100 dark:focus:border-gray-600 dark:focus:ring-gray-700"
+              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm text-gray-100 shadow-sm outline-none focus:border-gray-600 focus:ring-1 focus:ring-gray-700 bg-gray-900"
               placeholder="Type event name…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -104,10 +102,8 @@ export default function ManageEventPage() {
           </div>
 
           <div className="mt-3 flex items-center gap-2">
-            <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
-              Status
-            </span>
-            <div className="inline-flex rounded-full border border-gray-200 bg-gray-50 p-1 text-xs dark:border-gray-800 dark:bg-gray-900">
+            <span className="text-xs font-medium text-gray-300">Status</span>
+            <div className="inline-flex rounded-full border border-gray-800 bg-gray-900 p-1 text-xs">
               {[
                 { label: "All", value: "all" as const },
                 { label: "Draft", value: "draft" as const },
@@ -121,9 +117,7 @@ export default function ManageEventPage() {
                     type="button"
                     className={[
                       "rounded-full px-3 py-1 font-medium transition-colors",
-                      active
-                        ? "bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-gray-50"
-                        : "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50",
+                      active ? "bg-gray-800 text-gray-100 shadow-sm" : "text-gray-300 hover:text-gray-100",
                     ].join(" ")}
                     onClick={() => setStatusFilter(opt.value)}
                   >
@@ -138,30 +132,27 @@ export default function ManageEventPage() {
         {/* Loading skeleton */}
         {loading && (
           <div className="mt-4 grid gap-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-12 rounded-lg animate-pulse bg-gray-200 dark:bg-gray-800"
-              />
+              {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-12 rounded-lg animate-pulse bg-gray-800" />
             ))}
           </div>
         )}
 
         {/* Empty state */}
         {!loading && filtered.length === 0 && (
-          <div className="mt-4 rounded-2xl border border-dashed p-8 text-center text-sm text-gray-600 dark:border-gray-800 dark:text-gray-300">
+          <div className="mt-4 rounded-2xl border border-dashed p-8 text-center text-sm text-gray-300 border-gray-800">
             No events found.
           </div>
         )}
 
         {/* Table */}
         {!loading && filtered.length > 0 && (
-          <div className="mt-4 overflow-auto rounded-xl border border-gray-100 dark:border-gray-800">
+          <div className="mt-4 overflow-auto rounded-xl border border-gray-800">
             <table
               className="min-w-full text-left text-sm"
               aria-label="Events table"
             >
-              <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0 z-10">
+              <thead className="bg-gray-900 sticky top-0 z-10">
                 <tr>
                   <th className="px-3 py-2 font-medium">Name</th>
                   <th className="px-3 py-2 font-medium">Date</th>
@@ -173,10 +164,10 @@ export default function ManageEventPage() {
                 {filtered.map((event) => (
                   <tr
                     key={event.id}
-                    className="border-t border-gray-100 dark:border-gray-800"
+                    className="border-t border-gray-800"
                   >
                     <td className="px-3 py-3 font-medium">{event.name}</td>
-                    <td className="px-3 py-3 text-gray-600 dark:text-gray-300">
+                    <td className="px-3 py-3 text-gray-300">
                       {event.date}
                     </td>
                     <td className="px-3 py-3">
@@ -192,7 +183,7 @@ export default function ManageEventPage() {
                       <div className="flex items-center justify-end gap-2">
                         <button 
                           type="button"
-                          className="inline-flex items-center gap-1 rounded-full bg-gray-900 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-1 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200 dark:focus:ring-gray-300 dark:focus:ring-offset-gray-950"
+                          className="inline-flex items-center gap-1 rounded-full bg-gray-800 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-1 focus:ring-offset-gray-900"
                           onClick={() => {
                             // TODO: navigate to event details
                             navigate(path.organizer_created_event_details.replace(":id", event.id));

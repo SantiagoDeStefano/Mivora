@@ -26,7 +26,7 @@ export default function Header() {
             <>
               <NavLink
                 to={path.my_tickets}
-                className='px-3 py-1.5 rounded-xl text-sm font-medium border hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400'
+                className='px-3 py-1.5 rounded-xl text-sm font-medium border border-gray-700 hover:bg-gray-800 text-gray-200'
               >
                 My Tickets
               </NavLink>

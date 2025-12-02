@@ -57,16 +57,16 @@ export default function EventDetailsPage({ event }: Props) {
 		<section id="event-details" className="py-10 sm:py-14">
 			<div className="max-w-7xl mx-auto px-4">
 				{/* Breadcrumb */}
-				<nav className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+						<nav className="mb-4 text-sm text-gray-400">
 					<Link to="/events" className="hover:underline">
 						Events
 					</Link>
 					<span className="mx-2">/</span>
-					<span className="text-gray-900 dark:text-gray-100 font-medium">{ev.title}</span>
+							<span className="text-gray-100 font-medium">{ev.title}</span>
 				</nav>
 
 				{/* Header / Cover */}
-				<div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+						<div className="overflow-hidden rounded-2xl border border-gray-800 bg-gray-900">
 					<div className="relative">
 						{ev.poster_url ? (
 							<img
@@ -83,9 +83,9 @@ export default function EventDetailsPage({ event }: Props) {
 					<div className="p-5">
 						<div className="flex items-start justify-between gap-4">
 							<div>
-								<div className="text-xs font-medium uppercase tracking-wide text-pink-600 dark:text-pink-400">{formatDate(ev.start_at)}</div>
+								<div className="text-xs font-medium uppercase tracking-wide text-pink-400">{formatDate(ev.start_at)}</div>
 								<h1 className="mt-1 text-2xl sm:text-3xl font-semibold">{ev.title}</h1>
-								<div className="mt-1 text-sm text-gray-600 dark:text-gray-400 flex flex-wrap items-center gap-2">
+								<div className="mt-1 text-sm text-gray-300 flex flex-wrap items-center gap-2">
 									<span>{ev.location_text}</span>
 								</div>
 							</div>
@@ -107,40 +107,40 @@ export default function EventDetailsPage({ event }: Props) {
 					{/* Left: About + Organizer stacked */}
 					<div className="lg:col-span-2 space-y-6">
 						{/* About */}
-						<div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+								<div className="rounded-2xl border border-gray-800 bg-gray-900">
 							<div className="p-5">
 								<h2 className="text-lg font-semibold">About this event</h2>
-								<p className="mt-2 text-sm text-gray-700 dark:text-gray-300">{ev.description}</p>
+								<p className="mt-2 text-sm text-gray-300">{ev.description}</p>
 							</div>
 						</div>
 					</div>
 
 					{/* Right: Details card */}
 					<aside className="space-y-6">
-						<div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+								<div className="rounded-2xl border border-gray-800 bg-gray-900">
 							<div className="p-5 space-y-3 text-sm">
 								<div className="flex items-center justify-between">
-									<span className="text-gray-600 dark:text-gray-400">Price</span>
+									<span className="text-gray-300">Price</span>
 									<span className="font-medium">{ev.price_cents}</span>
 								</div>
 								<div className="flex items-center justify-between">
-									<span className="text-gray-600 dark:text-gray-400">Start</span>
+									<span className="text-gray-300">Start</span>
 									<span className="font-medium">{formatDate(ev.start_at)}</span>
 								</div>
 								<div className="flex items-center justify-between">
-									<span className="text-gray-600 dark:text-gray-400">End</span>
+									<span className="text-gray-300">End</span>
 									<span className="font-medium">{formatDate(ev.end_at)}</span>
 								</div>
 								<div className="flex items-center justify-between">
-									<span className="text-gray-600 dark:text-gray-400">Location</span>
+									<span className="text-gray-300">Location</span>
 									<span className="font-medium">{ev.location_text}</span>
 								</div>
 								<div className="flex items-center justify-between">
-									<span className="text-gray-600 dark:text-gray-400">Capacity</span>
+									<span className="text-gray-300">Capacity</span>
 									<span className="font-medium">{ev.capacity ?? '—'}</span>
 								</div>
 								<div className="flex items-center justify-between">
-									<span className="text-gray-600 dark:text-gray-400">Checked in</span>
+									<span className="text-gray-300">Checked in</span>
 									<span className="font-medium">{ev.checked_in ?? 0}</span>
 								</div>
 							</div>

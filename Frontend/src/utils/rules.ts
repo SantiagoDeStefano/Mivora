@@ -82,7 +82,7 @@ export const updateMe = yup.object({
     .min(LIMIT_MIN_MAX.NAME_LENGTH_MIN, USERS_MESSAGES.NAME_LENGTH_MUST_BE_FROM_3_TO_100)
     .max(LIMIT_MIN_MAX.NAME_LENGTH_MAX, USERS_MESSAGES.NAME_LENGTH_MUST_BE_FROM_3_TO_100)
     .trim(),
-  role: yup.string().oneOf(['organizer'], USERS_MESSAGES.UPDATE_ROLE_MUST_BE_ORGANIZER),
+  role: yup.string().oneOf(['attendee', 'organizer']),
 })
 
 export const updateAvatar = yup.object({
