@@ -34,6 +34,9 @@ const usersApi = {
   },
   sendVerifyEmail: () => {
     return http.post<MessageOnly>('/users/me/email-verification')
+  },
+  ForgotPassword: (email:string) => {
+    return http.post<MessageOnly>('/users/forgot-password', { email })
   }
 }
 
