@@ -316,7 +316,7 @@ class UserService {
   async updateAvatar(user_id: UUIDv4, avatar_url: string) {
     await databaseService.users(`UPDATE users SET avatar_url=$1 WHERE id=$2`, [avatar_url, user_id])
     const updatedUser = await databaseService.users(
-      `SELECT users.name, users.email, users.avatar_url, ARRAY_AGG(user_roles.role) AS role FROM users JOIN user_roles ON users.id = user_roles.user_id WHERE id=$1 GROUP BY users.id, users.name, users.email, users.avatar_url;`,
+      `SELECT users.name, users.email, users.avatar_url, users.verified, ARRAY_AGG(user_roles.role) AS role FROM users JOIN user_roles ON users.id = user_roles.user_id WHERE id=$1 GROUP BY users.id, users.name, users.email, users.avatar_url;`,
       [user_id]
     )
     updatedUser.rows[0].role = parsePgArray(updatedUser.rows[0].role)
