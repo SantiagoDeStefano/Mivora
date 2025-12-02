@@ -13,6 +13,8 @@ const path = {
   update_profile: '/users/me',
 
   event_details: '/events/:id',
+  email_verification: '/users/verify-email',
+
   attendee_dashboard: '/attendee/dashboard',
 
   organizer_create_event: '/organizer/create-event',

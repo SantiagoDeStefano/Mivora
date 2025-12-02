@@ -5,6 +5,9 @@ import http from '../utils/http'
 export interface RefreshTokenRequest {
   refresh_token: string
 }
+export interface EmailTokenRequest {
+  email_verify_token: string
+}
 
 const usersApi = {
   registerAccount: (body: RegisterSchema) => {
@@ -35,8 +38,11 @@ const usersApi = {
   sendVerifyEmail: () => {
     return http.post<MessageOnly>('/users/me/email-verification')
   },
-  ForgotPassword: (email:string) => {
+  forgotPassword: (email:string) => {
     return http.post<MessageOnly>('/users/forgot-password', { email })
+  },
+  verifyEmail: (body: EmailTokenRequest) => {
+    return http.post<MessageOnly>('/users/verify-email', body)
   }
 }
 

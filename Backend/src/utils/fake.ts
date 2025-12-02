@@ -30,7 +30,12 @@ function generateFakeEvent(): FakeEvent {
 
   return {
     id: uuidv4() as UUIDv4,
-    organizer_id: '3926ebb1-1855-431f-95d7-6ff836514f8b' as UUIDv4,
+    organizer_id: faker.helpers.arrayElement([
+      '2d0ae3c7-a849-48f0-bb3a-ec155fc4f485',
+      '88945d98-a228-42fe-89c8-f82c20bfc808',
+      '0eb6571e-26d3-4059-b448-e746693d45d8',
+      '96024adc-79ea-4559-ac59-2b76ead8c771'
+    ]) as UUIDv4,
     title: faker.company.catchPhrase(),
     description: faker.lorem.paragraphs({ min: 1, max: 3 }),
     poster_url: faker.image.urlPicsumPhotos({ width: 800, height: 600 }),
@@ -41,6 +46,7 @@ function generateFakeEvent(): FakeEvent {
     checked_in: faker.number.int({ min: 0, max: 50 }),
     capacity: faker.number.int({ min: 50, max: 500 }),
     status: faker.helpers.arrayElement(['draft', 'published', 'canceled'])
+    // status: faker.helpers.arrayElement(['published'])
   }
 }
 
