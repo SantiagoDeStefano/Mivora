@@ -14,8 +14,7 @@ const path = {
 
   event_details: '/events/:id',
   email_verification: '/users/verify-email',
-
-  attendee_dashboard: '/attendee/dashboard',
+  forgot_password_verification: '/users/verify-forgot-password',
 
   organizer_create_event: '/organizer/create-event',
   organizer_created_event_details: '/events/organizer/:id',

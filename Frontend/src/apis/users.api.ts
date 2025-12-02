@@ -8,7 +8,9 @@ export interface RefreshTokenRequest {
 export interface EmailTokenRequest {
   email_verify_token: string
 }
-
+export interface ForgotPasswordRequest {
+  forgot_password_token: string
+}
 const usersApi = {
   registerAccount: (body: RegisterSchema) => {
     return http.post<AuthResponse>('/users/register', body)
@@ -43,6 +45,9 @@ const usersApi = {
   },
   verifyEmail: (body: EmailTokenRequest) => {
     return http.post<MessageOnly>('/users/verify-email', body)
+  },
+  verifyForgotPassword: (body: ForgotPasswordRequest) => {
+    return http.post<MessageOnly>('/users/verify-forgot-password', body)
   }
 }
 

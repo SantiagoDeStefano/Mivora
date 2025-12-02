@@ -6,6 +6,7 @@ import { Surface } from '../../components/Card/Card'
 import Badge from '../../components/Badge/Badge'
 import Container from '../../components/Container/Container'
 import eventsApi, { Event } from '../../apis/events.api'
+import path from '../../constants/path'
 
 const PAGE_SIZE = 20
 
@@ -83,8 +84,49 @@ export default function Home() {
 
   return (
     <section id="explore" className="py-10 sm:py-14">
+      <section className="relative w-full h-[60vh] min-h-[380px] flex items-center justify-center">
+        {/* Background Image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`
+          }}
+        />
+
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-black/60" />
+
+        {/* Content */}
+        <div className="relative z-10 text-center px-6">
+          <h1 className="text-4xl sm:text-5xl font-bold text-white drop-shadow-lg">
+            Discover Amazing Events
+          </h1>
+
+          <p className="mt-4 text-lg text-gray-200 max-w-2xl mx-auto">
+            Find concerts, meetups, workshops and more - happening near you.
+          </p>
+
+          {/* CTA Buttons */}
+          <div className="mt-6 flex justify-center gap-4">
+            <button
+              className="px-5 py-2.5 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-medium text-sm"
+              onClick={() => navigate(path.home)}
+            >
+              Browse Events
+            </button>
+
+            <button
+              className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/30 text-white font-medium text-sm backdrop-blur"
+              onClick={() => navigate(path.organizer_create_event)}
+            >
+              Create Event
+            </button>
+          </div>
+        </div>
+      </section>
+
       <Container>
-        <header className="mb-6 sm:mb-8">
+        <header className="mt-10 mb-6 sm:mb-8">
           <h2 className="mt-1 text-2xl sm:text-3xl font-semibold">Explore events</h2>
         </header>
 

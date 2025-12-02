@@ -11,6 +11,7 @@ import AboutPage from './pages/About'
 import MePage from './pages/Users/Me'
 import ForgotPasswordModal from './pages/Users/ForgotPassword'
 import ResetPasswordModal from './pages/Users/ResetPassword'
+import ForgotPasswordVerification from './pages/Users/ForgotPasswordVerification/ForgotPasswordVerification'
 
 // --- Organizer Pages ---
 import CreateEventPage from './pages/Organzier/CreateEvent/CreateEvent'
@@ -38,7 +39,7 @@ function RejectedRoute() {
 import MainLayout from './layouts/MainLayout'
 import RegisterLayout from './layouts/RegisterLayout'
 import UserLayout from './layouts/UserLayout'
-import EmailVerification from './pages/EmailVerification'
+import EmailVerification from './pages/Users/EmailVerification/EmailVerification'
 
 export default function useRouteElements() {
   const routeElements = useRoutes([
@@ -102,7 +103,12 @@ export default function useRouteElements() {
               <RegisterPage />
             </RegisterLayout>
           )
-        }
+        },
+        // Forgot password verification
+        {
+          path: path.forgot_password_verification,
+          element: <ForgotPasswordVerification />
+        },
       ]
     },
 

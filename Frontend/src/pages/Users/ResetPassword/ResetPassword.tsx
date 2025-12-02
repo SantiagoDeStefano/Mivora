@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import ReactDOM from "react-dom";
 import Label from "../../../components/Label/Label";
 import Input from "../../../components/Input/Input";
@@ -6,9 +6,9 @@ import Button from "../../../components/Button";
 
 export default function ResetPasswordModal() {
   const navigate = useNavigate();
-  const [params] = useSearchParams();
+  // const [params] = useSearchParams();
   // Nếu cần, token verify sẽ nằm ở query ?token=...
-  const token = params.get("token"); // hiện tại chỉ đọc, chưa dùng
+  // const token = params.get("token"); // hiện tại chỉ đọc, chưa dùng
 
   const onClose = () => navigate("/users/login");
   const onSubmit = (e: React.FormEvent) => {
