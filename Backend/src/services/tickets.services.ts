@@ -96,7 +96,8 @@ class TicketsService {
           tickets.status, 
           tickets.checked_in_at, 
           tickets.price_cents, 
-          tickets.qr_code_token
+          tickets.qr_code_token,
+          COUNT(*) OVER() AS total_count
         FROM tickets  
         JOIN events ON tickets.event_id = events.id
         WHERE
@@ -108,7 +109,7 @@ class TicketsService {
       `,
       [statusParam, searchParam, limit, limit * (page - 1)]
     )
-    const totalTickets = ticketsResult.rows.length
+    const totalTickets = ticketsResult.rows.length > 0 ? Number(ticketsResult.rows[0].total_count) : 0
     const tickets = await Promise.all(
       ticketsResult.rows.map(async (ticket) => {
         const qr_code = await qrCode.generateQrTicketCode(ticket.qr_code_token)

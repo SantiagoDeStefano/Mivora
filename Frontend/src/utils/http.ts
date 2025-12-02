@@ -48,7 +48,7 @@ class Http {
           setRefreshTokenToLocalStorage(this.refreshToken)
           const getMeResponse = await usersApi.getMe()
           setProfileToLocalStorage(getMeResponse.data.result)
-        } else if (url === path.logout) {
+        } else if (url === path.logout || url === path.email_verification) {
           this.accessToken = ''
           this.refreshToken = ''
           clearLocalStorage()

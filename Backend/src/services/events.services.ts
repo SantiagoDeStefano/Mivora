@@ -85,7 +85,8 @@ class EventService {
             events.price_cents,
             events.checked_in,
             events.capacity,
-            events.status
+            events.status,
+            COUNT(*) OVER() AS total_count
           FROM events 
           JOIN users ON events.organizer_id = users.id
           WHERE status=$1
@@ -108,7 +109,8 @@ class EventService {
             events.price_cents,
             events.checked_in,
             events.capacity,
-            events.status
+            events.status,
+            COUNT(*) OVER() AS total_count
           FROM events 
           JOIN users ON events.organizer_id = users.id
           WHERE events.title ILIKE '%' || $1 || '%' AND events.status = $2
@@ -119,7 +121,7 @@ class EventService {
         )
 
     const events = eventsResult.rows
-    const totalEvents = eventsResult.rows.length
+    const totalEvents = events.length > 0 ? Number(events[0].total_count) : 0
     return {
       events,
       totalEvents
@@ -148,7 +150,8 @@ class EventService {
             price_cents,
             checked_in,
             capacity,
-            status
+            status,
+            COUNT(*) OVER() AS total_count
           FROM events
           WHERE organizer_id = $1
             AND status = COALESCE($2::event_status, status)
@@ -160,7 +163,7 @@ class EventService {
     )
 
     const events = eventsResult.rows
-    const totalEvents = eventsResult.rows.length
+    const totalEvents = events.length > 0 ? Number(events[0].total_count) : 0
     return {
       events,
       totalEvents

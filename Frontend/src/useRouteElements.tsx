@@ -26,19 +26,19 @@ import { AppContext } from './contexts/app.context'
 
 // eslint-disable-next-line react-refresh/only-export-components
 function ProtectedRoute() {
-  const { isAuthenticated } = useContext(AppContext);
-  return isAuthenticated ? <Outlet /> : <Navigate to={path.login} />;
+  const { isAuthenticated } = useContext(AppContext)
+  return isAuthenticated ? <Outlet /> : <Navigate to={path.login} />
 }
 // eslint-disable-next-line react-refresh/only-export-components
 function RejectedRoute() {
-  const { isAuthenticated } = useContext(AppContext);
-  return (!isAuthenticated) ? <Outlet /> : <Navigate to={path.home} replace />;
+  const { isAuthenticated } = useContext(AppContext)
+  return !isAuthenticated ? <Outlet /> : <Navigate to={path.home} replace />
 }
 
 import MainLayout from './layouts/MainLayout'
 import RegisterLayout from './layouts/RegisterLayout'
 import UserLayout from './layouts/UserLayout'
-
+import EmailVerification from './pages/EmailVerification'
 
 export default function useRouteElements() {
   const routeElements = useRoutes([
@@ -51,26 +51,26 @@ export default function useRouteElements() {
         </MainLayout>
       )
     },
-     {
-          path: path.event_details,
-          element: (
-            <MainLayout>
-              <EventDetailsPage />
-            </MainLayout>
-          )
-        },
-        {
-          path: path.about,
-          element: (
-            <MainLayout>
-              <AboutPage />
-            </MainLayout>
-          )
-        },
     {
-      path: '/', 
+      path: path.event_details,
+      element: (
+        <MainLayout>
+          <EventDetailsPage />
+        </MainLayout>
+      )
+    },
+    {
+      path: path.about,
+      element: (
+        <MainLayout>
+          <AboutPage />
+        </MainLayout>
+      )
+    },
+    {
+      path: '/',
       element: <RejectedRoute />,
-      children: [  
+      children: [
         {
           path: path.login,
           element: (
@@ -78,7 +78,7 @@ export default function useRouteElements() {
               <LoginPage />
             </RegisterLayout>
           )
-        }, 
+        },
         {
           path: path.forgot_password,
           element: (
@@ -86,7 +86,7 @@ export default function useRouteElements() {
               <ForgotPasswordModal />
             </RegisterLayout>
           )
-        }, 
+        },
         {
           path: path.reset_password,
           element: (
@@ -94,7 +94,7 @@ export default function useRouteElements() {
               <ResetPasswordModal />
             </RegisterLayout>
           )
-        }, 
+        },
         {
           path: path.register,
           element: (
@@ -102,7 +102,7 @@ export default function useRouteElements() {
               <RegisterPage />
             </RegisterLayout>
           )
-        },
+        }
       ]
     },
 
@@ -119,6 +119,12 @@ export default function useRouteElements() {
           )
         },
 
+        // Email verification
+        {
+          path: path.email_verification,
+          element: <EmailVerification />
+        },
+
         // "/profile"
         // element: <ProfilePage /> },
         {
@@ -128,7 +134,7 @@ export default function useRouteElements() {
               <CreateEventPage />
             </UserLayout>
           )
-        }, 
+        },
         {
           path: path.organizer_manage_event,
           element: (
@@ -184,7 +190,7 @@ export default function useRouteElements() {
     {
       path: '/',
       children: [
-         // "/signup"
+        // "/signup"
       ]
     }
   ])

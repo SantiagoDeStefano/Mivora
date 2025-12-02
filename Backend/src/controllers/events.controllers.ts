@@ -34,7 +34,7 @@ export const getOrSearchEventsController = async (
   const page = Number(req.query.page)
   const search = req.query.q
   // Easier postman uses, change to published on production
-  const eventStatus = 'draft' as EventStatus
+  const eventStatus = 'published' as EventStatus
   const result = await eventService.getOrSearchPublishedEvents(search, limit, page, eventStatus)
   res.json({
     message: EVENTS_MESSAGES.GET_EVENTS_SUCCESSFULLY,
