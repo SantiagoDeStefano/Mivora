@@ -29,7 +29,7 @@ export default function ForgotPasswordModal() {
     setSuccess(null)
 
     try {
-      const res = await usersApi.ForgotPassword(email.trim())
+      const res = await usersApi.forgotPassword(email.trim())
       setSuccess(res.data.message || 'Reset link has been sent to your email.')
     } catch (err: any) {
       console.error(err)
