@@ -71,12 +71,12 @@ const sendVerifyEmail = async (toAddress: string, subject: string, body: string)
   }
 }
 
-
 export const sendVerifyStatusEmail = (
   toAddress: string,
   email_verify_token: string,
   template: string = verifyEmailTemplate
 ) => {
+  console.log(template)
   return sendVerifyEmail(
     toAddress,
     'Verify your email',
@@ -85,7 +85,7 @@ export const sendVerifyStatusEmail = (
       .replace('{{content}}', 'Click the button below to verify your email')
       .replace('{{button}}', 'Verify your email')
       .replace('{{titleLink}}', 'Verify')
-      .replace('{{link}}', `${envConfig.clientUrl}/email-verification?token=${email_verify_token}`)
+      .replace(/{{link}}/g, `${envConfig.clientUrl}/email-verification?token=${email_verify_token}`)
   )
 }
 
@@ -102,6 +102,6 @@ export const sendForgotPasswordEmail = (
       .replace('{{content}}', 'Click the button below to reset your password')
       .replace('{{button}}', 'Reset password')
       .replace('{{titleLink}}', 'Reset Password')
-      .replace('{{link}}', `${envConfig.clientUrl}/forgot-password?token=${forgot_password_token}`)
+      .replace(/{{link}}/g, `${envConfig.clientUrl}/forgot-password?token=${forgot_password_token}`)
   )
 }

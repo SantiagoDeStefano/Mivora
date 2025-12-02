@@ -18,7 +18,6 @@ import ErrorWithStatus from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpStatus'
 import LIMIT_MIN_MAX from '~/constants/limits'
 
-
 // Allowed user roles
 const user_roles: UserRole[] = ['attendee', 'organizer']
 

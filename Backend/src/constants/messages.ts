@@ -12,6 +12,7 @@ export const USERS_MESSAGES = {
   CONFIRM_PASSWORD_MUST_BE_A_STRING: 'Password confirmation must be a string',
   CONFIRM_PASSWORD_MUST_BE_FROM_8_TO_24: 'Password confirmation must be between 8 and 24',
   CHANGE_PASSWORD_SUCCESS: 'Change password successfully',
+  CHECK_YOUR_EMAIL_FOR_VERIFICATION_LINK: 'Check your email for verification link',
 
   DATE_OF_BIRTH_IS_REQUIRED: 'Date of birth is required',
   DATE_OF_BIRTH_IS_NOT_VALID: 'Date of birth is not valid',
@@ -42,7 +43,7 @@ export const USERS_MESSAGES = {
   INVALID_USERNAME: 'Username must be between 4-15 characters and contain only letters, numbers, underscore',
   INVALID_EMAIL_VERIFY_TOKEN: 'Invalid email verification token',
   IMAGE_IS_REQUIRED: 'Image is required',
-  IMAGE_TOO_LARGE: 'Image size must be less than 1MB',
+  IMAGE_MUST_BE_LESS_THAN_1MB: 'Image must be less than 1MB',
 
   LOGIN_SUCCESS: 'Login successfully',
   LOGOUT_SUCCESS: 'Logout successfully',
@@ -55,6 +56,7 @@ export const USERS_MESSAGES = {
 
   OLD_PASSWORD_DOES_NOT_MATCH: 'Old password does not match',
   ONE_USER_PER_EVENT_ONLY: 'One user per event only',
+  ONLY_ONE_IMAGE_IS_ALLOWED: 'Only one image is allowed',
 
   PASSWORD_IS_REQUIRED: 'Password is required',
   PASSWORD_MUST_BE_A_STRING: 'Password must be a string',
