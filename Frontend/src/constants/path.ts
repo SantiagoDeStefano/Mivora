@@ -15,7 +15,8 @@ const path = {
   event_details: '/events/:event_id',
   email_verification: '/users/verify-email',
   forgot_password_verification: '/users/verify-forgot-password',
-
+  search_events: '/search',
+  
   organizer_create_event: '/organizer/create-event',
   organizer_created_event_details: '/events/organizer/:id',
   organizer_manage_event: '/events/organizer',

@@ -31,6 +31,11 @@ const eventsApi = {
   },
   getEventDetails: (event_id: string) => {
     return http.get<SuccessResponse<Event>>(`/events/${event_id}`)
+  },
+  searchEvents: (q: string, limit: number = 20, page: number = 1) => {
+    return http.get<SuccessResponse<GetEventsResponse>>('/events', {
+      params: { q, limit, page }
+    })
   }
 }
 

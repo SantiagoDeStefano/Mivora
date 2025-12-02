@@ -7,6 +7,7 @@ import EventDetailsPage from './pages/EventDetail'
 import LoginPage from './pages/Users/Login/Login'
 import RegisterPage from './pages/Users/Register/Register'
 import AboutPage from './pages/About'
+import SearchEventsPage from './pages/SearchEvents/SearchEvents'
 
 import MePage from './pages/Users/Me'
 import ForgotPasswordModal from './pages/Users/ForgotPassword'
@@ -65,6 +66,14 @@ export default function useRouteElements() {
       element: (
         <MainLayout>
           <AboutPage />
+        </MainLayout>
+      )
+    },
+    {
+      path: path.search_events,
+      element: (
+        <MainLayout>
+          <SearchEventsPage />
         </MainLayout>
       )
     },
