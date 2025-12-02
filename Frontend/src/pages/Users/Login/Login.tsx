@@ -66,7 +66,7 @@ export default function Login() {
           <Card>
             <header>
               <h2 className='text-2xl font-semibold'>Log in</h2>
-              <p className='mt-1 text-sm text-gray-600 dark:text-gray-400'>Welcome back</p>
+              <p className='mt-1 text-sm text-gray-400'>Welcome back</p>
             </header>
 
             <form className=' mt-4 grid gap-4' onSubmit={onSubmit} noValidate>
@@ -105,7 +105,7 @@ export default function Login() {
               </Button>
             </form>
 
-            <p className='mt-4 text-sm text-gray-600 dark:text-gray-400'>
+            <p className='mt-4 text-sm text-gray-400'>
               New to Mivora?{' '}
               <Link to={path.register} className='text-pink-600 hover:underline'>
                 Create an account

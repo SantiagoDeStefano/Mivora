@@ -122,7 +122,7 @@ export default function RegisterPage() {
               <Button type='submit'>Create account</Button>
             </form>
 
-            <p className='mt-4 text-sm text-gray-600 dark:text-gray-400'>
+                <p className='mt-4 text-sm text-gray-400'>
               Already have an account?{' '}
               <Link to={path.login} className='text-pink-600 hover:underline'>
                 Log in

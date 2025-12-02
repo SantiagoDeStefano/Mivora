@@ -1,6 +1,4 @@
-import React from "react";
 import { Surface } from "../../components/Card/Card";
-import Button from "../../components/Button";
 import Badge from "../../components/Badge/Badge";
 import Container from "../../components/Container/Container";
 import { Link, useNavigate } from "react-router-dom";
@@ -64,12 +62,12 @@ export function HomePage({
         {(loading || events === null) && (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <Surface key={i} className="overflow-hidden border-gray-200 dark:border-gray-800">
-                <div className="aspect-[4/3] animate-pulse bg-gray-200 dark:bg-gray-800" />
+              <Surface key={i} className="overflow-hidden border border-gray-800 bg-gray-900">
+                <div className="aspect-[4/3] animate-pulse bg-gray-800" />
                 <div className="p-5 space-y-2">
-                  <div className="h-3 w-28 animate-pulse rounded bg-gray-200 dark:bg-gray-800" />
-                  <div className="h-4 w-48 animate-pulse rounded bg-gray-200 dark:bg-gray-800" />
-                  <div className="h-3 w-36 animate-pulse rounded bg-gray-200 dark:bg-gray-800" />
+                  <div className="h-3 w-28 animate-pulse rounded bg-gray-800" />
+                  <div className="h-4 w-48 animate-pulse rounded bg-gray-800" />
+                  <div className="h-3 w-36 animate-pulse rounded bg-gray-800" />
                 </div>
               </Surface>
             ))}
@@ -78,7 +76,7 @@ export function HomePage({
 
         {/* Empty state */}
         {Array.isArray(events) && events.length === 0 && !loading && (
-          <div className="rounded-2xl border border-dashed p-10 text-center text-sm text-gray-600 dark:border-gray-800 dark:text-gray-300">
+          <div className="rounded-2xl border border-dashed border-gray-800 p-10 text-center text-sm text-gray-300 bg-gray-900">
             No events yet — try adjusting filters.
           </div>
         )}
@@ -89,7 +87,7 @@ export function HomePage({
             {events.map((e) => (
               <Surface
                 key={e.id}
-                className="overflow-hidden border-gray-600 bg-gray-100 text-white transition hover:shadow-xl focus-within:ring-2 focus-within:ring-pink-500"
+                className="overflow-hidden border border-gray-800 bg-gray-900 text-gray-100 transition hover:shadow-xl focus-within:ring-2 focus-within:ring-pink-500"
               >
                 <div
                   className="aspect-[4/3] w-full bg-cover bg-center"
@@ -110,7 +108,7 @@ export function HomePage({
                       
                       <Link
                         to={`/events/${e.id}`}
-                        className="inline-flex items-center justify-center px-3 py-1.5 rounded-xl text-sm font-medium bg-pink-500 hover:bg-gray-200 -800 dark:hover:bg-gray-700"
+                        className="inline-flex items-center justify-center px-3 py-1.5 rounded-xl text-sm font-medium bg-pink-500 hover:bg-pink-600 text-white"
                       >
                         View event
                       </Link>

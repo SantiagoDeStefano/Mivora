@@ -16,7 +16,7 @@ export default function RegisterHeader() {
       {/* Logo */}
       <Link
         to="/"
-        className="group flex items-center gap-2 rounded-xl px-2 py-1.5 transition-colors hover:bg-pink-50 dark:hover:bg-gray-800"
+        className="group flex items-center gap-2 rounded-xl px-2 py-1.5 transition-colors hover:bg-gray-800"
         aria-label="Home"
       >
         <img
