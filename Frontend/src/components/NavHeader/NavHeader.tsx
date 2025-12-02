@@ -54,10 +54,8 @@ export default function NavHeader() {
 
         <nav className="hidden items-center gap-1 md:flex">
           <NavLink to="/" className={navLink} end>Home</NavLink>
-          {isOrganizer ? (
+          {isOrganizer && (
             <NavLink to={path.organizer_manage_event} className={navLink}>Events</NavLink>
-          ) : (
-            <NavLink to={path.home} className={navLink}>Events</NavLink>
           )}
           <NavLink to="/about" className={navLink}>About</NavLink>
           <SearchButton />
