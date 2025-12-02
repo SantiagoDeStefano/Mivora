@@ -29,7 +29,7 @@ export default function MePage() {
 
   // Hỗ trợ role là string hoặc string[]
   const roles: string[] = Array.isArray(profile.role) ? profile.role : profile.role ? [profile.role] : []
-  const isVerified = profile.verified === 'verified'
+  const isVerified = profile.verified == 'verified'
   const isOrganizer = roles.map((r) => r.toLowerCase()).includes('organizer')
 
   // Edit mode: show UpdateProfile
