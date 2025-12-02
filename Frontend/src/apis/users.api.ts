@@ -31,6 +31,9 @@ const usersApi = {
         'Content-Type': 'multipart/form-data'
       }
     })
+  },
+  sendVerifyEmail: () => {
+    return http.post<MessageOnly>('/users/me/email-verification')
   }
 }
 

@@ -7,6 +7,7 @@ import Button from '../../../components/Button'
 import Badge from '../../../components/Badge'
 import path from '../../../constants/path'
 import { AppContext } from '../../../contexts/app.context'
+import VerifyEmailButton from '../../../components/VerifyEmailButton'
 
 export default function MePage() {
   const [isEditing, setIsEditing] = useState(false)
@@ -48,7 +49,7 @@ export default function MePage() {
           </div>
 
           <div className='flex items-center gap-2'>
-            <Button variant='secondary'>Verify email</Button>
+            <VerifyEmailButton />
 
             <Button type='button' onClick={toEdit}>
               Edit profile
