@@ -89,19 +89,26 @@ export const updateAvatar = yup.object({
   image: yup.mixed().required(USERS_MESSAGES.INVALID_IMAGE)
 })
 
-export const eventTitleSchema = yup.object({
+
+export const updateEvent = yup.object({
   title: yup
     .string()
     .trim()
-    .required('Event title is required.')
     .min(3, 'Title must be at least 3 characters')
-    .max(120, 'Title must be at most 120 characters')
+    .max(120, 'Title must be at most 120 characters'),
+  description: yup.string().trim(),
+  poster_url: yup.string().trim(),
+  location_text: yup.string().trim(),
+  start_at: yup.date(),
+  end_at: yup.date(),
+  price_cents: yup.number().min(0, 'Price must be non-negative'),
+  capacity: yup.number().min(0, 'Capacity must be non-negative')
 })
 
 // --- TYPES ---
 export type RegisterSchema = Required<yup.InferType<typeof registerSchema>>
 export type LoginSchema = Required<yup.InferType<typeof loginSchema>>
 
-export type EventTitleSchema = yup.InferType<typeof eventTitleSchema>
 export type UpdateMeSchema = yup.InferType<typeof updateMe>
 export type UpdateAvatarSchema = yup.InferType<typeof updateAvatar>
+export type UpdateEventSchema = yup.InferType<typeof updateEvent>

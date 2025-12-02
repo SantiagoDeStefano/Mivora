@@ -36,6 +36,25 @@ const eventsApi = {
     return http.get<SuccessResponse<GetEventsResponse>>('/events', {
       params: { q, limit, page }
     })
+  },
+  searchEventsOrganizer: (q: string, limit: number = 20, page: number = 1) => {
+    return http.get<SuccessResponse<GetEventsResponse>>('/events/organizer', {
+      params: { q, limit, page }
+    })
+  },
+  getCreatedEvents: (limit: number = 20, page: number = 1) => {
+    return http.get<SuccessResponse<GetEventsResponse>>('/events/organizer', {
+      params: { limit, page }
+    })
+  },
+  getCreatedEventDetails: (event_id: string) => {
+    return http.get<SuccessResponse<Event>>(`/events/organizer/${event_id}`)
+  },
+  createEvent: (body: any) => {
+    return http.post<SuccessResponse<Event>>('/events/organizer', body)
+  },
+  updateEvent: (event_id: string, body: any) => {
+    return http.patch<SuccessResponse<Event>>(`/events/organizer/${event_id}`, body)
   }
 }
 

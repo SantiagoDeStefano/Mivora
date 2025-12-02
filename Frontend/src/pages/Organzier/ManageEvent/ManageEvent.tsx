@@ -4,56 +4,101 @@ import Badge from "../../../components/Badge/Badge";
 import { Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import path from "../../../constants/path";
-
+import eventsApi from "../../../apis/events.api";
 
 type EventStatus = "draft" | "published" | "canceled";
 
-interface EventItem {
+interface OrganizerEvent {
   id: string;
-  name: string;
-  date: string; // ISO or display string
+  title: string;
+  start_at: string;
   status: EventStatus;
 }
-
-const sampleEvents: EventItem[] = [
-  { id: "evt_1", name: "Neon Nights", date: "2025-12-01", status: "published" },
-  { id: "evt_2", name: "Summer Jam", date: "2025-08-15", status: "draft" },
-  { id: "evt_3", name: "Tech Expo 2025", date: "2025-09-20", status: "published" },
-  { id: "evt_4", name: "Indie Film Fest", date: "2025-10-05", status: "draft" },
-  { id: "evt_5", name: "Canceled Gala", date: "2025-07-01", status: "canceled" },
-];
 
 export default function ManageEventPage() {
   const navigate = useNavigate();
 
-  const [events, setEvents] = useState<EventItem[]>([]);
+  const [events, setEvents] = useState<OrganizerEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const [isRefetching, setIsRefetching] = useState(false);
+
+  // input người dùng đang gõ
+  const [searchInput, setSearchInput] = useState("");
+  // term thực sự dùng để query API (đã debounce)
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [statusFilter, setStatusFilter] = useState<EventStatus | "all">("all");
 
+  // Debounce searchInput -> searchTerm (vd 400ms)
   useEffect(() => {
-    setLoading(true);
+    const id = window.setTimeout(() => {
+      setSearchTerm(searchInput.trim());
+    }, 400);
 
-    // TODO: fetch events created by current organizer
-    setEvents(sampleEvents);
+    return () => {
+      window.clearTimeout(id);
+    };
+  }, [searchInput]);
 
-    setLoading(false);
-  }, []);
+  const fetchOrganizerEvents = async (term: string) => {
+    const firstLoad = events.length === 0;
+
+    try {
+      if (firstLoad) {
+        setLoading(true);
+      } else {
+        setIsRefetching(true);
+      }
+
+      const limit = 50;
+      let page = 1;
+      let allEvents: OrganizerEvent[] = [];
+
+      while (true) {
+        const res = term
+          ? await eventsApi.searchEventsOrganizer(term, limit, page)
+          : await eventsApi.getCreatedEvents(limit, page);
+
+        const result = res.data.result;
+
+        const mapped: OrganizerEvent[] = result.events.map((ev: any) => ({
+          id: ev.id,
+          title: ev.title,
+          start_at: ev.start_at,
+          status: ev.status as EventStatus,
+        }));
+
+        allEvents = [...allEvents, ...mapped];
+
+        if (result.page >= result.total_page) break;
+        page++;
+      }
+
+      setEvents(allEvents);
+    } catch (err) {
+      console.error("Error loading organizer events:", err);
+      if (events.length === 0) setEvents([]);
+    } finally {
+      setLoading(false);
+      setIsRefetching(false);
+    }
+  };
+
+  // Fetch khi mount + khi searchTerm đổi (đã debounce)
+  useEffect(() => {
+    fetchOrganizerEvents(searchTerm);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
 
   const filtered = useMemo(() => {
     let list = [...events];
-
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
-      list = list.filter((e) => e.name.toLowerCase().includes(q));
-    }
 
     if (statusFilter !== "all") {
       list = list.filter((e) => e.status === statusFilter);
     }
 
-    return list.sort((a, b) => a.name.localeCompare(b.name));
-  }, [events, search, statusFilter]);
+    return list
+  }, [events, statusFilter]);
 
   const total = events.length;
   const totalDraft = events.filter((e) => e.status === "draft").length;
@@ -81,7 +126,6 @@ export default function ManageEventPage() {
             type="button"
             className="inline-flex items-center justify-center rounded-full bg-pink-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2 focus:ring-offset-gray-900"
             onClick={() => {
-              // TODO: navigate to create event page
               navigate(path.organizer_create_event);
             }}
           >
@@ -92,13 +136,22 @@ export default function ManageEventPage() {
         {/* Controls: search + filter */}
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-xs font-medium text-gray-300 mb-1">Search events</label>
-            <input
-              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm text-gray-100 shadow-sm outline-none focus:border-gray-600 focus:ring-1 focus:ring-gray-700 bg-gray-900"
-              placeholder="Type event name…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+            <label className="block text-xs font-medium text-gray-300 mb-1">
+              Search events
+            </label>
+            <div className="relative">
+              <input
+                className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm text-gray-100 shadow-sm outline-none focus:border-gray-600 focus:ring-1 focus:ring-gray-700 bg-gray-900"
+                placeholder="Type event name…"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+              />
+              {isRefetching && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                  Searching…
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="mt-3 flex items-center gap-2">
@@ -117,7 +170,9 @@ export default function ManageEventPage() {
                     type="button"
                     className={[
                       "rounded-full px-3 py-1 font-medium transition-colors",
-                      active ? "bg-gray-800 text-gray-100 shadow-sm" : "text-gray-300 hover:text-gray-100",
+                      active
+                        ? "bg-gray-800 text-gray-100 shadow-sm"
+                        : "text-gray-300 hover:text-gray-100",
                     ].join(" ")}
                     onClick={() => setStatusFilter(opt.value)}
                   >
@@ -129,10 +184,10 @@ export default function ManageEventPage() {
           </div>
         </div>
 
-        {/* Loading skeleton */}
-        {loading && (
+        {/* Loading skeleton – chỉ show khi chưa có data */}
+        {loading && events.length === 0 && (
           <div className="mt-4 grid gap-2">
-              {Array.from({ length: 5 }).map((_, i) => (
+            {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="h-12 rounded-lg animate-pulse bg-gray-800" />
             ))}
           </div>
@@ -162,13 +217,10 @@ export default function ManageEventPage() {
               </thead>
               <tbody>
                 {filtered.map((event) => (
-                  <tr
-                    key={event.id}
-                    className="border-t border-gray-800"
-                  >
-                    <td className="px-3 py-3 font-medium">{event.name}</td>
+                  <tr key={event.id} className="border-t border-gray-800">
+                    <td className="px-3 py-3 font-medium">{event.title}</td>
                     <td className="px-3 py-3 text-gray-300">
-                      {event.date}
+                      {new Date(event.start_at).toLocaleDateString()}
                     </td>
                     <td className="px-3 py-3">
                       {event.status === "published" ? (
@@ -181,12 +233,16 @@ export default function ManageEventPage() {
                     </td>
                     <td className="px-3 py-3">
                       <div className="flex items-center justify-end gap-2">
-                        <button 
+                        <button
                           type="button"
                           className="inline-flex items-center gap-1 rounded-full bg-gray-800 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-1 focus:ring-offset-gray-900"
                           onClick={() => {
-                            // TODO: navigate to event details
-                            navigate(path.organizer_created_event_details.replace(":id", event.id));
+                            navigate(
+                              path.organizer_created_event_details.replace(
+                                ":id",
+                                event.id
+                              )
+                            );
                           }}
                         >
                           <Eye className="h-3.5 w-3.5" />
