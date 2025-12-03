@@ -5,6 +5,12 @@ import { UUIDv4 } from '~/types/common'
 import { EventStatus } from '~/types/domain'
 
 class EventService {
+  /**
+   * Create a new event owned by the organizer
+   * - Inputs: `organizer_id`, `body: CreateEventRequestBody`
+   * - Action: inserts a new `events` row and returns the created event record
+   * - Returns: created event object (id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status)
+   */
   async createEvent(organizer_id: UUIDv4, body: CreateEventRequestBody) {
     const { title, description, poster_url, location_text, start_at, end_at, price_cents, capacity } = body
     const new_event = new Event({
@@ -68,6 +74,12 @@ class EventService {
     return newEvent.rows[0]
   }
 
+  /**
+   * List or search published events (public)
+   * - Inputs: `search` (optional), `limit`, `page`, `status` (usually 'published')
+   * - Action: queries `events` joined with organizer name, applies pagination and optional search
+   * - Returns: { events: Event[], totalEvents: number }
+   */
   async getOrSearchPublishedEvents(search: string, limit: number, page: number, status: EventStatus) {
     const eventsResult = !search
       ? await databaseService.events(
@@ -126,6 +138,12 @@ class EventService {
       totalEvents
     }
   }
+  /**
+   * List or search events for a specific organizer, optionally filtered by status
+   * - Inputs: `organizer_id`, `limit`, `page`, optional `search`, optional `status`
+   * - Action: returns organizer's events with pagination and optional filters
+   * - Returns: { events: Event[], totalEvents: number }
+   */
   async getOrSearchEventsWithStatus(
     organizer_id: UUIDv4,
     limit: number,
@@ -167,6 +185,12 @@ class EventService {
       totalEvents
     }
   }
+  /**
+   * Return details for a specific event created by the organizer
+   * - Inputs: `organizer_id`, `event_id`
+   * - Action: verifies ownership and returns the event details (or undefined if not found)
+   * - Returns: event object or undefined
+   */
   async getCreatedEventDetails(organizer_id: UUIDv4, event_id: UUIDv4) {
     const eventsResult = await databaseService.events(
       `
@@ -192,6 +216,12 @@ class EventService {
 
     return eventsResult.rows[0]
   }
+  /**
+   * Update an event's mutable fields
+   * - Inputs: `event_id`, `body: UpdateEventDetailsBody`
+   * - Action: updates the events row and returns the updated record
+   * - Returns: updated event object
+   */
   async updateEvent(event_id: UUIDv4, body: UpdateEventDetailsBody) {
     const { title, description, poster_url, location_text, start_at, end_at, price_cents, capacity } = body
     const event = await databaseService.events(
@@ -225,6 +255,12 @@ class EventService {
     return event.rows[0]
   }
 
+  /**
+   * Mark an event as published
+   * - Input: `event_id`
+   * - Action: sets `status = 'published'` and returns the updated event
+   * - Returns: updated event object
+   */
   async publishEvent(event_id: UUIDv4) {
     const event = await databaseService.events(
       `
@@ -250,6 +286,12 @@ class EventService {
     return event.rows[0]
   }
 
+  /**
+   * Mark an event as canceled
+   * - Input: `event_id`
+   * - Action: sets `status = 'canceled'` and returns the updated event
+   * - Returns: updated event object
+   */
   async cancelEvent(event_id: UUIDv4) {
     const event = await databaseService.events(
       `
@@ -275,6 +317,12 @@ class EventService {
     return event.rows[0]
   }
 
+  /**
+   * Lightweight title search used for quick lookups
+   * - Inputs: `search`, `limit`, `page`
+   * - Action: finds event IDs and titles matching the search term
+   * - Returns: { events: Array<{id, title}>, totalEvents: number }
+   */
   async searchEvents(search: string, limit: number, page: number) {
     const eventsResult = await databaseService.events(
       `
