@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
+import axios from 'axios'
 import path from '../../../constants/path'
 import eventsApi from '../../../apis/events.api'
 
@@ -40,7 +41,16 @@ export default function CreatedEventDetailsPage({ event }: Props) {
     visible: false
   })
 
-  const showNotification = (text: string, type: 'success' | 'error' = 'success') => {
+  const [publishing, setPublishing] = useState(false)
+  const [canceling, setCanceling] = useState(false)
+
+  const [confirmPublish, setConfirmPublish] = useState(false)
+  const [confirmCancel, setConfirmCancel] = useState(false)
+
+  const showNotification = (
+    text: string,
+    type: 'success' | 'error' = 'success'
+  ) => {
     setNotification({ text, type, visible: true })
     setTimeout(
       () => setNotification((prev) => ({ ...prev, visible: false })),
@@ -65,7 +75,6 @@ export default function CreatedEventDetailsPage({ event }: Props) {
     return `$${(cents / 100).toFixed(2)}`
   }
 
-  // Toast
   const NotificationToast = () => {
     if (!notification.visible) return null
     return (
@@ -81,9 +90,49 @@ export default function CreatedEventDetailsPage({ event }: Props) {
     )
   }
 
-  // Fetch event details nếu không có props.event
+  const ConfirmPopup = ({
+    open,
+    title,
+    message,
+    onConfirm,
+    onCancel
+  }: {
+    open: boolean
+    title: string
+    message: string
+    onConfirm: () => void
+    onCancel: () => void
+  }) => {
+    if (!open) return null
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div className="w-full max-w-sm rounded-2xl border border-gray-700 bg-gray-900 p-6 shadow-xl">
+          <h2 className="text-lg font-semibold text-gray-100">{title}</h2>
+          <p className="mt-2 text-sm text-gray-400">{message}</p>
+          <div className="mt-5 flex items-center justify-end gap-3">
+            <button
+              className="rounded-xl px-4 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800"
+              onClick={onCancel}
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              className="rounded-xl bg-pink-600 px-4 py-2 text-sm font-medium text-white hover:bg-pink-700"
+              onClick={onConfirm}
+              type="button"
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Fetch event details nếu không truyền qua props
   useEffect(() => {
-    if (event) return // đã có dữ liệu từ props
+    if (event) return
 
     if (!id) {
       setError('Missing event id.')
@@ -167,6 +216,7 @@ export default function CreatedEventDetailsPage({ event }: Props) {
           <button
             className="rounded-xl bg-pink-600 px-4 py-2 text-sm font-medium text-white hover:bg-pink-700"
             onClick={() => navigate(path.organizer_manage_event)}
+            type="button"
           >
             Back to My Events
           </button>
@@ -178,6 +228,79 @@ export default function CreatedEventDetailsPage({ event }: Props) {
   return (
     <section id="event-details" className="py-10 sm:py-14">
       <NotificationToast />
+      {/* Confirm popups */}
+      <ConfirmPopup
+        open={confirmPublish}
+        title="Publish Event"
+        message="Are you sure you want to publish this event?"
+        onCancel={() => setConfirmPublish(false)}
+        onConfirm={async () => {
+          setConfirmPublish(false)
+
+          if (ev.status !== 'draft') {
+            showNotification(
+              'Cannot publish: event must be in draft status.',
+              'error'
+            )
+            return
+          }
+
+          try {
+            setPublishing(true)
+            const res = await eventsApi.publishEvent(ev.id)
+            const updated = res.data.result
+            setEv((prev) => (prev ? { ...prev, ...updated } : updated))
+            showNotification('Publish event successfully', 'success')
+          } catch (err) {
+            const msg = axios.isAxiosError(err)
+              ? err.response?.data?.message ||
+                err.response?.data?.error ||
+                'Failed to publish event.'
+              : 'Failed to publish event.'
+            console.error('Publish event failed:', err)
+            showNotification(msg, 'error')
+          } finally {
+            setPublishing(false)
+          }
+        }}
+      />
+
+      <ConfirmPopup
+        open={confirmCancel}
+        title="Cancel Event"
+        message="Are you sure you want to cancel this event? This action cannot be undone."
+        onCancel={() => setConfirmCancel(false)}
+        onConfirm={async () => {
+          setConfirmCancel(false)
+
+          if (ev.status !== 'published') {
+            showNotification(
+              'Cannot cancel: event must be published to cancel.',
+              'error'
+            )
+            return
+          }
+
+          try {
+            setCanceling(true)
+            const res = await eventsApi.cancelEvent(ev.id)
+            const updated = res.data.result
+            setEv((prev) => (prev ? { ...prev, ...updated } : updated))
+            showNotification('Cancel event successfully', 'success')
+          } catch (err) {
+            const msg = axios.isAxiosError(err)
+              ? err.response?.data?.message ||
+                err.response?.data?.error ||
+                'Failed to cancel event.'
+              : 'Failed to cancel event.'
+            console.error('Cancel event failed:', err)
+            showNotification(msg, 'error')
+          } finally {
+            setCanceling(false)
+          }
+        }}
+      />
+
       <div className="max-w-7xl mx-auto px-4">
         {/* Breadcrumb */}
         <nav className="mb-4 text-sm text-gray-400">
@@ -224,27 +347,16 @@ export default function CreatedEventDetailsPage({ event }: Props) {
               {ev.status === 'draft' && (
                 <>
                   <button
-                    className="px-3 py-2 rounded-xl text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700"
-                    onClick={() => {
-                      if (ev.status !== 'draft') {
-                        alert('Cannot publish: event must be in draft status.')
-                        return
-                      }
-                      setEv((prev) =>
-                        prev ? { ...prev, status: 'published' } : prev
-                      )
-                      const newUrl = path.organizer_publish_event.replace(
-                        ':id',
-                        ev.id
-                      )
-                      window.history.pushState({}, '', newUrl)
-                      showNotification('Publish event successfully', 'success')
-                    }}
+                    type="button"
+                    disabled={publishing}
+                    className="px-3 py-2 rounded-xl text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                    onClick={() => setConfirmPublish(true)}
                   >
-                    Publish
+                    {publishing ? 'Publishing…' : 'Publish'}
                   </button>
 
                   <button
+                    type="button"
                     className="px-3 py-2 rounded-xl text-sm font-medium bg-yellow-600 text-white hover:bg-yellow-700"
                     onClick={() =>
                       navigate(
@@ -260,26 +372,12 @@ export default function CreatedEventDetailsPage({ event }: Props) {
               {/* Cancel when published */}
               {ev.status === 'published' && (
                 <button
-                  className="px-3 py-2 rounded-xl text-sm font-medium bg-red-600 text-white hover:bg-red-700"
-                  onClick={() => {
-                    if (ev.status !== 'published') {
-                      alert(
-                        'Cannot cancel: event must be published to cancel.'
-                      )
-                      return
-                    }
-                    setEv((prev) =>
-                      prev ? { ...prev, status: 'canceled' } : prev
-                    )
-                    const cancelUrl = path.organizer_cancel_event.replace(
-                      ':id',
-                      ev.id
-                    )
-                    window.history.pushState({}, '', cancelUrl)
-                    showNotification('Cancel event successfully', 'success')
-                  }}
+                  type="button"
+                  disabled={canceling}
+                  className="px-3 py-2 rounded-xl text-sm font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                  onClick={() => setConfirmCancel(true)}
                 >
-                  Cancel
+                  {canceling ? 'Canceling…' : 'Cancel'}
                 </button>
               )}
             </div>
@@ -323,7 +421,9 @@ export default function CreatedEventDetailsPage({ event }: Props) {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-300">Price</span>
-                  <span className="font-medium">{formatPrice(ev.price_cents)}</span>
+                  <span className="font-medium">
+                    {formatPrice(ev.price_cents)}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-300">Start</span>
@@ -335,7 +435,9 @@ export default function CreatedEventDetailsPage({ event }: Props) {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-300">Location</span>
-                  <span className="font-medium">{ev.location_text || '—'}</span>
+                  <span className="font-medium">
+                    {ev.location_text || '—'}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-300">Capacity</span>

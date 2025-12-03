@@ -19,11 +19,11 @@ export interface GetTicketsResponse {
   total_page: number
 }
 
-const eventsApi = {
+const ticketsApi = {
   bookTicket: (event_id: string) => {
     return http.post<SuccessResponse<Ticket>>('/tickets/book', event_id)
-  }
+  },
 }
 
-export default eventsApi
+export default ticketsApi
 

@@ -55,6 +55,12 @@ const eventsApi = {
   },
   updateEvent: (event_id: string, body: any) => {
     return http.patch<SuccessResponse<Event>>(`/events/organizer/${event_id}`, body)
+  },
+  publishEvent: (event_id: string) => {
+    return http.patch<SuccessResponse<Event>>(`/events/organizer/${event_id}/publish`)
+  },
+  cancelEvent: (event_id: string) => {
+    return http.patch<SuccessResponse<Event>>(`/events/organizer/${event_id}/cancel`)
   }
 }
 
