@@ -23,6 +23,8 @@ import UpdateEventPage from './pages/Organzier/UpdateEvent/UpdateEvent'
 import BookTicketPage from './pages/BookTickets/BookTickets'
 import MyTicketsPage from './pages/MyTickets/MyTickets'
 import MyTicketDetailsPage from './pages/MyTicketDetails/MyTicketDetails'
+import ScanTicketPage from './pages/ScanTicket/ScanTicket'
+
 import { useContext } from 'react'
 import { AppContext } from './contexts/app.context'
 
@@ -195,6 +197,14 @@ export default function useRouteElements() {
           element: (
             <UserLayout>
               <MyTicketDetailsPage />
+            </UserLayout>
+          )
+        },
+        {
+          path: path.scan_ticket,
+          element: (
+            <UserLayout>
+              <ScanTicketPage />
             </UserLayout>
           )
         }

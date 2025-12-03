@@ -1,201 +1,282 @@
-import React, { useEffect, useState } from "react";
+// src/pages/Tickets/MyTicketsPage.tsx
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Container from "../../components/Container/Container";
-import path from "../../constants/path";
-type Ticket = {
-  id: string;
-  title: string;
-  user_id: string;
-  status: "booked" | "checked_in" | string;
-  checked_in_at: string | null;
-  price_cents: number;
-  qr_code: string; // data:image/png;base64,...
-};
+import Container from '../../components/Container/Container'
+import Badge from '../../components/Badge/Badge'
+import { Eye } from 'lucide-react'
+import path from '../../constants/path'
+import ticketsApi, { Ticket, TicketApi } from '../../apis/tickets.api'
+import { SuccessResponse } from '../../types/response.types'
+import { GetOrSearchMyTicketsSchema } from '../../utils/rules'
 
-// type ApiResponse = {
-//   message: string;
-//   result: {
-//     tickets: Ticket[];
-//   };
-// };
+type TicketStatus = 'booked' | 'checked_in'
 
-// Mock tickets for local UI/testing
-const mockTickets: Ticket[] = [
-  {
-    id: 'f5d09842-e566-4eb6-9a1f-59cbf8db712c',
-    title: 'Tech Summit 2025',
-    user_id: '88945d98-a228-42fe-89c8-f82c20bfc808',
-    status: 'booked',
-    checked_in_at: null,
-    price_cents: 2500,
-    qr_code: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASQAAAEkCAYAAACG+Uzs...'
-  },
-  {
-    id: 'a1b2c3d4-e566-4eb6-9a1f-111111111111',
-    title: 'Design Workshop',
-    user_id: '88945d98-a228-42fe-89c8-f82c20bfc808',
-    status: 'checked_in',
-    checked_in_at: '2025-11-20T09:15:00.000Z',
-    price_cents: 0,
-    qr_code: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASQAAAEkCAYAAACG+Uzs...'
-  },
-  {
-    id: 'z9y8x7w6-e566-4eb6-9a1f-222222222222',
-    title: 'Music Fest',
-    user_id: '88945d98-a228-42fe-89c8-f82c20bfc808',
-    status: 'checked_in',
-    checked_in_at: null,
-    price_cents: 5000,
-    qr_code: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASQAAAEkCAYAAACG+Uzs...'
-  }
-];
-
-const statusLabel: Record<string, string> = {
-  booked: "Booked",
-  checked_in: "Checked-in",
-};
-
-const statusClass: Record<string, string> = {
-  booked: "bg-yellow-100/80 text-yellow-800",
-    checked_in: "bg-green-100/80 text-green-800",
-};
-
-function formatPrice(price_cents: number): string {
-  const value = price_cents / 100;
-  return value.toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-  });
+type GetMyTicketsResult = {
+  tickets: TicketApi[]
+  page: number
+  total_page: number
 }
 
-function formatCheckedIn(checked_in_at: string | null): string {
-  if (!checked_in_at) return "Not checked in";
-  const d = new Date(checked_in_at);
-  return d.toLocaleString("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+type GetMyTicketsResponse = SuccessResponse<GetMyTicketsResult>
+
+const LIMIT = 50
+
+const formatPrice = (priceCents: number) => {
+  if (!priceCents) return 'Free ticket'
+  return `$${(priceCents / 100).toFixed(2)}`
+}
+
+const formatCheckedIn = (value: string | null) => {
+  if (!value) return 'Not checked in'
+  const d = new Date(value)
+  return isNaN(d.getTime()) ? value : d.toLocaleString()
 }
 
 export default function MyTicketsPage() {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate()
 
+  const [tickets, setTickets] = useState<Ticket[]>([])
+  const [loading, setLoading] = useState(true)
+  const [isRefetching, setIsRefetching] = useState(false)
+
+  const [searchInput, setSearchInput] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const [statusFilter, setStatusFilter] = useState<TicketStatus | 'all'>('all')
+
+  // debounce searchInput -> searchTerm
   useEffect(() => {
-    // Use mock data for local development / UI
-    // Simulate small delay so loading state is visible
-    const t = setTimeout(() => {
-      setTickets(mockTickets);
-      setLoading(false);
-    }, 200);
+    const id = window.setTimeout(() => {
+      setSearchTerm(searchInput.trim())
+    }, 400)
 
-    return () => clearTimeout(t);
-  }, []);
+    return () => {
+      window.clearTimeout(id)
+    }
+  }, [searchInput])
 
-  if (loading) {
-    return (
-      <section className="py-10 sm:py-14">
-        <Container>
-          <div className="min-h-[60vh] flex items-center justify-center">
-            <p className="text-slate-500">Loading your tickets...</p>
-          </div>
-        </Container>
-      </section>
-    );
+  const fetchTickets = async (term: string, status: TicketStatus | 'all') => {
+    const firstLoad = tickets.length === 0
+
+    try {
+      if (firstLoad) {
+        setLoading(true)
+      } else {
+        setIsRefetching(true)
+      }
+
+      let page = 1
+      let all: Ticket[] = []
+
+      while (true) {
+        const params: GetOrSearchMyTicketsSchema = {
+          limit: LIMIT,
+          page
+        }
+
+        // rule q: 3–20 chars, nếu <3 coi như không search
+        if (term.length >= 3 && term.length <= 20) {
+          params.q = term
+        }
+
+        // filter status server-side
+        if (status !== 'all') {
+          params.status = status
+        }
+
+        const res = await ticketsApi.searchMyTickets(params)
+        const data = res.data as GetMyTicketsResponse
+        const result = data.result
+
+        // map TicketApi -> Ticket (ticket_status -> status)
+        const mapped: Ticket[] = result.tickets.map((raw: TicketApi) => ({
+          ...raw,
+          status: raw.ticket_status
+        }))
+
+        all = all.concat(mapped)
+
+        if (result.page >= result.total_page) break
+        page++
+      }
+
+      setTickets(all)
+    } catch (err) {
+      console.error('Error loading my tickets:', err)
+      if (tickets.length === 0) setTickets([])
+    } finally {
+      setLoading(false)
+      setIsRefetching(false)
+    }
   }
 
-  if (error) {
-    return (
-      <section className="py-10 sm:py-14">
-        <Container>
-          <div className="min-h-[60vh] flex items-center justify-center">
-            <p className="text-red-500">{error}</p>
-          </div>
-        </Container>
-      </section>
-    );
-  }
+  // fetch khi mount + khi searchTerm/statusFilter (đã debounce) đổi
+  useEffect(() => {
+    fetchTickets(searchTerm, statusFilter)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, statusFilter])
 
-  if (!tickets.length) {
-    return (
-      <section className="py-10 sm:py-14">
-        <Container>
-          <div className="min-h-[60vh] flex items-center justify-center">
-            <div className="text-center">
-              <h1 className="text-2xl font-semibold text-slate-900">You have no tickets</h1>
-              <p className="mt-2 text-slate-500">Once you book tickets, they will appear here.</p>
-            </div>
-          </div>
-        </Container>
-      </section>
-    );
-  }
+  const filtered = useMemo(() => {
+    let list = [...tickets]
+
+    if (statusFilter !== 'all') {
+      list = list.filter((t) => t.status === statusFilter)
+    }
+
+    return list
+  }, [tickets, statusFilter])
+
+  const total = tickets.length
+  const totalBooked = tickets.filter((t) => t.status === 'booked').length
+  const totalCheckedIn = tickets.filter((t) => t.status === 'checked_in').length
 
   return (
-    <section className="py-10 sm:py-14">
+    <section className='py-10 sm:py-14'>
       <Container>
-        <div className="max-w-5xl mx-auto px-4 py-8">
-          <header className="mb-8">
-            <h1 className="text-3xl font-bold text-slate-300">My Tickets</h1>
-            <p className="mt-1 text-slate-500">View and use your tickets. Show the QR code at the event to check in.</p>
-          </header> 
-
-          <div className="flex flex-col gap-4">
-            {tickets.map((ticket) => {
-              const label = statusLabel[ticket.status] || ticket.status;
-              const badgeClass =
-                statusClass[ticket.status] || "bg-slate-50 text-slate-800";
-
-              
-
-              return (
-                <div
-                  key={ticket.id}
-                  className="bg-white rounded-2xl shadow-sm border border-slate-600 p-5 flex flex-col gap-4"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <h2 className="text-lg font-semibold text-slate-300 line-clamp-2">
-                        {ticket.title}
-                      </h2>
-                      <p className="mt-1 text-sm text-slate-300">
-                        <span className="font-medium">Price:</span> {formatPrice(ticket.price_cents)}
-                      </p>
-                    </div>
-
-                    <div className="flex items-start">
-                      <span
-                        className={
-                          "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium " +
-                          badgeClass
-                        }
-                      >
-                        {label}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-sm text-slate-400">
-                    <div>
-                      <span className="font-medium">Checked in at:</span>{' '}
-                      {formatCheckedIn(ticket.checked_in_at)}
-                    </div>
-                    <div>
-                      <button
-                        onClick={() => navigate(path.my_ticket_details.replace(':id', ticket.id))}
-                        className="inline-flex items-center justify-center rounded-full border border-transparent bg-pink-600 text-white px-4 py-2 text-xs font-medium hover:bg-pink-700"
-                      >
-                        View details
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+        {/* Header + stats */}
+        <div className='flex flex-wrap items-center justify-between gap-3'>
+          <div className='flex flex-col gap-2'>
+            <h2 className='text-2xl sm:text-3xl font-semibold'>My Tickets</h2>
+            <div className='mt-3 flex flex-wrap items-center gap-2'>
+              <Badge tone='pink'>Total: {total}</Badge>
+              <Badge tone='neutral'>Booked: {totalBooked}</Badge>
+              <Badge tone='success'>Checked in: {totalCheckedIn}</Badge>
+            </div>
           </div>
-      </div>
-    </Container>
-  </section>
-  );
+
+          <button
+            type='button'
+            className='inline-flex items-center justify-center rounded-full bg-pink-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2 focus:ring-offset-gray-900'
+            onClick={() => {
+              navigate(path.home)
+            }}
+          >
+            Discover events
+          </button>
+        </div>
+
+        {/* Controls: search + filter */}
+        <div className='mt-6 flex flex-wrap items-center gap-3'>
+          <div className='flex-1 min-w-[200px]'>
+            <label className='block text-xs font-medium text-gray-300 mb-1'>
+              Search tickets
+            </label>
+            <div className='relative'>
+              <input
+                className='w-full rounded-lg border border-gray-700 px-3 py-2 text-sm text-gray-100 shadow-sm outline-none focus:border-gray-600 focus:ring-1 focus:ring-gray-700 bg-gray-900'
+                placeholder='Type ticket/event name…'
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+              />
+              {isRefetching && (
+                <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400'>
+                  Searching…
+                </span>
+              )}
+            </div>
+            <p className='mt-1 text-[11px] text-gray-400'>
+              Search applies when length is between 3 and 20 characters.
+            </p>
+          </div>
+
+          <div className='mt-3 flex items-center gap-2'>
+            <span className='text-xs font-medium text-gray-300'>Status</span>
+            <div className='inline-flex rounded-full border border-gray-800 bg-gray-900 p-1 text-xs'>
+              {[
+                { label: 'All', value: 'all' as const },
+                { label: 'Booked', value: 'booked' as const },
+                { label: 'Checked-in', value: 'checked_in' as const }
+              ].map((opt) => {
+                const active = statusFilter === opt.value
+                return (
+                  <button
+                    key={opt.value}
+                    type='button'
+                    className={[
+                      'rounded-full px-3 py-1 font-medium transition-colors',
+                      active
+                        ? 'bg-gray-800 text-gray-100 shadow-sm'
+                        : 'text-gray-300 hover:text-gray-100'
+                    ].join(' ')}
+                    onClick={() => setStatusFilter(opt.value)}
+                  >
+                    {opt.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Loading skeleton – chỉ show khi chưa có data */}
+        {loading && tickets.length === 0 && (
+          <div className='mt-4 grid gap-2'>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className='h-12 rounded-lg animate-pulse bg-gray-800' />
+            ))}
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!loading && filtered.length === 0 && (
+          <div className='mt-4 rounded-2xl border border-dashed p-8 text-center text-sm text-gray-300 border-gray-800'>
+            No tickets found.
+          </div>
+        )}
+
+        {/* Table */}
+        {!loading && filtered.length > 0 && (
+          <div className='mt-4 overflow-auto rounded-xl border border-gray-800'>
+            <table className='min-w-full text-left text-sm' aria-label='Tickets table'>
+              <thead className='bg-gray-900 sticky top-0 z-10'>
+                <tr>
+                  <th className='px-3 py-2 font-medium'>Event</th>
+                  <th className='px-3 py-2 font-medium'>Price</th>
+                  <th className='px-3 py-2 font-medium'>Status</th>
+                  <th className='px-3 py-2 font-medium'>Checked in at</th>
+                  <th className='px-3 py-2 font-medium text-right'>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((ticket) => (
+                  <tr key={ticket.id} className='border-t border-gray-800'>
+                    <td className='px-3 py-3 font-medium'>
+                      {ticket.event_title || (ticket as any).title || 'Untitled event'}
+                    </td>
+                    <td className='px-3 py-3 text-gray-300'>
+                      {formatPrice(ticket.price_cents)}
+                    </td>
+                    <td className='px-3 py-3'>
+                      {ticket.status === 'checked_in' ? (
+                        <Badge tone='success'>Checked-in</Badge>
+                      ) : (
+                        <Badge tone='neutral'>Booked</Badge>
+                      )}
+                    </td>
+                    <td className='px-3 py-3 text-gray-300'>
+                      {formatCheckedIn(ticket.checked_in_at)}
+                    </td>
+                    <td className='px-3 py-3'>
+                      <div className='flex items-center justify-end gap-2'>
+                        <button
+                          type='button'
+                          className='inline-flex items-center gap-1 rounded-full bg-gray-800 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-1 focus:ring-offset-gray-900'
+                          onClick={() => {
+                            navigate(path.my_ticket_details.replace(':id', ticket.id))
+                          }}
+                        >
+                          <Eye className='h-3.5 w-3.5' />
+                          View details
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Container>
+    </section>
+  )
 }

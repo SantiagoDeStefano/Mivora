@@ -74,6 +74,7 @@ export default function NavHeader() {
             </NavLink>
           )}
 
+
           <NavLink to='/about' className={navLink}>
             About
           </NavLink>
@@ -152,6 +153,12 @@ export default function NavHeader() {
                     className='text-left w-full px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-gray-800'
                   >
                     My Account
+                  </button>
+                  <button
+                    onClick={() => navigate(path.scan_ticket)}
+                    className='text-left w-full px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-gray-800'
+                  >
+                    Scan tickets
                   </button>
                   <button
                     onClick={handleLogout}

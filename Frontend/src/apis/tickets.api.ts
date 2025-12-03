@@ -1,29 +1,56 @@
-import { SuccessResponse } from 'src/types/response.types'
+import { SuccessResponse } from '../types/response.types'
 import http from '../utils/http'
 
-export interface Ticket {
+// Shape đúng với JSON backend
+export interface TicketApi {
   id: string
-  title: string
-  user_id: string
+  event_title: string
+  event_status: string 
+  ticket_status: 'booked' | 'checked_in'
+  checked_in_at: string | null
   price_cents: number
-  checked_in_at: number
-  total_count: number
   qr_code: string
+  total_count?: string 
+  event_id: string      
+}
+
+
+export interface Ticket extends Omit<TicketApi, 'ticket_status'> {
   status: 'booked' | 'checked_in'
 }
 
-export interface GetTicketsResponse {
-  events: Event[]
+
+export interface BookTicketResult {
+  ticket: Ticket
+}
+
+export interface GetMyTicketsResponse {
+  tickets: Ticket[]
   limit: number
   page: number
   total_page: number
 }
 
+export type GetOrSearchMyTicketsSchema = {
+  limit?: number
+  page?: number
+  status?: 'booked' | 'checked_in'
+  q?: string
+}
+
 const ticketsApi = {
   bookTicket: (event_id: string) => {
-    return http.post<SuccessResponse<Ticket>>('/tickets/book', event_id)
+    return http.post<SuccessResponse<BookTicketResult>>('/tickets/book', { event_id })
   },
+  getMyTickets: (limit: number = 20, page: number = 1) => {
+    return http.get<SuccessResponse<GetMyTicketsResponse>>('/tickets', { params: { limit, page } })
+  },
+  searchMyTickets: (body: GetOrSearchMyTicketsSchema) => {
+    return http.get<SuccessResponse<GetMyTicketsResponse>>('/tickets', { params: body })
+  },
+  getTicketDetails: (ticket_id: string) => {
+    return http.get<SuccessResponse<TicketApi>>(`/tickets/${ticket_id}`)
+  }
 }
 
 export default ticketsApi
-

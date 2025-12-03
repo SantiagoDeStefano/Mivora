@@ -245,8 +245,44 @@ export const cancelEvent = yup.object({
 export const bookTicket = yup.object({
   event_id: yup
     .string()
+    .trim()
     .required(EVENTS_MESSAGES.INVALID_EVENT_ID)
-    .matches(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i, EVENTS_MESSAGES.INVALID_EVENT_ID)
+    .matches(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+      EVENTS_MESSAGES.INVALID_EVENT_ID
+    )
+})
+
+export const getOrSearchMyTickets = yup.object({
+  limit: yup
+    .number()
+    .integer()
+    .min(LIMIT_MIN_MAX.EVENT_PER_PAGE_MIN, EVENTS_MESSAGES.EVENTS_LENGTH_PER_PAGE_IS_BETWEEN_1_AND_50)
+    .max(LIMIT_MIN_MAX.EVENT_PER_PAGE_MAX, EVENTS_MESSAGES.EVENTS_LENGTH_PER_PAGE_IS_BETWEEN_1_AND_50)
+    .optional(),
+  page: yup.number().integer().min(1, EVENTS_MESSAGES.NUMBER_OF_PAGE_MUST_BE_GREATER_THAN_0).optional(),
+  status: yup
+    .string()
+    .oneOf(['booked', 'checked_in'], TICKETS_MESSAGES.TICKET_STATUS_MUST_BE_BOOKED_CHECKED_IN)
+    .optional(),
+  q: yup
+    .string()
+    .trim()
+    .min(3, EVENTS_MESSAGES.MAXIMUM_SEARCH_LENGTH_MUST_BE_BETWEEN_3_AND_20)
+    .max(20, EVENTS_MESSAGES.MAXIMUM_SEARCH_LENGTH_MUST_BE_BETWEEN_3_AND_20)
+    .optional()
+})
+
+export const getTicketDetails = yup.object({
+  ticket_id: yup
+    .string()
+    .trim()
+    .required(TICKETS_MESSAGES.TICKET_NOT_FOUND)
+    .matches(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+      TICKETS_MESSAGES.TICKET_NOT_FOUND
+    )
+    .transform((value) => value.toLowerCase())
 })
 // --- TYPES ---
 export type RegisterSchema = Required<yup.InferType<typeof registerSchema>>
@@ -259,3 +295,5 @@ export type ResetPasswordSchema = Required<yup.InferType<typeof resetPasswordSch
 export type UpdateEventSchema = yup.InferType<typeof updateEvent>
 export type PublishEventSchema = yup.InferType<typeof publishEvent>
 export type CancelEventSchema = yup.InferType<typeof cancelEvent>
+export type BookTicketSchema = Required<yup.InferType<typeof bookTicket>>
+export type GetOrSearchMyTicketsSchema = yup.InferType<typeof getOrSearchMyTickets>

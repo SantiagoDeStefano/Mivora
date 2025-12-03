@@ -1,160 +1,290 @@
-import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import path from "../../constants/path";
-import Container from "../../components/Container/Container";
+// src/pages/Tickets/TicketSuccess.tsx
+import React, { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import axios from 'axios'
 
+import path from '../../constants/path'
+import Container from '../../components/Container/Container'
+import ticketsApi, { Ticket, BookTicketResult } from '../../apis/tickets.api'
+import { SuccessResponse } from '../../types/response.types'
 
-type Ticket = {
-  id: string;
-  event_id: string;
-  user_id: string;
-  status: string;
-  checked_in_at: string | null;
-  price_cents: number;
-  qr_code: string;
-};
+type BookingResponse = SuccessResponse<BookTicketResult>
 
-type BookingResponse = {
-  message: string;
-  result: { ticket: Ticket };
-};
-
-interface TicketSuccessProps {
-  response?: BookingResponse;
-  onViewEvent?: (eventId: string) => void;
-  onGoToMyTickets?: () => void;
+type LocationState = {
+  ticket?: Ticket
+  response?: BookingResponse
+  eventId?: string
+  eventTitle?: string
 }
 
-export default function TicketSuccess({ response, onViewEvent, onGoToMyTickets }: TicketSuccessProps) {
-  const location = useLocation();
-  const navigate = useNavigate();
+// UUID theo rule bookTicket
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
-  // Prefer prop, then location.state.response, fallback to SAMPLE mock
-  const SAMPLE: BookingResponse = {
-    message: "Book ticket successfully",
-    result: {
-      ticket: {
-        id: "f5d09842-e566-4eb6-9a1f-59cbf8db712c",
-        event_id: "c278cbc0-26ce-4332-9d4f-64bb85a6969c",
-        user_id: "88945d98-a228-42fe-89c8-f82c20bfc808",
-        status: "booked",
-        checked_in_at: null,
-        price_cents: 2500,
-        qr_code:
-          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASQAAAEkCAYAAACG+UzsAAAAAklEQVR4AewaftIAABSsSURBVO3BQW7g2rLgQFLw/rfMrmGODiBI9tX7nRH2D2ut9QEXa631ERdrrfURF2ut9REXa631ERdrrfURF2ut9REXa631ERdrrfURF2ut9REXa631ERdrrfURF2ut9REXa631ER/PKTylyr+kspJxR0qU8WkMlVMKlPFpHJScaJyR8WkMlVMKicVb1I5qZhUpopJ5aTiCZWpYlKZKk5U/lLFExdrrfURF2ut9REXa631ET+8rOJNKneoTBWTyknFVDGpTConFW+qeEJlqpgq7lCZKk4qJpVJZaqYVKaKSeWk4qTipGJSmVSmikllqrijYlKZKk4q3qTypou11vqIi7XW+oiLtdb6iB9+mcodFXeo3FExqdxRcaIyqZyoTBWTylQxqUwVk8pUcaJyUjFVTCpTxaQyVUwqk8pUcVJxovJExVRxonKiMlVMKlPFm1TuqPhNF2ut9REXa631ERdrrfURP/x/RmWqmFROKiaVN6mcqJyonKjcUTGpnFRMKicqU8WkcofKScWJyonKHRV3qJyoTBX/l1ystdZHXKy11kdcrLXWR/zwf0zFScWkMlVMKpPKVDGpTBWTyknFicpJxYnKVHGicofKEypTxaTyhMpUMVWcqEwVk8qbKk5Upor/ZRdrrfURF2ut9REXa631ET/8soq/pHJHxR0Vb6qYVKaKO1SmijtUTiruUJkqJpU7KiaVqWJSOVE5qZgqTipOVKaKqWJSmSqmiicqvuRirbU+4mKttT7iYq21PuKHl6n8lyomlaliUpkq7lCZKiaVqWJSmSomlaliUpkqJpWpYlKZKiaVE5Wp4omKSWWqeKJiUpkqJpWpYlKZKiaVqWJSmSruUJkqTlS+7GKttT7iYq21PuJirbU+wv7hf5jKScWkMlWcqNxR8SUqJxUnKlPFHSpTxaTyRMWbVE4qTlSmikllqphU7qj4v+RirbU+4mKttT7iYq21PsL+4QGVqWJSeVPFicpUcaIyVZyovKniRGWqOFGZKiaVk4pJ5S9VTCpTxYnKHRWTyhMVb1I5qThReVPFb7pYa62PuFhrrY+4WGutj7B/eJHKmyruUJkq3qQyVTyhMlVMKlPFm1SmijtUpopJZaqYVO6o+EsXa631ERdrrfURF2ut9RE/PFTxRMWbKk4qnlCZKiaVE5Wp4kRlqrhDZap4ouJEZVKZKiaVL6mYVKaKSWWqmFTuUJkqpoo7VE4q7lCZKt50sdZaH3Gx1lofcbHWWh/xwy9TmSomlaliUnlCZao4UZkqJpVJZao4qbij4g6VqeJE5Q6VqWKqOFE5qZhUpooTlSdUpopJ5YmKO1TeVDGp3FExqUwVT1ystdZHXKy11kdcrLXWR/zwH6s4qZhUTlSmiknlDpWTijtUpopJ5S9VTCr/JZWpYlKZKt5UcVJxojJV/KaK/1LFmy7WWusjLtZa6yMu1lrrI354SGWqeELlpOJE5YmKE5VJ5Y6KSWWq+C9VTCp3qJxUnKicVJxU3KEyVTxRcYfKVHGicqJyUvFlF2ut9REXa631ERdrrfURPzxUcYfKVHFSMancoXJScUfFicpU8YTKb6qYVO5QmSomlROVE5WTikllqjipOFGZKiaVJypOVE5UflPFX7pYa62PuFhrrY+4WGutj7B/eJHKScWkMlVMKlPFicodFZPKScWkckfFm1ROKk5UpopJZaq4Q+VNFU+oTBUnKm+qOFE5qXhC5aTiDpWp4omLtdb6iIu11vqIi7XW+oiLtdb6gIu11vqIi7XW+oiLtdb6iIu11vqIi7XW+oiLtdb6iIu11vqIi7XW+oiLtdb6iIu11vqIi7XW+oiLtdb6iIu11vqIi7XW+oiLtdb6iIu11vqIi7XW+oiLtdb6iP8H6WwYpyiz46AAAAAASUVORK5CYII="
+export default function TicketSuccess() {
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [response, setResponse] = useState<BookingResponse | null>(null)
+
+  const state = (location.state || {}) as LocationState
+  const searchParams = new URLSearchParams(location.search)
+
+  // Lấy eventId theo thứ tự ưu tiên: state -> query
+  const eventIdFromState = state.eventId
+  const eventIdFromQuery =
+    searchParams.get('eventId') || searchParams.get('event_id') || undefined
+
+  const eventId = eventIdFromState || eventIdFromQuery || undefined
+
+  useEffect(() => {
+    let cancelled = false
+
+    const bootstrap = async () => {
+      // 1. Có response trong state -> dùng luôn
+      if (state.response) {
+        setResponse(state.response)
+        setLoading(false)
+        return
+      }
+
+      // 2. Có ticket trong state -> wrap thành BookingResponse
+      if (state.ticket) {
+        const result: BookTicketResult = {
+          ticket: state.ticket
+        }
+
+        setResponse({
+          message: 'Book ticket successfully',
+          result
+        })
+        setLoading(false)
+        return
+      }
+
+      // 3. Không có gì -> fallback: tự book bằng eventId
+      if (!eventId) {
+        setError('Missing event id.')
+        setLoading(false)
+        return
+      }
+
+      if (!UUID_REGEX.test(eventId)) {
+        setError('Invalid event id.')
+        setLoading(false)
+        return
+      }
+
+      try {
+        setLoading(true)
+        setError(null)
+
+        const res = await ticketsApi.bookTicket(eventId)
+        const data = res.data as BookingResponse
+        if (cancelled) return
+        setResponse(data)
+      } catch (err) {
+        console.error('Book ticket failed:', err)
+        if (cancelled) return
+
+        if (axios.isAxiosError(err)) {
+          const data: any = err.response?.data
+          const msg =
+            data?.message || data?.error || data?.detail || 'Failed to book ticket.'
+          setError(msg)
+        } else {
+          setError('Failed to book ticket.')
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
       }
     }
-  };
 
-  const resp: BookingResponse = response ?? (location.state as any)?.response ?? SAMPLE;
-  const { message, result } = resp;
-  const ticket = result.ticket;
+    bootstrap()
 
-  // Event title: prefer `resp.result.event.title` if present, then location.state.eventTitle, otherwise a sample title
-  const eventTitle = (result as any).event?.title ?? (location.state as any)?.eventTitle ?? "Sample Event Title";
-
-  const priceLabel = ticket.price_cents
-    ? `$${(ticket.price_cents / 100).toFixed(2)}`
-    : "Free ticket";  
-
-  const isCheckedIn = Boolean(ticket.checked_in_at);
-
-  const formatCheckedIn = (iso: string | null) => {
-    if (!iso) return "Not checked in yet";
-    try {
-      const d = new Date(iso);
-      return d.toLocaleString();
-    } catch {
-      return iso;
+    return () => {
+      cancelled = true
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key])
 
-  const handleViewEventInternal = (eventId: string) => {
-    if (onViewEvent) return onViewEvent(eventId);
-    navigate(path.event_details.replace(":id", eventId));
-  };
-
-  const handleGoToMyTicketsInternal = () => {
-    if (onGoToMyTickets) return onGoToMyTickets();
-    navigate(path.my_tickets);
-  };
-
-  return (
-    <section className="py-10 sm:py-14">
-      <Container>
-        <div className="w-full max-w-2xl mx-auto">
-        {/* Card */}
-        <div className="overflow-hidden rounded-2xl bg-white shadow-sm border border-gray-100">
-          {/* Header */}
-          <div className="border-b border-gray-100 bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 px-6 py-4 text-white">
-            <div className="text-xs uppercase tracking-[0.15em] opacity-80">
-              Ticket confirmation
-            </div>
-            <div className="mt-1 text-lg font-semibold">
-              {message || "Your ticket is booked"}
+  // Loading UI
+  if (loading) {
+    return (
+      <section className='py-10 sm:py-14'>
+        <Container>
+          <div className='w-full max-w-2xl mx-auto'>
+            <div className='rounded-2xl border border-gray-800 bg-gray-900 p-6'>
+              <div className='h-5 w-32 bg-gray-800 rounded-md animate-pulse mb-3' />
+              <div className='h-8 w-64 bg-gray-800 rounded-md animate-pulse mb-6' />
+              <div className='h-40 w-full bg-gray-800 rounded-xl animate-pulse' />
             </div>
           </div>
+        </Container>
+      </section>
+    )
+  }
 
-          {/* Body */}
-          <div className="px-6 py-6 sm:py-7">
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-              {/* QR */}
-              <div className="flex justify-center sm:block">
-                <div className="inline-flex flex-col items-center gap-2">
-                  <div className="rounded-xl bg-white p-2 shadow-sm">
-                    <img
-                      src={ticket.qr_code}
-                      alt="Ticket QR"
-                      className="h-40 w-40 sm:h-44 sm:w-44 rounded-lg object-contain"
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500 text-center">
-                    Scan this QR at the entrance to check in.
-                  </p>
-                </div>
-              </div>
-
-              {/* Right content */}
-              <div className="flex-1 space-y-5">
-                {/* Status + price */}
-                <div>
-
-                  <div className="mt-4">
-                    <div className="text-xm uppercase tracking-wide text-gray-400">Ticket price</div>
-                    <div className="mt-1 text-4xl font-semibold text-gray-100">{priceLabel}</div>
-                    <div className="mt-2 text-xm text-gray-300">Event: <span className="font-medium">{eventTitle}</span></div>
-                    <div className="mt-2 text-sm text-gray-500">{isCheckedIn ? `Checked in at ${formatCheckedIn(ticket.checked_in_at)}` : "Not checked in yet"}</div>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-wrap gap-3">
-
+  // Error UI
+  if (error || !response) {
+    return (
+      <section className='py-10 sm:py-14'>
+        <Container>
+          <div className='w-full max-w-2xl mx-auto text-center'>
+            <div className='rounded-2xl border border-red-700 bg-red-900/40 px-6 py-8'>
+              <h2 className='text-xl font-semibold text-gray-100'>Booking failed</h2>
+              <p className='mt-2 text-sm text-red-200'>
+                {error || 'Could not book ticket.'}
+              </p>
+              <div className='mt-4 flex justify-center gap-3'>
+                <button
+                  type='button'
+                  onClick={() => navigate(path.home)}
+                  className='rounded-xl bg-gray-800 px-4 py-2 text-sm font-medium text-gray-100 hover:bg-gray-700'
+                >
+                  Back to home
+                </button>
+                {eventId && (
                   <button
-                    type="button"
-                    onClick={() => handleViewEventInternal(ticket.event_id)}
-                    className="mt-4 inline-flex items-center justify-center rounded-full border border-gray-200 bg-gray-900 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-black active:bg-black/90 transition"
+                    type='button'
+                    onClick={() =>
+                      navigate(path.event_details.replace(':event_id', eventId))
+                    }
+                    className='rounded-xl bg-pink px-4 py-2 text-sm font-medium text-white hover:bg-pink-700'
                   >
                     View event
                   </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </Container>
+      </section>
+    )
+  }
 
-                  <button
-                    type="button"
-                    onClick={handleGoToMyTicketsInternal}
-                    className="mt-4 inline-flex items-center justify-center rounded-full border border-transparent bg-pink-900 px-4 py-2 text-sm font-medium text-white hover:bg-black active:bg-black/90 transition"
-                  >
-                    My tickets
-                  </button>
+  // Chuẩn hóa result: giờ CHẮC CHẮN là { ticket }
+  const ticket = response.result.ticket
+
+  // eventId cuối cùng: state -> query -> ticket.event_id
+  const effectiveEventId = eventId || ticket.event_id
+  const eventTitle = state.eventTitle || 'Event'
+
+  const priceCents = ticket.price_cents
+  const priceLabel = priceCents
+    ? `$${(priceCents / 100).toFixed(2)}`
+    : 'Free ticket'
+
+  const isCheckedIn = Boolean(ticket.checked_in_at)
+
+  const formatCheckedIn = (value: string | number | null) => {
+    if (!value) return 'Not checked in yet'
+    try {
+      const d = new Date(value)
+      return isNaN(d.getTime()) ? String(value) : d.toLocaleString()
+    } catch {
+      return String(value)
+    }
+  }
+
+  const handleViewEvent = () => {
+    if (!effectiveEventId) return
+    navigate(path.event_details.replace(':event_id', effectiveEventId))
+  }
+
+  const handleGoToMyTickets = () => {
+    navigate(path.my_tickets)
+  }
+
+  const qrSrc = ticket.qr_code || ''
+
+  return (
+    <section className='py-10 sm:py-14'>
+      <Container>
+        <div className='w-full max-w-2xl mx-auto'>
+          <div className='overflow-hidden rounded-2xl bg-white shadow-sm border border-gray-100'>
+            {/* Header */}
+            <div className='border-b border-gray-100 bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 px-6 py-4 text-white'>
+              <div className='text-xl uppercase font-bold tracking-[0.15em] opacity-80'>
+                Ticket booked
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className='px-6 py-6 sm:py-7'>
+              <div className='flex flex-col gap-6 sm:flex-row sm:items-start'>
+                {/* QR */}
+                <div className='flex justify-center sm:block'>
+                  <div className='inline-flex flex-col items-center gap-2'>
+                    <div className='rounded-xl bg-white p-2 shadow-sm'>
+                      {qrSrc ? (
+                        <img
+                          src={qrSrc}
+                          alt='Ticket QR'
+                          className='h-40 w-40 sm:h-44 sm:w-44 rounded-lg object-contain'
+                        />
+                      ) : (
+                        <div className='h-40 w-40 sm:h-44 sm:w-44 rounded-lg bg-gray-100' />
+                      )}
+                    </div>
+                    <p className='text-xs text-gray-500 text-center'>
+                      Scan this QR at the entrance to check in.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Right content */}
+                <div className='flex-1 space-y-5'>
+                  <div>
+                    <div className='text-xs uppercase tracking-wide text-gray-200'>
+                      Ticket price
+                    </div>
+                    <div className='mt-1 text-3xl sm:text-4xl font-semibold text-gray-200'>
+                      {priceLabel}
+                    </div>
+                    <div className='mt-2 text-sm text-gray-200'>
+                      Event:{' '}
+                      <span className='font-medium text-gray-200'>{eventTitle}</span>
+                    </div>
+                    <div className='mt-2 text-xs text-gray-200'>
+                      {isCheckedIn
+                        ? `Checked in at ${formatCheckedIn(ticket.checked_in_at)}`
+                        : 'Not checked in yet'}
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className='flex flex-wrap gap-3'>
+                    {effectiveEventId && (
+                      <button
+                        type='button'
+                        onClick={handleViewEvent}
+                        className='mt-4 inline-flex items-center justify-center rounded-full border border-gray-200 bg-gray-900 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-800 active:bg-gray-200 transition'
+                      >
+                        View event
+                      </button>
+                    )}
+
+                    <button
+                      type='button'
+                      onClick={handleGoToMyTickets}
+                      className='mt-4 inline-flex items-center justify-center rounded-full border border-transparent bg-pink-600 px-4 py-2 text-sm font-medium text-white hover:bg-pink-700 active:bg-pink-800 transition'
+                    >
+                      My tickets
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Sub copy */}
-        <p className="mt-4 text-center text-xs text-gray-400">Keep this QR safe. Do not share it publicly.</p>
+          <p className='mt-4 text-center text-xs text-gray-400'>
+            Keep this QR safe. Do not share it publicly.
+          </p>
         </div>
       </Container>
     </section>
-  );
+  )
 }
