@@ -14,7 +14,13 @@ import Event from '~/models/schemas/Event.schema'
 
 const event_statuts: EventStatus[] = ['draft', 'published', 'canceled']
 
-// Validator for creating an event with field type checks, length limits, and logical constraints
+/**
+ * Validator: createEventValidator
+ * - Purpose: validate the request body when creating an event
+ * - Body fields validated: `title`, `description?`, `poster_url?`, `location_text`, `start_at`, `end_at`, `price_cents`, `capacity`, `status?`
+ * - Rules: type checks, length limits, ISO8601 dates, end_at > start_at, positive numeric checks
+ * - Side-effects: none (pure validation)
+ */
 export const createEventValidator = validate(
   checkSchema(
     {
@@ -103,7 +109,7 @@ export const createEventValidator = validate(
             return end > start
           },
           errorMessage: EVENTS_MESSAGES.EVENT_END_AT_MUST_BE_AFTER_START_AT
-        },
+        }
       },
       price_cents: {
         isNumeric: {
@@ -144,6 +150,11 @@ export const createEventValidator = validate(
   )
 )
 
+/**
+ * Validator: updateEventValidator
+ * - Purpose: validate event update payloads (same constraints as create but used for PATCH)
+ * - Body: updatable fields with the same semantic checks as creation
+ */
 export const updateEventValidator = validate(
   checkSchema(
     {
@@ -263,6 +274,11 @@ export const updateEventValidator = validate(
   )
 )
 
+/**
+ * Validator: paginationValidator
+ * - Purpose: validate `limit` and `page` query parameters for paginated listing endpoints
+ * - Rules: `limit` must be within allowed range, `page` must be >= 1
+ */
 export const paginationValidator = validate(
   checkSchema(
     {
@@ -293,6 +309,11 @@ export const paginationValidator = validate(
   )
 )
 
+/**
+ * Validator: searchValidator
+ * - Purpose: validate search query parameter `q` (optional)
+ * - Rules: if present, `q` must be a trimmed string with allowed length
+ */
 export const searchValidator = validate(
   checkSchema(
     {
@@ -315,6 +336,13 @@ export const searchValidator = validate(
   )
 )
 
+/**
+ * Validator: eventIdValidator
+ * - Purpose: validate `event_id` param and load event data
+ * - Params: `event_id` (must be a valid UUIDv4)
+ * - Side-effects: queries the DB for the event; if found attaches `req.event` = event.rows
+ * - Errors: throws 400 for invalid id, 404 if event not found
+ */
 export const eventIdValidator = validate(
   checkSchema(
     {
@@ -364,6 +392,13 @@ export const eventIdValidator = validate(
   )
 )
 
+/**
+ * Guard factory: changeEventStatusValidator
+ * - Purpose: create middleware that ensures the current event is in an expected status
+ * - Usage: pass the allowed status, an error message and an http status code
+ * - Side-effects: expects `req.event` to exist (populated by `eventIdValidator`) and forwards a
+ *   `ErrorWithStatus` when the event's status does not match `allowedStatus`.
+ */
 export const changeEventStatusValidator =
   (allowedStatus: string, errorMessage: string, httpStatus: number) =>
   async (req: Request, res: Response, next: NextFunction) => {
@@ -379,6 +414,11 @@ export const changeEventStatusValidator =
     }
     next()
   }
+
+/**
+ * Validator: getEventStatusValidator
+ * - Purpose: validate optional `status` query parameter when filtering organizer events
+ */
 export const getEventStatusValidator = validate(
   checkSchema(
     {
@@ -394,24 +434,40 @@ export const getEventStatusValidator = validate(
   )
 )
 
+/**
+ * Guard: updateEventStatusValidator
+ * - Ensures event is in `draft` before allowing status updates specific to editing
+ */
 export const updateEventStatusValidator = changeEventStatusValidator(
   'draft',
   EVENTS_MESSAGES.CHANGE_EVENT_ONLY_ALLOWED_ON_DRAFT,
   HTTP_STATUS.CONFLICT
 )
 
+/**
+ * Guard: publishEventStatusValidator
+ * - Ensures event is in `draft` before publishing
+ */
 export const publishEventStatusValidator = changeEventStatusValidator(
   'draft',
   EVENTS_MESSAGES.PUBLISH_EVENT_ONLY_ALLOWED_ON_DRAFT,
   HTTP_STATUS.CONFLICT
 )
 
+/**
+ * Guard: cancelEventStatusValidator
+ * - Ensures event is in `published` before allowing cancellation
+ */
 export const cancelEventStatusValidator = changeEventStatusValidator(
   'published',
   EVENTS_MESSAGES.CANCEL_EVENT_ONLY_ALLOWED_ON_PUBLISHED,
   HTTP_STATUS.CONFLICT
 )
 
+/**
+ * Guard: getPublishedEventStatusValidator
+ * - Ensures event is in `published` when returning public event details
+ */
 export const getPublishedEventStatusValidator = changeEventStatusValidator(
   'published',
   EVENTS_MESSAGES.GET_EVENT_DETAILS_IS_ONLY_ON_PUBLISHED,
