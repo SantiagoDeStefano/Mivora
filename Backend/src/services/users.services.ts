@@ -13,7 +13,13 @@ import { UserVerificationStatus } from '~/types/domain'
 import { sendForgotPasswordEmail, sendVerifyStatusEmail } from '~/utils/email'
 
 class UserService {
-  // Signs a short-lived Access Token (used on every API call). Lifetime comes from envConfig.accessTokenExpiresIn.
+  /**
+   * Sign a short-lived Access Token for the given user
+   * - Purpose: create a JWT used for API authorization (sent as `Authorization: Bearer <token>`)
+   * - Inputs: `user_id` and `verify` status
+   * - Returns: a signed JWT string (access token)
+   * - Notes: lifetime is configured through `envConfig.accessTokenExpiresIn`
+   */
   private signAccessToken({ user_id, verify }: { user_id: UUIDv4; verify: UserVerificationStatus }): Promise<string> {
     return signToken({
       payload: {
@@ -29,8 +35,13 @@ class UserService {
     }) as Promise<string>
   }
 
-  // Signs a Refresh Token. If exp (unix seconds) is provided, it is embedded directly; otherwise uses configured expiresIn.
-  // This dual mode enables rotation while preserving original expiration when desired.
+  /**
+   * Sign a Refresh Token for the given user
+   * - Purpose: issue a longer-lived token used to obtain new access tokens
+   * - Inputs: `user_id`, `verify`, optional `exp` to preserve an explicit expiry when rotating tokens
+   * - Returns: a signed JWT string (refresh token)
+   * - Notes: when `exp` is provided the value is embedded in the token payload (rotation preserving expiry)
+   */
   private signRefreshToken({
     user_id,
     verify,
@@ -65,7 +76,11 @@ class UserService {
     }) as Promise<string>
   }
 
-  // Convenience helper: signs both tokens in parallel sequence for a given user.
+  /**
+   * Convenience: sign both access and refresh tokens for a user
+   * - Inputs: `user_id`, `verify`
+   * - Returns: `[access_token, refresh_token]`
+   */
   private async signAccessAndRefreshToken({
     user_id,
     verify
@@ -78,6 +93,12 @@ class UserService {
     return [access_token, refresh_token]
   }
 
+  /**
+   * Sign an email verification token
+   * - Purpose: create a short-lived token used in email verification links
+   * - Inputs: `user_id`, `verify`
+   * - Returns: a signed JWT string (email verify token)
+   */
   private signEmailVerifyToken({
     user_id,
     verify
@@ -99,6 +120,12 @@ class UserService {
     }) as Promise<string>
   }
 
+  /**
+   * Sign a forgot-password token
+   * - Purpose: create a token for password reset flows
+   * - Inputs: `user_id`, `verify`
+   * - Returns: a signed JWT string (forgot-password token)
+   */
   async signForgotPasswordToken({
     user_id,
     verify
@@ -120,7 +147,11 @@ class UserService {
     }) as Promise<string>
   }
 
-  // Decodes/validates a refresh token using the refresh secret. Returns payload (expects iat/exp in seconds).
+  /**
+   * Decode / validate a refresh token
+   * - Inputs: `refresh_token` string
+   * - Returns: decoded payload (including `iat`/`exp`) or throws on invalid token
+   */
   private decodeRefreshToken(refresh_token: string) {
     return verifyToken({
       token: refresh_token,
@@ -128,7 +159,15 @@ class UserService {
     })
   }
 
-  // Registers a new user, creates a role row, issues tokens, and persists the refresh token record.
+  /**
+   * Register a new user
+   * - Body: `{ name, email, password }`
+   * - Actions:
+   *   1. Hashes password and creates a `users` row
+   *   2. Creates the initial `user_roles` entry (attendee)
+   *   3. Issues access + refresh tokens and persists the refresh token record
+   * - Returns: `{ access_token, refresh_token }`
+   */
   async register(payload: RegisterRequestBody) {
     const { name, email, password } = payload
     const password_hash = hashPassword(password) // Hashing password before storing (uses sha256 in hashPassword).
@@ -176,7 +215,12 @@ class UserService {
     }
   }
 
-  // Issues a fresh token pair for an existing user and stores the refresh token record.
+  /**
+   * Issue a fresh access + refresh token pair for an existing user
+   * - Inputs: `user_id`, `verify`
+   * - Actions: signs tokens, persists the refresh token record
+   * - Returns: `{ access_token, refresh_token }`
+   */
   async login(user_id: UUIDv4, verify: UserVerificationStatus) {
     const [access_token, refresh_token] = await this.signAccessAndRefreshToken({ user_id, verify })
     const { iat, exp } = await this.decodeRefreshToken(refresh_token)
@@ -199,17 +243,30 @@ class UserService {
     }
   }
 
-  // Logs out a single session by deleting the refresh token row. Access token naturally expires on its own.
+  /**
+   * Logout: revoke a refresh token
+   * - Inputs: `refresh_token` string
+   * - Action: deletes the refresh token row from persistence
+   */
   async logout(refresh_token: string) {
     await databaseService.refresh_tokens(`DELETE FROM refresh_tokens WHERE token_hash=$1`, [refresh_token])
   }
 
-  // Fast existence check for email (returns boolean). Use LIMIT 1 to reduce result size.
+  /**
+   * Check whether an email address is already registered
+   * - Input: `email` string
+   * - Returns: boolean (true if email exists)
+   */
   async checkEmailExist(email: string) {
     const userRow = await databaseService.users(`SELECT id FROM users WHERE email=$1 LIMIT 1`, [email])
     return userRow.rows.length > 0
   }
 
+  /**
+   * Check whether a user already has a specific role
+   * - Inputs: `user_id`, `role`
+   * - Returns: boolean (true if role row exists)
+   */
   async checkRoleExist(user_id: UUIDv4, role: string) {
     const userRow = await databaseService.user_roles(`SELECT role FROM user_roles WHERE user_id=$1 AND role=$2`, [
       user_id,
@@ -218,8 +275,12 @@ class UserService {
     return userRow.rows.length > 0
   }
 
-  // Refresh flow: issues new access + refresh tokens, deletes the old refresh token, and inserts the new one.
-  // Keeps the same exp for the new refresh token if provided (rotation with preserved expiry).
+  /**
+   * Rotate a refresh token and issue new tokens
+   * - Inputs: `{ user_id, refresh_token, verify, exp }` where `exp` is preserved when rotating
+   * - Actions: deletes the old refresh token row, signs new tokens, and persists the new refresh token
+   * - Returns: `{ access_token, refresh_token }`
+   */
   async refreshToken({
     user_id,
     refresh_token,
@@ -234,14 +295,14 @@ class UserService {
     const [new_access_token, new_refresh_token] = await Promise.all([
       this.signAccessToken({ user_id, verify }),
       this.signRefreshToken({ user_id, verify, exp }),
-      databaseService.refresh_tokens(`DELETE FROM refresh_tokens WHERE token_hash=$1`, [refresh_token]) // Remove old token to prevent reuse.
+      databaseService.refresh_tokens(`DELETE FROM refresh_tokens WHERE token_hash=$1`, [refresh_token])
     ])
 
     const decoded_refresh_token = await this.decodeRefreshToken(new_refresh_token)
 
     const refreshToken = new RefreshToken({
       user_id: user_id,
-      token_hash: new_refresh_token, // Store hash value; ensure upstream hashing is consistent with DB.
+      token_hash: new_refresh_token,
       iat: decoded_refresh_token.iat,
       exp: decoded_refresh_token.exp
     })
@@ -257,6 +318,12 @@ class UserService {
     }
   }
 
+  /**
+   * Return the current user's profile
+   * - Input: `user_id`
+   * - Returns: user object with `{ name, email, avatar_url, verified, role }`
+   * - Notes: when the user has 'organizer' role, the service also computes `revenue_cents`
+   */
   async getMe(user_id: UUIDv4) {
     const user = await databaseService.users(
       `SELECT 
@@ -291,6 +358,12 @@ class UserService {
     return user.rows[0]
   }
 
+  /**
+   * Update a user's profile fields
+   * - Inputs: `user_id`, `body` (may include `name` and optional `role`)
+   * - Actions: updates user row and optionally inserts a new `user_roles` row when role is provided
+   * - Returns: updated user object
+   */
   async updateMe(user_id: UUIDv4, body: UpdateMeRequestBody) {
     const { name, role } = body
 
@@ -313,6 +386,11 @@ class UserService {
     return updatedUser.rows[0]
   }
 
+  /**
+   * Update user's avatar URL
+   * - Inputs: `user_id`, `avatar_url`
+   * - Action: updates `avatar_url` on the users table and returns the updated user
+   */
   async updateAvatar(user_id: UUIDv4, avatar_url: string) {
     await databaseService.users(`UPDATE users SET avatar_url=$1 WHERE id=$2`, [avatar_url, user_id])
     const updatedUser = await databaseService.users(
@@ -323,6 +401,11 @@ class UserService {
     return updatedUser.rows[0]
   }
 
+  /**
+   * Generate and send an email verification token
+   * - Inputs: `user_id`, `email`
+   * - Actions: signs an email verification token, sends it by email, and stores the token on the user row
+   */
   async sendEmailVerifyToken(user_id: UUIDv4, email: string) {
     const email_verify_token = await this.signEmailVerifyToken({ user_id, verify: 'unverified' })
     console.log('email_verify_token:', email_verify_token)
@@ -331,8 +414,13 @@ class UserService {
     await databaseService.users(`UPDATE users SET email_verify_token=$1 WHERE id=$2`, [email_verify_token, user_id])
   }
 
+  /**
+   * Verify a user's email and issue fresh auth tokens
+   * - Input: `user_id` (from validated email token)
+   * - Actions: marks user as verified, clears stored email token, issues new access+refresh tokens and persists the refresh token
+   * - Returns: `{ access_token, refresh_token }`
+   */
   async verifyEmail(user_id: UUIDv4) {
-    //Declare update value
     const [tokens] = await Promise.all([
       this.signAccessAndRefreshToken({ user_id, verify: 'verified' }),
 
@@ -365,6 +453,12 @@ class UserService {
     }
   }
 
+  /**
+   * Initiate forgot-password flow for a user
+   * - Inputs: `user_id`, `verify`, `email`
+   * - Actions: signs a forgot-password token, stores it on the user row and emails the reset link
+   * - Returns: `{ forgot_password_token }` (for testing; production may not return this)
+   */
   async forgotPassword({ user_id, verify, email }: { user_id: UUIDv4; verify: UserVerificationStatus; email: string }) {
     const forgot_password_token = await this.signForgotPasswordToken({ user_id, verify })
     console.log('forgot_password_token:', forgot_password_token)
@@ -373,7 +467,6 @@ class UserService {
       user_id
     ])
 
-    // Sending email https://twitter.com/forgot-password?token=token
     await sendForgotPasswordEmail(email, forgot_password_token)
 
     // For testing only, remove return this statement in production
@@ -381,6 +474,11 @@ class UserService {
       forgot_password_token
     }
   }
+  /**
+   * Reset a user's password
+   * - Inputs: `user_id` (from validated forgot-password token), `new_password`
+   * - Actions: hashes and updates the stored password and clears the forgot-password token
+   */
   async resetPassword(user_id: string, new_password: string) {
     const password = hashPassword(new_password)
     await databaseService.users(`UPDATE users SET password_hash=$1, forgot_password_token=$2 WHERE id=$3`, [
