@@ -1,11 +1,22 @@
 import { UUIDv4 } from '~/types/common'
+import { TicketStatus } from '~/types/domain'
 
 import databaseService from './database.services'
 import qrCode from './qrcode.services'
 import Ticket from '~/models/schemas/Tickets.schema'
-import { TicketStatus } from '~/types/domain'
 
 class TicketsService {
+  /**
+   * Create a new ticket reservation for a user.
+   * - Signs a QR token for the ticket, saves the ticket record and returns the
+   *   created ticket with a generated QR image (the raw token is omitted).
+   * - Params:
+   *   - `event_id`: UUID of the event being booked
+   *   - `user_id`: UUID of the user booking the ticket
+   *   - `price_cents`: numeric price stored with the ticket
+   * - Returns: `{ ticket }` where `ticket` includes `qr_code` (image/data) instead
+   *   of the raw `qr_code_token`.
+   */
   async bookTicket(event_id: UUIDv4, user_id: UUIDv4, price_cents: number) {
     // Sign QR code token
     const qr_code_token = await qrCode.createQrTicketToken(event_id, user_id)
@@ -56,6 +67,13 @@ class TicketsService {
     }
   }
 
+  /**
+   * Mark a ticket as checked-in (scan).
+   * - Updates ticket status and `checked_in_at`, increments event's `checked_in` counter,
+   *   then returns the updated ticket.
+   * - Params: `ticket_id` (UUID) to identify the ticket to scan.
+   * - Returns: `{ ticket }` with the updated ticket fields.
+   */
   async scanTicket(ticket_id: UUIDv4) {
     const ticketResult = await databaseService.tickets(
       `
@@ -84,6 +102,14 @@ class TicketsService {
     )
     return { ticket }
   }
+
+  /**
+   * List or search tickets with optional status filtering.
+   * - Supports pagination via `limit` and `page`.
+   * - Supports search by event title (case-insensitive ILIKE).
+   * - For each row, replaces the stored `qr_code_token` with a generated `qr_code`.
+   * - Returns `{ tickets, totalTickets }` where `totalTickets` is the full result count.
+   */
   async getOrSearchTicketWithStatus(limit: number, page: number, search?: string, status?: TicketStatus) {
     const statusParam = status ?? null // null = "all statuses"
     const searchParam = search ?? null // null = "no search"
@@ -125,13 +151,6 @@ class TicketsService {
     )
 
     return { tickets, totalTickets }
-  }
-  async getTicketDetails(ticket_id: UUIDv4) {
-    const ticketResult = await databaseService.tickets(
-      `
-        
-      `
-    )
   }
 }
 

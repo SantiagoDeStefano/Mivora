@@ -20,6 +20,14 @@ import qrCode from '~/services/qrcode.services'
 
 const ticket_status: TicketStatus[] = ['booked', 'checked_in']
 
+/**
+ * Ensure the authenticated user hasn't already booked the specified event.
+ * - Reads `req.decoded_authorization.user_id` (set by `accessTokenValidator`) and
+ *   `req.event` (set by `eventIdValidator`).
+ * - Queries the tickets table to count existing bookings for the user/event.
+ * - If a booking already exists, responds with 403 and `USERS_MESSAGES.ONE_USER_PER_EVENT_ONLY`.
+ * - Calls `next()` when the user can book.
+ */
 export const bookTicketValidator = async (req: Request, res: Response, next: NextFunction) => {
   const { user_id } = req.decoded_authorization as TokenPayload
   const event_id = (req.event as Event[])[0].id
@@ -38,6 +46,14 @@ export const bookTicketValidator = async (req: Request, res: Response, next: Nex
   next()
 }
 
+/**
+ * Validate and decode a ticket QR token provided in the request body (`qr_code_token`).
+ * - Verifies the token using the QR secret and extracts `user_id` and `event_id`.
+ * - Confirms a ticket exists for that user/event and that the associated event is published.
+ * - Ensures the ticket is not already checked-in.
+ * - On success attaches the found ticket(s) to `req.ticket` for downstream handlers.
+ * - On failure throws an `ErrorWithStatus` so the global error handler can set the proper HTTP response.
+ */
 export const scanTicketValidator = validate(
   checkSchema(
     {
@@ -101,6 +117,14 @@ export const scanTicketValidator = validate(
   )
 )
 
+/**
+ * Ensure the requester is the organizer (event creator) for the ticket's event.
+ * - Expects `req.ticket` to be present (provided by `scanTicketValidator` or `ticketIdValidator`).
+ * - Loads the organizer_id from the events table for the ticket's event and compares it
+ *   with the authenticated `user_id` (from `req.decoded_authorization`).
+ * - If the user is not the organizer, responds with 403 and `TICKETS_MESSAGES.USER_IS_NOT_EVENT_ORGANIZER`.
+ * - Calls `next()` when authorized.
+ */
 export const eventCreatorValidator = async (req: Request, res: Response, next: NextFunction) => {
   const { id: event_id } = (req.ticket as Ticket[])[0]
   const { user_id } = req.decoded_authorization as TokenPayload
@@ -132,6 +156,11 @@ export const eventCreatorValidator = async (req: Request, res: Response, next: N
   next()
 }
 
+/**
+ * Validate optional `status` query parameter for ticket listing endpoints.
+ * - Accepts only the statuses defined in `ticket_status` (['booked','checked_in']).
+ * - Used by the ticket listing/search route to filter results by ticket state.
+ */
 export const getTicketStatusValidator = validate(
   checkSchema(
     {
@@ -147,6 +176,14 @@ export const getTicketStatusValidator = validate(
   )
 )
 
+/**
+ * Validate `ticket_id` URL parameter and load full ticket details.
+ * - Ensures `ticket_id` is a valid UUIDv4.
+ * - Loads ticket and related event information from the database.
+ * - Generates a QR image using `qrCode.generateQrTicketCode` and attaches a
+ *   `ticket` object to `req.ticket` (without exposing the raw qr_code_token).
+ * - Throws `ErrorWithStatus` for invalid ids or when the ticket is not found.
+ */
 export const ticketIdValidator = validate(
   checkSchema(
     {
