@@ -111,8 +111,12 @@ export const EVENTS_MESSAGES = {
   EVENT_LOCATION_TEXT_IS_REQUIRED: "Event's location text is required",
   EVENT_LOCATION_TEXT_MUST_BE_STRING: "Event's location text must be string",
   EVENT_LOCATION_TEXT_MUST_BE_BETWEEN_5_AND_100: "Event's location text must be between 5 and 100",
+  
+  EVENT_START_AT_IS_REQUIRED: "Event's start at is required",
   EVENT_START_AT_MUST_BE_ISO8601: "Event's start at must be ISO8601",
   EVENT_END_AT_MUST_BE_ISO8601: "Event's end at must be ISO8601",
+  EVENT_END_AT_IS_REQUIRED: "Event's end at is required",
+
   EVENT_END_AT_MUST_BE_AFTER_START_AT: "Event's end at must be after start at",
   EVENT_PRICE_MUST_BE_NUMERIC: "Event's price must be numeric",
   EVENT_PRICE_MUST_BE_POSITIVE: "Event's price must be positive",
@@ -126,6 +130,7 @@ export const EVENTS_MESSAGES = {
   GET_EVENTS_SUCCESSFULLY: 'Get events successfully',
   GET_CREATED_EVENTS_SUCCESSFULLY: 'Get created events successfully',
   GET_EVENT_DETAILS_IS_ONLY_ON_PUBLISHED: "Get event's details is only on published",
+  GET_CREATED_EVENTS_DETAILS_SUCCESSFULLY: "Get created event's details successfully",
 
   SEARCH_MUST_BE_STRING: 'Search values must be string',
 
@@ -148,6 +153,7 @@ export const MEDIAS_MESSAGES = {
 export const TICKETS_MESSAGES = {
   BOOK_TICKET_SUCCESS: 'Book ticket successfully',
   GET_TICKETS_SUCCESSFULLY: 'Get tickets successfully',
+  GET_TICKETS_DETAILS_SUCCESSFULLY: 'Get ticket details successfully',
 
   TICKET_ALREADY_CHECKED_IN: 'Ticket already checked in',
 

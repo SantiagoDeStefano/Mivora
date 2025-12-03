@@ -35,6 +35,10 @@ export interface SearchEventWithStatus extends Pagination {
   q?: string
 }
 
+export interface GetCreatedEventDetailsParams {
+  event_id?: string
+}
+
 export interface SearchEvents extends Pagination {
   q: string
 }

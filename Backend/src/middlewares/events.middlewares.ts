@@ -76,6 +76,9 @@ export const createEventValidator = validate(
         trim: true
       },
       start_at: {
+        notEmpty: {
+          errorMessage: EVENTS_MESSAGES.EVENT_START_AT_IS_REQUIRED
+        },
         isISO8601: {
           options: { strict: true, strictSeparator: true },
           errorMessage: EVENTS_MESSAGES.EVENT_START_AT_MUST_BE_ISO8601
@@ -83,10 +86,14 @@ export const createEventValidator = validate(
         toDate: true
       },
       end_at: {
+        notEmpty: {
+          errorMessage: EVENTS_MESSAGES.EVENT_END_AT_IS_REQUIRED
+        },
         isISO8601: {
           options: { strict: true, strictSeparator: true },
           errorMessage: EVENTS_MESSAGES.EVENT_END_AT_MUST_BE_ISO8601
         },
+        toDate: true,
         custom: {
           options: (value, { req }) => {
             const start = Date.parse(req.body.start_at)
@@ -97,7 +104,6 @@ export const createEventValidator = validate(
           },
           errorMessage: EVENTS_MESSAGES.EVENT_END_AT_MUST_BE_AFTER_START_AT
         },
-        toDate: true
       },
       price_cents: {
         isNumeric: {
@@ -199,6 +205,9 @@ export const updateEventValidator = validate(
         trim: true
       },
       start_at: {
+        notEmpty: {
+          errorMessage: EVENTS_MESSAGES.EVENT_START_AT_IS_REQUIRED
+        },
         isISO8601: {
           options: { strict: true, strictSeparator: true },
           errorMessage: EVENTS_MESSAGES.EVENT_START_AT_MUST_BE_ISO8601
@@ -206,6 +215,9 @@ export const updateEventValidator = validate(
         toDate: true
       },
       end_at: {
+        notEmpty: {
+          errorMessage: EVENTS_MESSAGES.EVENT_END_AT_IS_REQUIRED
+        },
         isISO8601: {
           options: { strict: true, strictSeparator: true },
           errorMessage: EVENTS_MESSAGES.EVENT_END_AT_MUST_BE_ISO8601
@@ -316,7 +328,24 @@ export const eventIdValidator = validate(
               })
             }
             const event = await databaseService.events(
-              `SELECT id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events WHERE id=$1`,
+              `
+                SELECT 
+                  events.id, 
+                  users.name as organizer_name, 
+                  events.title, 
+                  events.description, 
+                  events.poster_url, 
+                  events.location_text, 
+                  events.start_at, 
+                  events.end_at, 
+                  events.price_cents, 
+                  events.checked_in, 
+                  events.capacity, 
+                  events.status 
+                FROM events 
+                JOIN users ON events.organizer_id = users.id
+                WHERE events.id=$1
+              `,
               [values]
             )
             if (event.rows.length <= 0) {

@@ -91,9 +91,9 @@ class TicketsService {
       `
         SELECT 
           tickets.id, 
-          events.title, 
-          tickets.user_id, 
-          tickets.status, 
+          events.title as event_title, 
+          events.status as event_status,
+          tickets.status as ticket_status, 
           tickets.checked_in_at, 
           tickets.price_cents, 
           tickets.qr_code_token,
@@ -125,6 +125,13 @@ class TicketsService {
     )
 
     return { tickets, totalTickets }
+  }
+  async getTicketDetails(ticket_id: UUIDv4) {
+    const ticketResult = await databaseService.tickets(
+      `
+        
+      `
+    )
   }
 }
 

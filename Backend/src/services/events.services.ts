@@ -39,7 +39,6 @@ class EventService {
         )
         RETURNING
           id,
-          organizer_id, 
           title, 
           description, 
           poster_url, 
@@ -75,7 +74,7 @@ class EventService {
           `
           SELECT 
             events.id,
-            users.name,
+            users.name as organizer_name,
             events.title,
             events.description,
             events.poster_url,
@@ -99,7 +98,7 @@ class EventService {
           `
           SELECT
             events.id,
-            users.name,
+            users.name as organizer_name,
             events.title,
             events.description,
             events.poster_url,
@@ -140,7 +139,6 @@ class EventService {
       `
           SELECT
             id,
-            organizer_id,
             title,
             description,
             poster_url,
@@ -169,7 +167,31 @@ class EventService {
       totalEvents
     }
   }
+  async getCreatedEventDetails(organizer_id: UUIDv4, event_id: UUIDv4) {
+    const eventsResult = await databaseService.events(
+      `
+          SELECT
+            id,
+            title,
+            description,
+            poster_url,
+            location_text,
+            start_at,
+            end_at,
+            price_cents,
+            checked_in,
+            capacity,
+            status
+          FROM events
+          WHERE organizer_id = $1
+          AND id = $2
+          LIMIT 1
+        `,
+      [organizer_id, event_id]
+    )
 
+    return eventsResult.rows[0]
+  }
   async updateEvent(event_id: UUIDv4, body: UpdateEventDetailsBody) {
     const { title, description, poster_url, location_text, start_at, end_at, price_cents, capacity } = body
     const event = await databaseService.events(
@@ -187,7 +209,6 @@ class EventService {
         WHERE id = $9
         RETURNING
           id,
-          organizer_id,
           title,
           description,
           poster_url,

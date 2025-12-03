@@ -2,6 +2,7 @@ import { Router } from 'express'
 import {
   cancelEventController,
   createEventController,
+  getCreatedEventDetailsController,
   getEventDetailsController,
   getOrSearchEventsController,
   getOrSearchEventsWithStatusController,
@@ -64,7 +65,7 @@ eventsRouter.patch(
 eventsRouter.get('/', paginationValidator, searchValidator, wrapRequestHandler(getOrSearchEventsController))
 
 /**
- * Description: Get or search event with status
+ * Description: Get or search event
  * Path: /
  * Method: GET
  * Header: { Authorization: Bearer <access_token> }
@@ -78,6 +79,19 @@ eventsRouter.get(
   paginationValidator,
   searchValidator,
   wrapRequestHandler(getOrSearchEventsWithStatusController)
+)
+
+/**
+ * Description: Get created event's details
+ * Path: /organizer/:event_id
+ * Method: GET
+ * Header: { Authorization: Bearer <access_token> }
+ */
+eventsRouter.get(
+  '/organizer/:event_id',
+  accessTokenValidator,
+  organizerValidator,
+  wrapRequestHandler(getCreatedEventDetailsController)
 )
 
 /**

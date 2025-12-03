@@ -2,6 +2,7 @@ import { Router } from 'express'
 import {
   bookTicketController,
   getOrSearchTicketWithStatusController,
+  getTicketDetailsController,
   scanTicketController
 } from '~/controllers/tickets.controllers'
 import { eventIdValidator, paginationValidator, searchValidator } from '~/middlewares/events.middlewares'
@@ -9,7 +10,8 @@ import {
   bookTicketValidator,
   eventCreatorValidator,
   getTicketStatusValidator,
-  scanTicketValidator
+  scanTicketValidator,
+  ticketIdValidator
 } from '~/middlewares/tickets.middlewares'
 import { accessTokenValidator, organizerValidator } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
@@ -58,6 +60,18 @@ ticketsRouter.get(
   getTicketStatusValidator,
   paginationValidator,
   wrapRequestHandler(getOrSearchTicketWithStatusController)
+)
+
+/**
+ * Description: Get or search tickets with status
+ * Path: /:ticket_id
+ * Method: GET
+ */
+ticketsRouter.get(
+  '/:ticket_id',
+  accessTokenValidator,
+  ticketIdValidator,
+  wrapRequestHandler(getTicketDetailsController)
 )
 
 export default ticketsRouter

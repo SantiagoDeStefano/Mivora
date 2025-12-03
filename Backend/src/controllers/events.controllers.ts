@@ -3,6 +3,7 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { EVENTS_MESSAGES } from '~/constants/messages'
 import {
   CreateEventRequestBody,
+  GetCreatedEventDetailsParams,
   SearchEvents,
   SearchEventWithStatus,
   UpdateEventDetailsBody
@@ -65,6 +66,19 @@ export const getOrSearchEventsWithStatusController = async (
       page,
       total_page: Math.ceil(result.totalEvents / limit)
     }
+  })
+}
+
+export const getCreatedEventDetailsController = async (
+  req: Request<ParamsDictionary, unknown, unknown, GetCreatedEventDetailsParams>,
+  res: Response
+): Promise<void> => {
+  const event_id = req.params.event_id as UUIDv4
+  const organizer_id = req.decoded_authorization?.user_id as UUIDv4
+  const result = await eventService.getCreatedEventDetails(organizer_id, event_id)
+  res.json({
+    message: EVENTS_MESSAGES.GET_CREATED_EVENTS_DETAILS_SUCCESSFULLY,
+    result
   })
 }
 

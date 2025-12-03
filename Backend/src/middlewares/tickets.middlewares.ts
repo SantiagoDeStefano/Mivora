@@ -15,6 +15,8 @@ import databaseService from '~/services/database.services'
 import Event from '~/models/schemas/Event.schema'
 import ErrorWithStatus from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpStatus'
+import { isValidUUIDv4 } from '~/utils/uuid'
+import qrCode from '~/services/qrcode.services'
 
 const ticket_status: TicketStatus[] = ['booked', 'checked_in']
 
@@ -129,5 +131,58 @@ export const getTicketStatusValidator = validate(
       }
     },
     ['query']
+  )
+)
+
+export const ticketIdValidator = validate(
+  checkSchema(
+    {
+      ticket_id: {
+        custom: {
+          options: async (values, { req }) => {
+            if (!isValidUUIDv4(values)) {
+              throw new ErrorWithStatus({
+                status: HTTP_STATUS.BAD_REQUEST,
+                message: EVENTS_MESSAGES.INVALID_EVENT_ID
+              })
+            }
+            const ticketResult = await databaseService.events(
+              `
+                SELECT 
+                  tickets.id, 
+                  events.title as event_title,
+                  events.status as event_status,
+                  tickets.status as ticket_status, 
+                  tickets.status, 
+                  tickets.checked_in_at, 
+                  tickets.price_cents, 
+                  tickets.qr_code_token
+                FROM tickets 
+                JOIN events ON events.id = tickets.event_id
+                WHERE tickets.id=$1
+              `,
+              [values]
+            )
+            if (ticketResult.rows.length <= 0) {
+              throw new ErrorWithStatus({
+                status: HTTP_STATUS.NOT_FOUND,
+                message: EVENTS_MESSAGES.EVENT_NOT_FOUND
+              })
+            }
+            const qr_code = await qrCode.generateQrTicketCode(ticketResult.rows[0].qr_code_token)
+            const { qr_code_token: token, ...ticketWithoutToken } = ticketResult.rows[0]
+
+            const ticket = {
+              ...ticketWithoutToken,
+              qr_code
+            }
+
+            req.ticket = ticket
+            return true
+          }
+        }
+      }
+    },
+    ['params']
   )
 )
