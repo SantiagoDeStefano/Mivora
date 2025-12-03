@@ -56,7 +56,13 @@ class Http {
         return response
       },
       function onRejected(error: AxiosError) {
-        console.log(error)
+        console.error(
+          'Axios error:',
+          error.response?.status,
+          error.config?.method,
+          error.config?.url,
+          error.response?.data
+        )
         if (error.response?.status == HttpStatusCode.Unauthorized) {
           clearLocalStorage()
           window.location.reload()

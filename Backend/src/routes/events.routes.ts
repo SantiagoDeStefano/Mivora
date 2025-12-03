@@ -87,7 +87,6 @@ eventsRouter.get(
  */
 eventsRouter.get(
   '/:event_id',
-  accessTokenValidator,
   eventIdValidator,
   getPublishedEventStatusValidator,
   wrapRequestHandler(getEventDetailsController)

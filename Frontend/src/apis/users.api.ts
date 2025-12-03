@@ -11,6 +11,11 @@ export interface EmailTokenRequest {
 export interface ForgotPasswordRequest {
   forgot_password_token: string
 }
+export type ResetPasswordPayload = {
+  password: string
+  confirm_password: string
+  forgot_password_token: string
+}
 const usersApi = {
   registerAccount: (body: RegisterSchema) => {
     return http.post<AuthResponse>('/users/register', body)
@@ -40,7 +45,7 @@ const usersApi = {
   sendVerifyEmail: () => {
     return http.post<MessageOnly>('/users/me/email-verification')
   },
-  forgotPassword: (email:string) => {
+  forgotPassword: (email: string) => {
     return http.post<MessageOnly>('/users/forgot-password', { email })
   },
   verifyEmail: (body: EmailTokenRequest) => {
@@ -48,6 +53,9 @@ const usersApi = {
   },
   verifyForgotPassword: (body: ForgotPasswordRequest) => {
     return http.post<MessageOnly>('/users/verify-forgot-password', body)
+  },
+  resetPassword: (body: ResetPasswordPayload) => {
+    return http.post<MessageOnly>('/users/reset-password', body)
   }
 }
 
