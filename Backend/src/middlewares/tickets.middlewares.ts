@@ -57,7 +57,14 @@ export const scanTicketValidator = validate(
               })
               const { user_id, event_id } = decoded_qr_code_token
               const ticket = await databaseService.users(
-                `SELECT id, status FROM tickets WHERE user_id=$1 AND event_id=$2`,
+                `
+                  SELECT 
+                    tickets.id, 
+                    tickets.status as ticket_status, 
+                    events.status as event_status 
+                  FROM tickets
+                  JOIN events ON events.id = tickets.event_id 
+                  WHERE tickets.user_id=$1 AND tickets.event_id=$2`,
                 [user_id, event_id]
               )
               if (ticket.rows.length <= 0) {
@@ -66,7 +73,13 @@ export const scanTicketValidator = validate(
                   status: HTTP_STATUS.NOT_FOUND
                 })
               }
-              if (ticket.rows[0].status == 'checked_in') {
+              if (ticket.rows[0].event_status != 'published') {
+                throw new ErrorWithStatus({
+                  message: TICKETS_MESSAGES.EVENT_STATUS_NOT_PUBLISHED,
+                  status: HTTP_STATUS.FORBIDDEN
+                })
+              }
+              if (ticket.rows[0].ticket_status == 'checked_in') {
                 throw new ErrorWithStatus({
                   message: TICKETS_MESSAGES.TICKET_ALREADY_CHECKED_IN,
                   status: HTTP_STATUS.NOT_FOUND

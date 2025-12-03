@@ -152,6 +152,9 @@ export const MEDIAS_MESSAGES = {
 
 export const TICKETS_MESSAGES = {
   BOOK_TICKET_SUCCESS: 'Book ticket successfully',
+
+  EVENT_STATUS_NOT_PUBLISHED: "Event's status is not published",
+
   GET_TICKETS_SUCCESSFULLY: 'Get tickets successfully',
   GET_TICKETS_DETAILS_SUCCESSFULLY: 'Get ticket details successfully',
 
