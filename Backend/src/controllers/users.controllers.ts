@@ -19,6 +19,14 @@ import User from '~/models/schemas/User.schema'
 import userService from '~/services/users.services'
 import mediasService from '~/services/medias.services'
 
+/**
+ * Register controller
+ * - Route: POST /register
+ * - Public endpoint
+ * - Body: { name, email, password, confirm_password }
+ * - Action: creates a new user, stores hashed password and role, and returns auth tokens
+ * - Response: JSON { message, result } where result contains `{ access_token, refresh_token }`
+ */
 export const registerController = async (
   req: Request<ParamsDictionary, unknown, RegisterRequestBody>,
   res: Response
@@ -31,6 +39,15 @@ export const registerController = async (
   return
 }
 
+/**
+ * Login controller
+ * - Route: POST /login
+ * - Public endpoint
+ * - Body: { email, password }
+ * - Action: verifies credentials and returns a new access/refresh token pair
+ * - Side-effect: `loginValidator` attaches `req.user` before this runs
+ * - Response: JSON { message, result } where result contains `{ access_token, refresh_token }`
+ */
 export const loginController = async (
   req: Request<ParamsDictionary, unknown, LoginRequestBody>,
   res: Response
@@ -46,6 +63,14 @@ export const loginController = async (
   return
 }
 
+/**
+ * Logout controller
+ * - Route: POST /logout
+ * - Protected: requires a refresh token in the request body
+ * - Body: { refresh_token }
+ * - Action: revokes the refresh token from persistence
+ * - Response: JSON { message }
+ */
 export const logoutController = async (
   req: Request<ParamsDictionary, unknown, LogoutRequestBody>,
   res: Response
@@ -58,6 +83,15 @@ export const logoutController = async (
   return
 }
 
+/**
+ * Refresh-token controller
+ * - Route: POST /refresh-token
+ * - Public endpoint but requires a valid `refresh_token` in the body
+ * - Body: { refresh_token }
+ * - Action: validates the provided refresh token and issues a new token pair
+ * - Side-effect: `refreshTokenValidator` attaches `req.decoded_refresh_token`
+ * - Response: JSON { message, result } where result contains `{ access_token, refresh_token }`
+ */
 export const refreshTokenController = async (
   req: Request<ParamsDictionary, unknown, RefreshTokenRequestBody>,
   res: Response
@@ -72,6 +106,14 @@ export const refreshTokenController = async (
   return
 }
 
+/**
+ * Get current user's profile
+ * - Route: GET /me
+ * - Protected: requires `Authorization: Bearer <access_token>`
+ * - Action: returns user profile including name, email, avatar_url and roles
+ * - Note: when the user has the 'organizer' role, `userService.getMe` includes organizer revenue
+ * - Response: JSON { message, result }
+ */
 export const getMeController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { user_id } = req.decoded_authorization as TokenPayload
   const result = await userService.getMe(user_id)
@@ -82,6 +124,14 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
   return
 }
 
+/**
+ * Update current user's profile
+ * - Route: PATCH /me
+ * - Protected: requires `Authorization: Bearer <access_token>`
+ * - Body: partial profile fields (e.g. { name, avatar_url, role })
+ * - Action: updates allowed fields and may add 'organizer' role if validated
+ * - Response: JSON { message, result }
+ */
 export const updateMeController = async (
   req: Request<ParamsDictionary, unknown, UpdateMeRequestBody>,
   res: Response,
@@ -96,6 +146,14 @@ export const updateMeController = async (
   return
 }
 
+/**
+ * Update avatar controller
+ * - Route: PUT /me/avatar
+ * - Protected: requires `Authorization: Bearer <access_token>`
+ * - Payload: multipart/form-data with single `image` file
+ * - Action: uploads file via `mediasService.uploadImage` and updates user's `avatar_url`
+ * - Response: JSON { message, result } where result contains the updated user
+ */
 export const updateAvatarController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { user_id } = req.decoded_authorization as TokenPayload
   const url = await mediasService.uploadImage(req)
@@ -106,6 +164,14 @@ export const updateAvatarController = async (req: Request, res: Response, next: 
   })
   return
 }
+
+/**
+ * Send email verification controller
+ * - Route: POST /me/email-verification
+ * - Protected: requires `Authorization: Bearer <access_token>`
+ * - Action: generates a verification token and sends an email to the user's registered address
+ * - Response: JSON { message }
+ */
 
 export const sendEmailController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const user = req.user as User
@@ -118,6 +184,13 @@ export const sendEmailController = async (req: Request, res: Response, next: Nex
   return
 }
 
+/**
+ * Verify email controller
+ * - Route: POST /verify-email
+ * - Public: accepts `{ email_verify_token }` in the body
+ * - Action: validates token, marks user as verified and issues new auth tokens
+ * - Response: JSON { message, result }
+ */
 export const verifyEmailController = async (
   req: Request<ParamsDictionary, unknown, VerifyEmailRequestBody>,
   res: Response
@@ -130,6 +203,13 @@ export const verifyEmailController = async (
   })
 }
 
+/**
+ * Forgot-password controller
+ * - Route: POST /forgot-password
+ * - Public: accepts `{ email }` in the body
+ * - Action: sends a password reset email containing a token if the email exists
+ * - Response: JSON { message }
+ */
 export const forgotPasswordController = async (
   req: Request<ParamsDictionary, unknown, ForgotPasswordRequestBody>,
   res: Response
@@ -142,6 +222,13 @@ export const forgotPasswordController = async (
   return
 }
 
+/**
+ * Verify forgot-password token controller
+ * - Route: POST /verify-forgot-password
+ * - Public: accepts `{ forgot_password_token }` in the body
+ * - Action: validates token; response indicates the token is valid and the client can proceed
+ * - Response: JSON { message }
+ */
 export const verifyForgotPasswordController = async (
   req: Request<ParamsDictionary, unknown, VerifyForgotPasswordRequestBody>,
   res: Response,
@@ -152,6 +239,13 @@ export const verifyForgotPasswordController = async (
   })
 }
 
+/**
+ * Reset password controller
+ * - Route: POST /reset-password
+ * - Public: accepts `{ password, confirm_password, forgot_password_token }` in the body
+ * - Action: validates token and password rules, updates stored password hash and clears token
+ * - Response: JSON { message }
+ */
 export const resetPasswordController = async (
   req: Request<ParamsDictionary, unknown, ResetPasswordRequestBody>,
   res: Response

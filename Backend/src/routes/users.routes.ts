@@ -30,67 +30,87 @@ import { wrapRequestHandler } from '~/utils/handlers'
 const usersRouter = Router()
 
 /**
- * Description: Register a new user
- * Path: /register
- * Method: POST
- * Body: { name: string, email: string, password: string, confirm_password:string, role: 'Attendee' || 'Organizer', avatar_url: string }
+ * Register a new user
+ * - Method: POST
+ * - Path: /register
+ * - Public: no authentication required
+ * - Body (JSON): { name, email, password, confirm_password, role?, avatar_url? }
+ * - Validations: `registerValidator` ensures required fields, email uniqueness and password rules
+ * - Success: 201 (created) with created user (or auth tokens depending on controller)
  */
 usersRouter.post('/register', registerValidator, wrapRequestHandler(registerController))
 
 /**
- * Description: Login to an exsisting user
- * Path: /login
- * Method: POST
- * Body: { email: string, password: string }
+ * Login (authenticate) a user
+ * - Method: POST
+ * - Path: /login
+ * - Public endpoint
+ * - Body (JSON): { email, password }
+ * - Validations: `loginValidator` checks credentials and attaches user id to request
+ * - Success: 200 with `access_token` and `refresh_token` in response
  */
 usersRouter.post('/login', loginValidator, wrapRequestHandler(loginController))
 
 /**
- * Description: Remove refreshtoken of a user
- * Path: /logout
- * Method: POST
- * Headers: { Authorization: Bearer <refresh_token> }
- * Body: { refresh_token: string }
+ * Logout and revoke refresh token
+ * - Method: POST
+ * - Path: /logout
+ * - Protected: requires `Authorization: Bearer <access_token>`
+ * - Body (JSON): { refresh_token }
+ * - Validations: `accessTokenValidator` (auth) and `refreshTokenValidator` (refresh token ownership)
+ * - Success: 200 and refresh token removed from persistence
  */
 usersRouter.post('/logout', accessTokenValidator, refreshTokenValidator, wrapRequestHandler(logoutController))
 
 /**
- * Description: Get refresh token
- * Path: /refresh-token
- * Method: POST
- * Body: { refresh_token: string }
+ * Exchange refresh token for new access/refresh tokens
+ * - Method: POST
+ * - Path: /refresh-token
+ * - Public: accepts a `refresh_token` in body
+ * - Validations: `refreshTokenValidator` verifies JWT and persistence
+ * - Success: 200 with new `{ access_token, refresh_token }`
  */
 usersRouter.post('/refresh-token', refreshTokenValidator, wrapRequestHandler(refreshTokenController))
 
 /**
- * Description: Get me
- * Path: /me
- * Method: POST
+ * Get current user's profile
+ * - Method: GET
+ * - Path: /me
+ * - Protected: requires Authorization header
+ * - Returns the authenticated user's profile (name, email, avatar_url, roles, etc.)
  */
 usersRouter.get('/me', accessTokenValidator, wrapRequestHandler(getMeController))
 
-/*
- * Description: Update my profile
- * Path: /me
- * Method: PATCH
- * Headers: { Authorization: Bearer <access_token> }
- * Body: UpdateMeRequestBody
+/**
+ * Update current user's profile
+ * - Method: PATCH
+ * - Path: /me
+ * - Protected: requires Authorization header
+ * - Body: partial profile fields { name, avatar_url, role }
+ * - Validations: `updateMeValidator` (name rules, optional role upgrade to organizer)
+ * - Success: 200 with updated user
  */
 usersRouter.patch('/me', accessTokenValidator, updateMeValidator, wrapRequestHandler(updateMeController))
 
-/*
- * Description: Upload avatar image file to s3 and return the link
- * Path: /me
- * Method: PUT
- * Headers: { Authorization: Bearer <access_token> }
+/**
+ * Upload avatar image for current user
+ * - Method: PUT
+ * - Path: /me/avatar
+ * - Protected: requires Authorization header
+ * - Payload: multipart/form-data with a single `image` file field
+ * - Middleware: `uploadImageMiddleware` (parses multipart) and `uploadImageValidator` (validates file)
+ * - Action: uploads file to S3 via `medias.services` and updates user's `avatar_url`
+ * - Success: 200 with avatar URL
  */
 usersRouter.put('/me/avatar', accessTokenValidator, wrapRequestHandler(updateAvatarController))
 
 /**
- * Description: Send email verification token to current user's email
- * Path: /me/email-verification
- * Method: POST
- * Headers: { Authorization: Bearer <access_token> }
+ * Send a verification email to the current user
+ * - Method: POST
+ * - Path: /me/email-verification
+ * - Protected: requires `Authorization: Bearer <access_token>`
+ * - Action: generates an email verification token and sends a verification email to the user's address
+ * - Success: 200 with a message instructing the user to check their email
  */
 usersRouter.post(
   '/me/email-verification',
@@ -100,27 +120,33 @@ usersRouter.post(
 )
 
 /**
- * Description: Verify email when user click on the link in the email
- * Path: /verify-email
- * Method: POST
- * Headers: Don't need because user can verify email without login
- * Body: { email_verify_token: string }
+ * Verify a user's email using an email verification token
+ * - Method: POST
+ * - Path: /verify-email
+ * - Public: no authentication required
+ * - Body: `{ email_verify_token: string }`
+ * - Action: validates token, marks the user as verified and issues new auth tokens
+ * - Success: 200 with new `{ access_token, refresh_token }`
  */
 usersRouter.post('/verify-email', emailVerifyTokenValidator, wrapRequestHandler(verifyEmailController))
 
 /**
- * Description: Submit email to reset password, then send email to user
- * Path: /forgot-password
- * Method: POST
- * Body: { email: string }
+ * Initiate the forgot-password flow by sending a reset link
+ * - Method: POST
+ * - Path: /forgot-password
+ * - Public: accepts `{ email: string }` in the body
+ * - Action: verifies the email exists and sends a reset email containing a token
+ * - Success: 200 with a message instructing the user to check their email
  */
 usersRouter.post('/forgot-password', forgotPasswordValidator, wrapRequestHandler(forgotPasswordController))
 
 /**
- * Description: Verify link(token) in email to reset password
- * Path: /verity-forgot-password
- * Method: POST
- * Body: { forgot_password_token: string }
+ * Verify a forgot-password token sent by email
+ * - Method: POST
+ * - Path: /verify-forgot-password
+ * - Public: accepts `{ forgot_password_token: string }` in the body
+ * - Action: validates the token so the client may proceed to reset the password
+ * - Success: 200 with a confirmation message
  */
 usersRouter.post(
   '/verify-forgot-password',
@@ -129,10 +155,13 @@ usersRouter.post(
 )
 
 /**
- * Description: Reset password after verify forgot password token
- * Path: /reset-password
- * Method: POST
- * Body: { password: string, confirm_password: string, forgot_password_token: string }
+ * Reset a user's password using a verified forgot-password token
+ * - Method: POST
+ * - Path: /reset-password
+ * - Public: body must include `{ password, confirm_password, forgot_password_token }`
+ * - Validations: `resetPasswordValidator` ensures token validity and password rules
+ * - Action: updates the user's password and clears the forgot-password token
+ * - Success: 200 with a message confirming password reset
  */
 usersRouter.post('/reset-password', resetPasswordValidator, wrapRequestHandler(resetPasswordController))
 

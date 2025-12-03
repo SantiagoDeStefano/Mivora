@@ -58,3 +58,17 @@ export const getOrSearchTicketWithStatusController = async (
     }
   })
 }
+
+export const getTicketDetailsController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const ticketData = req.ticket
+  const ticket = {
+    ...ticketData
+  }
+  res.json({
+    message: TICKETS_MESSAGES.GET_TICKETS_DETAILS_SUCCESSFULLY,
+    result: ticket
+  })
+}

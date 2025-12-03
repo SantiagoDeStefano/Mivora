@@ -11,6 +11,7 @@ import {
 import path from '../constants/path'
 import { AuthResponse } from '../types/auth.types'
 import { HttpStatusCode } from 'axios'
+import { get } from 'node_modules/axios/index.cjs'
 
 class Http {
   instance: AxiosInstance
@@ -80,17 +81,25 @@ class Http {
         if (error.response?.status === HttpStatusCode.Unauthorized && !originalRequest._retry) {
           originalRequest._retry = true
 
-          const refreshToken = localStorage.getItem('refresh_token')
+          const refreshToken = getRefreshTokenFromLocalStorage()
+          if (!refreshToken) {
+            clearLocalStorage()
+            window.location.reload()
+            return Promise.reject(error)
+          }  
 
           const res = await usersApi.refreshToken({ refresh_token: refreshToken })
 
-          const newAccessToken = res.data.result.access_token
-          const newRefreshToken = res.data.result.refresh_token
-          localStorage.setItem('access_token', newAccessToken)
-          localStorage.setItem('refresh_token', newRefreshToken)
+          console.log(res)
+
+          this.accessToken = res.data.result.access_token
+          this.refreshToken = res.data.result.refresh_token
+          setAccessTokenToLocalStorage(this.accessToken)
+          setRefreshTokenToLocalStorage(this.refreshToken)
 
           // Retry original request
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
+
+          originalRequest.headers.Authorization = `Bearer ${this.accessToken}`
           return this.instance(originalRequest)
         }
 

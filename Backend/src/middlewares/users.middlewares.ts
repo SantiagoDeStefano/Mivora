@@ -1,4 +1,4 @@
-import { body, checkSchema, ParamSchema } from 'express-validator'
+import { checkSchema, ParamSchema } from 'express-validator'
 import { USERS_MESSAGES } from '~/constants/messages'
 import { validate } from '~/utils/validation'
 import { UserRole } from '~/types/domain'
@@ -21,7 +21,11 @@ import LIMIT_MIN_MAX from '~/constants/limits'
 // Allowed user roles
 const user_roles: UserRole[] = ['attendee', 'organizer']
 
-// Shared password rules
+/**
+ * Shared password validation rules
+ * - Used by registration and password-reset validators
+ * - Enforces non-empty string, length constraints and a strong-password policy
+ */
 const passwordSchema: ParamSchema = {
   notEmpty: {
     errorMessage: USERS_MESSAGES.PASSWORD_IS_REQUIRED
@@ -45,7 +49,10 @@ const passwordSchema: ParamSchema = {
   }
 }
 
-// Shared name rules
+/**
+ * Shared name validation rules
+ * - Trims whitespace and enforces min/max length
+ */
 const nameSchema: ParamSchema = {
   trim: true,
   notEmpty: {
@@ -63,7 +70,10 @@ const nameSchema: ParamSchema = {
   }
 }
 
-// Optional avatar URL rules
+/**
+ * Optional avatar URL rules
+ * - Validates that provided `avatar_url` (if present) is a string and within length limits
+ */
 const imageSchema: ParamSchema = {
   trim: true,
   optional: true,
@@ -79,7 +89,13 @@ const imageSchema: ParamSchema = {
   }
 }
 
-// Verify forgot_password_token
+/**
+ * Validate and decode a `forgot_password_token` value
+ * - Body: { forgot_password_token }
+ * - Ensures the token is present, verifies the JWT, checks the token is still stored on the user
+ * - On success: attaches `req.decoded_forgot_password_token` for downstream handlers
+ * - On failure: throws `ErrorWithStatus` (401/404) with explanatory message
+ */
 const forgotPasswordTokenSchema: ParamSchema = {
   custom: {
     options: async (value: string, { req }) => {
@@ -122,7 +138,10 @@ const forgotPasswordTokenSchema: ParamSchema = {
   }
 }
 
-// Confirm-password must match another field
+/**
+ * Confirm-password validator factory
+ * - Ensures the `confirm_password` value matches the given `customField` in the request body
+ */
 const confirmPasswordSchema = (customField: string): ParamSchema => ({
   notEmpty: {
     errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_IS_REQUIRED
@@ -144,7 +163,13 @@ const confirmPasswordSchema = (customField: string): ParamSchema => ({
   }
 })
 
-// Register: validate body fields and unique email
+/**
+ * Register validator
+ * - Body: { name, email, password, confirm_password }
+ * - Ensures required fields, password strength, and that the email is not already registered
+ * - On success: request proceeds to the controller to create the user
+ * - On failure: throws a validation error with a descriptive message
+ */
 export const registerValidator = validate(
   checkSchema(
     {
@@ -174,7 +199,12 @@ export const registerValidator = validate(
   )
 )
 
-// Login: check email/password combo against DB and attach user_id
+/**
+ * Login validator
+ * - Body: { email, password }
+ * - Verifies credentials against the database and attaches `req.user = { id, verified }` on success
+ * - On failure: throws an error indicating incorrect email/password
+ */
 export const loginValidator = validate(
   checkSchema(
     {
@@ -210,7 +240,12 @@ export const loginValidator = validate(
   )
 )
 
-// Access token: verify "Authorization: Bearer <token>" header
+/**
+ * Access token validator
+ * - Header: Authorization: Bearer <access_token>
+ * - Delegates to `verifyAccessToken` which validates the token and attaches decoded payload on `req`
+ * - Must be run before handlers that depend on `req.decoded_authorization`
+ */
 export const accessTokenValidator = validate(
   checkSchema(
     {
@@ -227,7 +262,13 @@ export const accessTokenValidator = validate(
   )
 )
 
-// Refresh token: verify JWT and ensure it exists in DB (not reused)
+/**
+ * Refresh token validator
+ * - Body: { refresh_token }
+ * - Verifies the refresh JWT and ensures the token exists in persistence (prevents reuse)
+ * - On success attaches `req.decoded_refresh_token` for the refresh controller to use
+ * - On failure: throws 401/404 as appropriate
+ */
 export const refreshTokenValidator = validate(
   checkSchema(
     {
@@ -278,7 +319,12 @@ export const refreshTokenValidator = validate(
   )
 )
 
-// User's role: verify event's creator role is 'organizer'
+/**
+ * Organizer role guard
+ * - Ensures the authenticated user (from `req.decoded_authorization`) has the 'organizer' role
+ * - Intended to be used after `accessTokenValidator`
+ * - On failure: forwards a 403 Forbidden error
+ */
 export const organizerValidator = async (req: Request, res: Response, next: NextFunction) => {
   const { user_id } = req.decoded_authorization as TokenPayload
   const role = await databaseService.user_roles(`SELECT role FROM user_roles WHERE user_id=$1 AND role=$2`, [
@@ -296,7 +342,12 @@ export const organizerValidator = async (req: Request, res: Response, next: Next
   next()
 }
 
-// Validator for updating user info, allowing only name, avatar, and role change to 'organizer' if not already assigned
+/**
+ * Update-me validator
+ * - Body: { name?, role? }
+ * - Validates `name` using shared rules; `role` may be changed only to 'organizer' and only
+ *   when the user is verified and does not already have the role
+ */
 export const updateMeValidator = validate(
   checkSchema(
     {
@@ -339,6 +390,12 @@ export const updateMeValidator = validate(
   )
 )
 
+/**
+ * Send-email validator
+ * - Ensures the user's email is not already verified before sending a verification email
+ * - Reads user row from DB; if already verified, short-circuits with a 200 (OK) response message
+ * - On success attaches `req.user` for the controller to use
+ */
 export const sendEmailValidator = async (req: Request, res: Response, next: NextFunction) => {
   const { user_id } = req.decoded_authorization as TokenPayload
   const userRow = await databaseService.users(`SELECT id, verified, email FROM users WHERE id=$1`, [user_id])
@@ -354,6 +411,13 @@ export const sendEmailValidator = async (req: Request, res: Response, next: Next
   next()
 }
 
+/**
+ * Email verification token validator
+ * - Body: { email_verify_token }
+ * - Verifies the email verification JWT, checks DB for matching token and attaches
+ *   `req.decoded_email_verify_token` on success
+ * - On failure: throws 401/404 with descriptive message
+ */
 export const emailVerifyTokenValidator = validate(
   checkSchema(
     {
@@ -404,6 +468,11 @@ export const emailVerifyTokenValidator = validate(
   )
 )
 
+/**
+ * Forgot-password request validator
+ * - Body: { email }
+ * - Ensures the provided email belongs to a user and attaches `req.user` for downstream use
+ */
 export const forgotPasswordValidator = validate(
   checkSchema(
     {
@@ -428,6 +497,12 @@ export const forgotPasswordValidator = validate(
   )
 )
 
+/**
+ * Verify-forgot-password token validator
+ * - Body: { forgot_password_token }
+ * - Uses `forgotPasswordTokenSchema` to validate and decode the token; on success attaches
+ *   `req.decoded_forgot_password_token`
+ */
 export const verifyForgotPasswordTokenValidator = validate(
   checkSchema(
     {
@@ -437,6 +512,11 @@ export const verifyForgotPasswordTokenValidator = validate(
   )
 )
 
+/**
+ * Reset-password validator
+ * - Body: { password, confirm_password, forgot_password_token }
+ * - Validates password rules and the forgot-password token before allowing a password change
+ */
 export const resetPasswordValidator = validate(
   checkSchema(
     {

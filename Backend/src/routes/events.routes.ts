@@ -2,6 +2,7 @@ import { Router } from 'express'
 import {
   cancelEventController,
   createEventController,
+  getCreatedEventDetailsController,
   getEventDetailsController,
   getOrSearchEventsController,
   getOrSearchEventsWithStatusController,
@@ -26,10 +27,13 @@ import {
 const eventsRouter = Router()
 
 /**
- * Description: Create a new event
- * Path: /organizer/
- * Method: POST
- * Body: { title: string, description?: string, poster_url?: string, localtion_text: , start_at: , end_at: , price_cents: , capacity: number, status: EventStatus }
+ * Create a new event (organizer only)
+ * - Method: POST
+ * - Path: /organizer/
+ * - Protected: requires `Authorization: Bearer <access_token>` and organizer role
+ * - Body: { title, description?, poster_url?, location_text, start_at, end_at, price_cents, capacity, status }
+ * - Validations: `createEventValidator` enforces required fields and constraints
+ * - Success: 201/200 with created event data
  */
 eventsRouter.post(
   '/organizer/',
@@ -40,10 +44,14 @@ eventsRouter.post(
 )
 
 /**
- * Description: Update event's details
- * Path: /organizer/:event_id
- * Method: PATCH
- * Body: { title: string, description?: string, poster_url?: string, localtion_text: , start_at: , end_at: , price_cents: , capacity: number, status: EventStatus }
+ * Update an existing event's details (organizer only)
+ * - Method: PATCH
+ * - Path: /organizer/:event_id
+ * - Protected: requires `Authorization: Bearer <access_token>` and organizer role
+ * - Params: `event_id` in URL (validated by `eventIdValidator`)
+ * - Body: any updatable fields (title, description, poster_url, location_text, start_at, end_at, price_cents, capacity, status)
+ * - Validations: `updateEventStatusValidator`, `updateEventValidator`
+ * - Success: 200 with updated event data
  */
 eventsRouter.patch(
   '/organizer/:event_id',
@@ -56,19 +64,23 @@ eventsRouter.patch(
 )
 
 /**
- * Description: Get or search all published event
- * Path: /
- * Method: GET
- * Query: { limit: number, page: number, q?: string }
+ * List or search published events
+ * - Method: GET
+ * - Path: /
+ * - Query: { limit, page, q? }
+ * - Validations: `paginationValidator`, `searchValidator`
+ * - Success: 200 with paginated list of published events
  */
 eventsRouter.get('/', paginationValidator, searchValidator, wrapRequestHandler(getOrSearchEventsController))
 
 /**
- * Description: Get or search event with status
- * Path: /
- * Method: GET
- * Header: { Authorization: Bearer <access_token> }
- * Query: { limit: number, page: number, status?: string, q?: string }
+ * List or search events for the authenticated organizer
+ * - Method: GET
+ * - Path: /organizer/
+ * - Protected: requires `Authorization: Bearer <access_token>` and organizer role
+ * - Query: { limit, page, status?, q? }
+ * - Validations: `getEventStatusValidator`, `paginationValidator`, `searchValidator`
+ * - Success: 200 with paginated list (filtered by status if provided)
  */
 eventsRouter.get(
   '/organizer/',
@@ -81,9 +93,27 @@ eventsRouter.get(
 )
 
 /**
- * Description: Get published event's details
- * Path: /:event_id
- * Method: GET
+ * Get details for an event created by the authenticated organizer
+ * - Method: GET
+ * - Path: /organizer/:event_id
+ * - Protected: requires `Authorization: Bearer <access_token>` and organizer role
+ * - Params: `event_id` in URL (validated by `eventIdValidator` if applied upstream)
+ * - Success: 200 with event details for organizer's event
+ */
+eventsRouter.get(
+  '/organizer/:event_id',
+  accessTokenValidator,
+  organizerValidator,
+  wrapRequestHandler(getCreatedEventDetailsController)
+)
+
+/**
+ * Get details for a published event
+ * - Method: GET
+ * - Path: /:event_id
+ * - Params: `event_id` in URL (validated by `eventIdValidator`)
+ * - Validations: `getPublishedEventStatusValidator`
+ * - Success: 200 with public event details
  */
 eventsRouter.get(
   '/:event_id',
@@ -93,9 +123,13 @@ eventsRouter.get(
 )
 
 /**
- * Description: Publish event (change event's status to 'published')
- * Path: /:event_id/publish
- * Method: PATCH
+ * Publish an event (mark status as 'published')
+ * - Method: PATCH
+ * - Path: /organizer/:event_id/publish
+ * - Protected: requires `Authorization: Bearer <access_token>` and organizer role
+ * - Params: `event_id` in URL
+ * - Validations: `publishEventStatusValidator`
+ * - Success: 200 with updated event status
  */
 eventsRouter.patch(
   '/organizer/:event_id/publish',
@@ -107,9 +141,13 @@ eventsRouter.patch(
 )
 
 /**
- * Description: Cancel event (change event's status to 'canceled')
- * Path: /:event_id/cancel
- * Method: PATCH
+ * Cancel an event (mark status as 'canceled')
+ * - Method: PATCH
+ * - Path: /organizer/:event_id/cancel
+ * - Protected: requires `Authorization: Bearer <access_token>` and organizer role
+ * - Params: `event_id` in URL
+ * - Validations: `cancelEventStatusValidator`
+ * - Success: 200 with updated event status
  */
 eventsRouter.patch(
   '/organizer/:event_id/cancel',

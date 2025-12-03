@@ -3,6 +3,7 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { EVENTS_MESSAGES } from '~/constants/messages'
 import {
   CreateEventRequestBody,
+  GetCreatedEventDetailsParams,
   SearchEvents,
   SearchEventWithStatus,
   UpdateEventDetailsBody
@@ -14,6 +15,14 @@ import eventService from '~/services/events.services'
 import { UUIDv4 } from '~/types/common'
 import { EventStatus } from '~/types/domain'
 
+/**
+ * Create event controller
+ * - Route: POST /organizer/
+ * - Protected: requires organizer Authorization header
+ * - Body: `CreateEventRequestBody` (title, description?, poster_url?, location_text, start_at, end_at, price_cents, capacity, status)
+ * - Action: creates an event owned by the authenticated organizer
+ * - Response: JSON { message, result } with created event
+ */
 export const createEventController = async (
   req: Request<ParamsDictionary, unknown, CreateEventRequestBody>,
   res: Response
@@ -26,6 +35,13 @@ export const createEventController = async (
   })
 }
 
+/**
+ * List or search published events (public)
+ * - Route: GET /
+ * - Query: `{ limit, page, q? }`
+ * - Action: returns paginated list of published events
+ * - Response: JSON { message, result: { events, limit, page, total_page } }
+ */
 export const getOrSearchEventsController = async (
   req: Request<ParamsDictionary, unknown, unknown, SearchEvents>,
   res: Response
@@ -47,6 +63,13 @@ export const getOrSearchEventsController = async (
   })
 }
 
+/**
+ * List or search events for authenticated organizer
+ * - Route: GET /organizer/
+ * - Protected: requires organizer Authorization header
+ * - Query: `{ limit, page, status?, q? }`
+ * - Action: returns paginated list filtered by status/search for the organizer
+ */
 export const getOrSearchEventsWithStatusController = async (
   req: Request<ParamsDictionary, unknown, unknown, SearchEventWithStatus>,
   res: Response
@@ -68,6 +91,32 @@ export const getOrSearchEventsWithStatusController = async (
   })
 }
 
+/**
+ * Get event details for organizer-created event
+ * - Route: GET /organizer/:event_id
+ * - Protected: requires organizer Authorization header
+ * - Params: `event_id` (UUID)
+ * - Action: returns full event details for the organizer's event
+ */
+export const getCreatedEventDetailsController = async (
+  req: Request<ParamsDictionary, unknown, unknown, GetCreatedEventDetailsParams>,
+  res: Response
+): Promise<void> => {
+  const event_id = req.params.event_id as UUIDv4
+  const organizer_id = req.decoded_authorization?.user_id as UUIDv4
+  const result = await eventService.getCreatedEventDetails(organizer_id, event_id)
+  res.json({
+    message: EVENTS_MESSAGES.GET_CREATED_EVENTS_DETAILS_SUCCESSFULLY,
+    result
+  })
+}
+
+/**
+ * Get public event details
+ * - Route: GET /:event_id
+ * - Params: `event_id` (UUID)
+ * - Action: returns public event information (only for published events)
+ */
 export const getEventDetailsController = async (req: Request, res: Response): Promise<void> => {
   const eventData = req.event?.[0]
   const event = {
@@ -79,6 +128,14 @@ export const getEventDetailsController = async (req: Request, res: Response): Pr
   })
 }
 
+/**
+ * Update event details controller
+ * - Route: PATCH /organizer/:event_id
+ * - Protected: requires organizer Authorization header
+ * - Params: `event_id` (UUID)
+ * - Body: partial event fields to update
+ * - Action: updates event and returns updated resource
+ */
 export const updateEventDetailsController = async (
   req: Request<ParamsDictionary, unknown, UpdateEventDetailsBody>,
   res: Response
@@ -91,6 +148,12 @@ export const updateEventDetailsController = async (
   })
 }
 
+/**
+ * Publish event controller
+ * - Route: PATCH /organizer/:event_id/publish
+ * - Protected: requires organizer Authorization header
+ * - Action: marks event as published and returns updated event
+ */
 export const publishEventController = async (req: Request, res: Response): Promise<void> => {
   const event_id = (req.event as Event[])[0].id
   const result = await eventService.publishEvent(event_id)
@@ -99,6 +162,13 @@ export const publishEventController = async (req: Request, res: Response): Promi
     result
   })
 }
+
+/**
+ * Cancel event controller
+ * - Route: PATCH /organizer/:event_id/cancel
+ * - Protected: requires organizer Authorization header
+ * - Action: marks event as canceled and returns updated event
+ */
 
 export const cancelEventController = async (req: Request, res: Response): Promise<void> => {
   const event_id = (req.event as Event[])[0].id

@@ -14,7 +14,13 @@ import Event from '~/models/schemas/Event.schema'
 
 const event_statuts: EventStatus[] = ['draft', 'published', 'canceled']
 
-// Validator for creating an event with field type checks, length limits, and logical constraints
+/**
+ * Validator: createEventValidator
+ * - Purpose: validate the request body when creating an event
+ * - Body fields validated: `title`, `description?`, `poster_url?`, `location_text`, `start_at`, `end_at`, `price_cents`, `capacity`, `status?`
+ * - Rules: type checks, length limits, ISO8601 dates, end_at > start_at, positive numeric checks
+ * - Side-effects: none (pure validation)
+ */
 export const createEventValidator = validate(
   checkSchema(
     {
@@ -76,6 +82,9 @@ export const createEventValidator = validate(
         trim: true
       },
       start_at: {
+        notEmpty: {
+          errorMessage: EVENTS_MESSAGES.EVENT_START_AT_IS_REQUIRED
+        },
         isISO8601: {
           options: { strict: true, strictSeparator: true },
           errorMessage: EVENTS_MESSAGES.EVENT_START_AT_MUST_BE_ISO8601
@@ -83,10 +92,14 @@ export const createEventValidator = validate(
         toDate: true
       },
       end_at: {
+        notEmpty: {
+          errorMessage: EVENTS_MESSAGES.EVENT_END_AT_IS_REQUIRED
+        },
         isISO8601: {
           options: { strict: true, strictSeparator: true },
           errorMessage: EVENTS_MESSAGES.EVENT_END_AT_MUST_BE_ISO8601
         },
+        toDate: true,
         custom: {
           options: (value, { req }) => {
             const start = Date.parse(req.body.start_at)
@@ -96,8 +109,7 @@ export const createEventValidator = validate(
             return end > start
           },
           errorMessage: EVENTS_MESSAGES.EVENT_END_AT_MUST_BE_AFTER_START_AT
-        },
-        toDate: true
+        }
       },
       price_cents: {
         isNumeric: {
@@ -138,6 +150,11 @@ export const createEventValidator = validate(
   )
 )
 
+/**
+ * Validator: updateEventValidator
+ * - Purpose: validate event update payloads (same constraints as create but used for PATCH)
+ * - Body: updatable fields with the same semantic checks as creation
+ */
 export const updateEventValidator = validate(
   checkSchema(
     {
@@ -199,6 +216,9 @@ export const updateEventValidator = validate(
         trim: true
       },
       start_at: {
+        notEmpty: {
+          errorMessage: EVENTS_MESSAGES.EVENT_START_AT_IS_REQUIRED
+        },
         isISO8601: {
           options: { strict: true, strictSeparator: true },
           errorMessage: EVENTS_MESSAGES.EVENT_START_AT_MUST_BE_ISO8601
@@ -206,6 +226,9 @@ export const updateEventValidator = validate(
         toDate: true
       },
       end_at: {
+        notEmpty: {
+          errorMessage: EVENTS_MESSAGES.EVENT_END_AT_IS_REQUIRED
+        },
         isISO8601: {
           options: { strict: true, strictSeparator: true },
           errorMessage: EVENTS_MESSAGES.EVENT_END_AT_MUST_BE_ISO8601
@@ -251,6 +274,11 @@ export const updateEventValidator = validate(
   )
 )
 
+/**
+ * Validator: paginationValidator
+ * - Purpose: validate `limit` and `page` query parameters for paginated listing endpoints
+ * - Rules: `limit` must be within allowed range, `page` must be >= 1
+ */
 export const paginationValidator = validate(
   checkSchema(
     {
@@ -281,6 +309,11 @@ export const paginationValidator = validate(
   )
 )
 
+/**
+ * Validator: searchValidator
+ * - Purpose: validate search query parameter `q` (optional)
+ * - Rules: if present, `q` must be a trimmed string with allowed length
+ */
 export const searchValidator = validate(
   checkSchema(
     {
@@ -303,6 +336,13 @@ export const searchValidator = validate(
   )
 )
 
+/**
+ * Validator: eventIdValidator
+ * - Purpose: validate `event_id` param and load event data
+ * - Params: `event_id` (must be a valid UUIDv4)
+ * - Side-effects: queries the DB for the event; if found attaches `req.event` = event.rows
+ * - Errors: throws 400 for invalid id, 404 if event not found
+ */
 export const eventIdValidator = validate(
   checkSchema(
     {
@@ -316,7 +356,24 @@ export const eventIdValidator = validate(
               })
             }
             const event = await databaseService.events(
-              `SELECT id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status FROM events WHERE id=$1`,
+              `
+                SELECT 
+                  events.id, 
+                  users.name as organizer_name, 
+                  events.title, 
+                  events.description, 
+                  events.poster_url, 
+                  events.location_text, 
+                  events.start_at, 
+                  events.end_at, 
+                  events.price_cents, 
+                  events.checked_in, 
+                  events.capacity, 
+                  events.status 
+                FROM events 
+                JOIN users ON events.organizer_id = users.id
+                WHERE events.id=$1
+              `,
               [values]
             )
             if (event.rows.length <= 0) {
@@ -335,6 +392,13 @@ export const eventIdValidator = validate(
   )
 )
 
+/**
+ * Guard factory: changeEventStatusValidator
+ * - Purpose: create middleware that ensures the current event is in an expected status
+ * - Usage: pass the allowed status, an error message and an http status code
+ * - Side-effects: expects `req.event` to exist (populated by `eventIdValidator`) and forwards a
+ *   `ErrorWithStatus` when the event's status does not match `allowedStatus`.
+ */
 export const changeEventStatusValidator =
   (allowedStatus: string, errorMessage: string, httpStatus: number) =>
   async (req: Request, res: Response, next: NextFunction) => {
@@ -350,6 +414,11 @@ export const changeEventStatusValidator =
     }
     next()
   }
+
+/**
+ * Validator: getEventStatusValidator
+ * - Purpose: validate optional `status` query parameter when filtering organizer events
+ */
 export const getEventStatusValidator = validate(
   checkSchema(
     {
@@ -365,24 +434,40 @@ export const getEventStatusValidator = validate(
   )
 )
 
+/**
+ * Guard: updateEventStatusValidator
+ * - Ensures event is in `draft` before allowing status updates specific to editing
+ */
 export const updateEventStatusValidator = changeEventStatusValidator(
   'draft',
   EVENTS_MESSAGES.CHANGE_EVENT_ONLY_ALLOWED_ON_DRAFT,
   HTTP_STATUS.CONFLICT
 )
 
+/**
+ * Guard: publishEventStatusValidator
+ * - Ensures event is in `draft` before publishing
+ */
 export const publishEventStatusValidator = changeEventStatusValidator(
   'draft',
   EVENTS_MESSAGES.PUBLISH_EVENT_ONLY_ALLOWED_ON_DRAFT,
   HTTP_STATUS.CONFLICT
 )
 
+/**
+ * Guard: cancelEventStatusValidator
+ * - Ensures event is in `published` before allowing cancellation
+ */
 export const cancelEventStatusValidator = changeEventStatusValidator(
   'published',
   EVENTS_MESSAGES.CANCEL_EVENT_ONLY_ALLOWED_ON_PUBLISHED,
   HTTP_STATUS.CONFLICT
 )
 
+/**
+ * Guard: getPublishedEventStatusValidator
+ * - Ensures event is in `published` when returning public event details
+ */
 export const getPublishedEventStatusValidator = changeEventStatusValidator(
   'published',
   EVENTS_MESSAGES.GET_EVENT_DETAILS_IS_ONLY_ON_PUBLISHED,
