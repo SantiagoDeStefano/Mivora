@@ -5,20 +5,18 @@ import http from '../utils/http'
 export interface TicketApi {
   id: string
   event_title: string
-  event_status: string 
+  event_status: string
   ticket_status: 'booked' | 'checked_in'
   checked_in_at: string | null
   price_cents: number
   qr_code: string
-  total_count?: string 
-  event_id: string      
+  total_count?: string
+  event_id: string
 }
-
 
 export interface Ticket extends Omit<TicketApi, 'ticket_status'> {
   status: 'booked' | 'checked_in'
 }
-
 
 export interface BookTicketResult {
   ticket: Ticket
@@ -40,7 +38,7 @@ export type GetOrSearchMyTicketsSchema = {
 
 const ticketsApi = {
   bookTicket: (event_id: string) => {
-    return http.post<SuccessResponse<BookTicketResult>>('/tickets/book', { event_id })
+    return http.post<SuccessResponse<BookTicketResult>>('/tickets/', { event_id })
   },
   getMyTickets: (limit: number = 20, page: number = 1) => {
     return http.get<SuccessResponse<GetMyTicketsResponse>>('/tickets', { params: { limit, page } })

@@ -37,30 +37,35 @@ const eventsApi = {
       params: { q, limit, page }
     })
   },
-  searchEventsOrganizer: (q: string, limit: number = 20, page: number = 1) => {
-    return http.get<SuccessResponse<GetEventsResponse>>('/events/organizer', {
-      params: { q, limit, page }
-    })
-  },
-  getCreatedEvents: (limit: number = 20, page: number = 1) => {
-    return http.get<SuccessResponse<GetEventsResponse>>('/events/organizer', {
-      params: { limit, page }
-    })
-  },
-  getCreatedEventDetails: (event_id: string) => {
-    return http.get<SuccessResponse<Event>>(`/events/organizer/${event_id}`)
-  },
+
+  // searchEventsOrganizer: (q: string, limit: number = 20, page: number = 1) => {
+  //   return http.get<SuccessResponse<GetEventsResponse>>('/organizer/events', {
+  //     params: { q, limit, page }
+  //   })
+  // },
+
+  // getCreatedEvents: (limit: number = 20, page: number = 1) => {
+  //   return http.get<SuccessResponse<GetEventsResponse>>('/events/organizer', {
+  //     params: { limit, page }
+  //   })
+  // },
+  
+  // getCreatedEventDetails: (event_id: string) => {
+  //   return http.get<SuccessResponse<Event>>(`/events/organizer/${event_id}`)
+  // },
+
+
   createEvent: (body: any) => {
-    return http.post<SuccessResponse<Event>>('/events/organizer', body)
+    return http.post<SuccessResponse<Event>>('/events', body)
   },
   updateEvent: (event_id: string, body: any) => {
-    return http.patch<SuccessResponse<Event>>(`/events/organizer/${event_id}`, body)
+    return http.patch<SuccessResponse<Event>>(`/events/${event_id}`, body)
   },
   publishEvent: (event_id: string) => {
-    return http.patch<SuccessResponse<Event>>(`/events/organizer/${event_id}/publish`)
+    return http.patch<SuccessResponse<Event>>(`/events/${event_id}/publish`)
   },
   cancelEvent: (event_id: string) => {
-    return http.patch<SuccessResponse<Event>>(`/events/organizer/${event_id}/cancel`)
+    return http.patch<SuccessResponse<Event>>(`/events/${event_id}/cancel`)
   }
 }
 

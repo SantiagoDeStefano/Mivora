@@ -11,7 +11,6 @@ import {
 import path from '../constants/path'
 import { AuthResponse } from '../types/auth.types'
 import { HttpStatusCode } from 'axios'
-import { get } from 'node_modules/axios/index.cjs'
 
 class Http {
   instance: AxiosInstance

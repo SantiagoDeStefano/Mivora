@@ -29,7 +29,7 @@ const ticketsRouter = Router()
  * - Success: 200/201 with created ticket details
  */
 ticketsRouter.post(
-  '/book',
+  '/',
   accessTokenValidator,
   eventIdValidator,
   bookTicketValidator,
@@ -47,7 +47,7 @@ ticketsRouter.post(
  * - Success: 200 with scanned ticket info
  */
 ticketsRouter.patch(
-  '/scan',
+  '/',
   accessTokenValidator,
   organizerValidator,
   scanTicketValidator,

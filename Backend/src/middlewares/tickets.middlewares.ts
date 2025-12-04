@@ -216,7 +216,7 @@ export const ticketIdValidator = validate(
             if (ticketResult.rows.length <= 0) {
               throw new ErrorWithStatus({
                 status: HTTP_STATUS.NOT_FOUND,
-                message: EVENTS_MESSAGES.EVENT_NOT_FOUND
+                message: TICKETS_MESSAGES.TICKET_NOT_FOUND
               })
             }
             const qr_code = await qrCode.generateQrTicketCode(ticketResult.rows[0].qr_code_token)

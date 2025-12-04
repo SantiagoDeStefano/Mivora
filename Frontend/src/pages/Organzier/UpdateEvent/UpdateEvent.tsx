@@ -7,6 +7,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import eventsApi from '../../../apis/events.api'
 import http from '../../../utils/http'
 import path from '../../../constants/path'
+import usersApi from '../../../apis/users.api'
 
 export default function UpdateEventPage() {
   const { id } = useParams<{ id: string }>()
@@ -61,7 +62,7 @@ export default function UpdateEventPage() {
         setLoading(true)
         setError(null)
 
-        const res = await eventsApi.getCreatedEventDetails(id)
+        const res = await usersApi.getCreatedEventDetails(id)
         const data = res.data.result
 
         if (cancelled) return

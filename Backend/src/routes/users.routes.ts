@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { getCreatedEventDetailsController, getOrSearchEventsWithStatusController } from '~/controllers/events.controllers'
 import {
   forgotPasswordController,
   getMeController,
@@ -13,11 +14,13 @@ import {
   verifyEmailController,
   verifyForgotPasswordController
 } from '~/controllers/users.controllers'
+import { getEventStatusValidator, paginationValidator, searchValidator } from '~/middlewares/events.middlewares'
 import {
   accessTokenValidator,
   emailVerifyTokenValidator,
   forgotPasswordValidator,
   loginValidator,
+  organizerValidator,
   refreshTokenValidator,
   registerValidator,
   resetPasswordValidator,
@@ -91,6 +94,40 @@ usersRouter.get('/me', accessTokenValidator, wrapRequestHandler(getMeController)
  * - Success: 200 with updated user
  */
 usersRouter.patch('/me', accessTokenValidator, updateMeValidator, wrapRequestHandler(updateMeController))
+
+/**
+ * List or search events for the authenticated organizer
+ * - Method: GET
+ * - Path: /organizer/
+ * - Protected: requires `Authorization: Bearer <access_token>` and organizer role
+ * - Query: { limit, page, status?, q? }
+ * - Validations: `getEventStatusValidator`, `paginationValidator`, `searchValidator`
+ * - Success: 200 with paginated list (filtered by status if provided)
+ */
+usersRouter.get(
+  '/me/events',
+  accessTokenValidator,
+  organizerValidator,
+  getEventStatusValidator,
+  paginationValidator,
+  searchValidator,
+  wrapRequestHandler(getOrSearchEventsWithStatusController)
+)
+
+/**
+ * Get details for an event created by the authenticated organizer
+ * - Method: GET
+ * - Path: /organizer/:event_id
+ * - Protected: requires `Authorization: Bearer <access_token>` and organizer role
+ * - Params: `event_id` in URL (validated by `eventIdValidator` if applied upstream)
+ * - Success: 200 with event details for organizer's event
+ */
+usersRouter.get(
+  '/me/events/:event_id',
+  accessTokenValidator,
+  organizerValidator,
+  wrapRequestHandler(getCreatedEventDetailsController)
+)
 
 /**
  * Upload avatar image for current user

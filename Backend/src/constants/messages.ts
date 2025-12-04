@@ -159,10 +159,10 @@ export const TICKETS_MESSAGES = {
   GET_TICKETS_DETAILS_SUCCESSFULLY: 'Get ticket details successfully',
 
   TICKET_ALREADY_CHECKED_IN: 'Ticket already checked in',
+  TICKET_NOT_FOUND: 'Ticket not found',
 
   QR_CODE_TOKEN_REQUIRED: 'QR code token is required',
 
-  TICKET_NOT_FOUND: 'Ticket not found',
   TICKET_SCANNED_SUCCESS: 'Ticket scanned successfully',
   TICKET_STATUS_MUST_BE_BOOKED_CHECKED_IN: 'Ticket status must be booked or checked in',
 

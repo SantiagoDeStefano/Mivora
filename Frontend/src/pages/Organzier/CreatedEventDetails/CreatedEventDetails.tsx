@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import path from '../../../constants/path'
 import eventsApi from '../../../apis/events.api'
+import usersApi from '../../../apis/users.api'
 
 type EventDetails = {
   id: string
@@ -147,7 +148,7 @@ export default function CreatedEventDetailsPage({ event }: Props) {
         setLoading(true)
         setError(null)
 
-        const res = await eventsApi.getCreatedEventDetails(id)
+        const res = await usersApi.getCreatedEventDetails(id)
         const data = res.data.result
 
         if (cancelled) return

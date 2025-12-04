@@ -1,5 +1,7 @@
 import { LoginSchema, RegisterSchema, UpdateMeSchema } from '../utils/rules'
 import type { AuthResponse, GetMeResponse, MessageOnly } from '../types/auth.types'
+import { SuccessResponse } from '../types/response.types'
+import { Event, GetEventsResponse } from './events.api'
 import http from '../utils/http'
 
 export interface RefreshTokenRequest {
@@ -56,6 +58,19 @@ const usersApi = {
   },
   resetPassword: (body: ResetPasswordPayload) => {
     return http.post<MessageOnly>('/users/reset-password', body)
+  },
+  searchEventsOrganizer: (q: string, limit: number = 20, page: number = 1) => {
+    return http.get<SuccessResponse<GetEventsResponse>>('/users/me/events', {
+      params: { q, limit, page }
+    })
+  },
+  getCreatedEventDetails: (event_id: string) => {
+    return http.get<SuccessResponse<Event>>(`/users/me/events/${event_id}`)
+  },
+  getCreatedEvents: (limit: number = 20, page: number = 1) => {
+    return http.get<SuccessResponse<GetEventsResponse>>('/users/me/events', {
+      params: { limit, page }
+    })
   }
 }
 

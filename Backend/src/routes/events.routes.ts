@@ -36,7 +36,7 @@ const eventsRouter = Router()
  * - Success: 201/200 with created event data
  */
 eventsRouter.post(
-  '/organizer/',
+  '/',
   accessTokenValidator,
   organizerValidator,
   createEventValidator,
@@ -54,7 +54,7 @@ eventsRouter.post(
  * - Success: 200 with updated event data
  */
 eventsRouter.patch(
-  '/organizer/:event_id',
+  '/:event_id',
   accessTokenValidator,
   organizerValidator,
   eventIdValidator,
@@ -73,39 +73,6 @@ eventsRouter.patch(
  */
 eventsRouter.get('/', paginationValidator, searchValidator, wrapRequestHandler(getOrSearchEventsController))
 
-/**
- * List or search events for the authenticated organizer
- * - Method: GET
- * - Path: /organizer/
- * - Protected: requires `Authorization: Bearer <access_token>` and organizer role
- * - Query: { limit, page, status?, q? }
- * - Validations: `getEventStatusValidator`, `paginationValidator`, `searchValidator`
- * - Success: 200 with paginated list (filtered by status if provided)
- */
-eventsRouter.get(
-  '/organizer/',
-  accessTokenValidator,
-  organizerValidator,
-  getEventStatusValidator,
-  paginationValidator,
-  searchValidator,
-  wrapRequestHandler(getOrSearchEventsWithStatusController)
-)
-
-/**
- * Get details for an event created by the authenticated organizer
- * - Method: GET
- * - Path: /organizer/:event_id
- * - Protected: requires `Authorization: Bearer <access_token>` and organizer role
- * - Params: `event_id` in URL (validated by `eventIdValidator` if applied upstream)
- * - Success: 200 with event details for organizer's event
- */
-eventsRouter.get(
-  '/organizer/:event_id',
-  accessTokenValidator,
-  organizerValidator,
-  wrapRequestHandler(getCreatedEventDetailsController)
-)
 
 /**
  * Get details for a published event
@@ -132,7 +99,7 @@ eventsRouter.get(
  * - Success: 200 with updated event status
  */
 eventsRouter.patch(
-  '/organizer/:event_id/publish',
+  '/:event_id/publish',
   accessTokenValidator,
   organizerValidator,
   eventIdValidator,
@@ -150,7 +117,7 @@ eventsRouter.patch(
  * - Success: 200 with updated event status
  */
 eventsRouter.patch(
-  '/organizer/:event_id/cancel',
+  '/:event_id/cancel',
   accessTokenValidator,
   organizerValidator,
   eventIdValidator,
