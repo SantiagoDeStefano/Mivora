@@ -71,7 +71,7 @@ export const scanTicketValidator = validate(
                 token: value,
                 secretOrPublicKey: envConfig.jwtSecretQRCodeToken as string
               })
-              const { user_id, event_id } = decoded_qr_code_token
+              const { ticket_id, user_id, event_id } = decoded_qr_code_token
               const ticket = await databaseService.users(
                 `
                   SELECT 
@@ -80,8 +80,8 @@ export const scanTicketValidator = validate(
                     events.status as event_status 
                   FROM tickets
                   JOIN events ON events.id = tickets.event_id 
-                  WHERE tickets.user_id=$1 AND tickets.event_id=$2`,
-                [user_id, event_id]
+                  WHERE tickets.id=$1 AND tickets.user_id=$2 AND tickets.event_id=$3`,
+                [ticket_id, user_id, event_id]
               )
               if (ticket.rows.length <= 0) {
                 throw new ErrorWithStatus({

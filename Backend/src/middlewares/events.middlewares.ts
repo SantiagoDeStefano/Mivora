@@ -445,6 +445,16 @@ export const updateEventStatusValidator = changeEventStatusValidator(
 )
 
 /**
+ * Guard: uploadEventPosterStatusValidator
+ * - Ensures event is in `draft` before uploading poster
+ */
+export const uploadEventPosterStatusValidator = changeEventStatusValidator(
+  'draft',
+  EVENTS_MESSAGES.EVENT_POSTER_ONLY_ALLOWED_ON_DRAFT,
+  HTTP_STATUS.CONFLICT
+)
+
+/**
  * Guard: publishEventStatusValidator
  * - Ensures event is in `draft` before publishing
  */

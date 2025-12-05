@@ -230,13 +230,12 @@ class EventService {
         SET
           title = $1,
           description = $2,
-          poster_url = $3,
-          location_text = $4,
-          start_at = $5,
-          end_at = $6,
-          price_cents = $7,
-          capacity = $8
-        WHERE id = $9
+          location_text = $3,
+          start_at = $4,
+          end_at = $5,
+          price_cents = $6,
+          capacity = $7
+        WHERE id = $8
         RETURNING
           id,
           title,
@@ -250,7 +249,7 @@ class EventService {
           capacity,
           status
       `,
-      [title, description, poster_url, location_text, start_at, end_at, price_cents, capacity, event_id]
+      [title, description, location_text, start_at, end_at, price_cents, capacity, event_id]
     )
     return event.rows[0]
   }
@@ -340,6 +339,31 @@ class EventService {
       events,
       totalEvents
     }
+  }
+
+  async uploadEventPoster(event_id: UUIDv4, poster_url: string) {
+    const event = await databaseService.events(
+      `
+        UPDATE events
+        SET poster_url = $1
+        WHERE id = $2
+        RETURNING
+          id,
+          organizer_id,
+          title,
+          description,
+          poster_url,
+          location_text,
+          start_at,
+          end_at,
+          price_cents,
+          checked_in,
+          capacity,
+          status
+      `,
+      [poster_url, event_id]
+    )
+    return event.rows[0]
   }
 }
 

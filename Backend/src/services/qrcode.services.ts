@@ -5,8 +5,8 @@ import { signToken, verifyToken } from '~/utils/jwt'
 import QRCodeLib from 'qrcode'
 
 class QRCode {
-  async createQrTicketToken(event_id: UUIDv4, user_id: UUIDv4) {
-    const signedQrToken = await this.signTicketQR({ event_id, user_id })
+  async createQrTicketToken(ticket_id: UUIDv4, event_id: UUIDv4, user_id: UUIDv4) {
+    const signedQrToken = await this.signTicketQR({ ticket_id, event_id, user_id })
     return signedQrToken
   }
   async generateQrTicketCode(qr_code_token: string) {
@@ -17,9 +17,10 @@ class QRCode {
     const decoded = await this.decodeTicketQR(qr_code_token)
     return decoded
   }
-  private signTicketQR({ event_id, user_id }: { event_id: UUIDv4; user_id: UUIDv4 }) {
+  private signTicketQR({ ticket_id, event_id, user_id }: { ticket_id: UUIDv4; event_id: UUIDv4; user_id: UUIDv4 }) {
     return signToken({
       payload: {
+        ticket_id,
         event_id,
         user_id,
         tokenType: TokenType.QRCodeToken

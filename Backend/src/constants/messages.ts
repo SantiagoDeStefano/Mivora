@@ -111,12 +111,10 @@ export const EVENTS_MESSAGES = {
   EVENT_LOCATION_TEXT_IS_REQUIRED: "Event's location text is required",
   EVENT_LOCATION_TEXT_MUST_BE_STRING: "Event's location text must be string",
   EVENT_LOCATION_TEXT_MUST_BE_BETWEEN_5_AND_100: "Event's location text must be between 5 and 100",
-  
   EVENT_START_AT_IS_REQUIRED: "Event's start at is required",
   EVENT_START_AT_MUST_BE_ISO8601: "Event's start at must be ISO8601",
   EVENT_END_AT_MUST_BE_ISO8601: "Event's end at must be ISO8601",
   EVENT_END_AT_IS_REQUIRED: "Event's end at is required",
-
   EVENT_END_AT_MUST_BE_AFTER_START_AT: "Event's end at must be after start at",
   EVENT_PRICE_MUST_BE_NUMERIC: "Event's price must be numeric",
   EVENT_PRICE_MUST_BE_POSITIVE: "Event's price must be positive",
@@ -126,6 +124,7 @@ export const EVENTS_MESSAGES = {
   EVENT_STATUS_MUST_BE_DRAFT_PUBLISHED_CANCELED: "Event's status must be draft, published, or canceled",
   EVENT_CREATED_SUCCESSFULLY: 'Event created successfully',
   EVENT_NOT_FOUND: 'Event not found',
+  EVENT_POSTER_ONLY_ALLOWED_ON_DRAFT: 'Event poster only allowed on draft',
 
   GET_EVENTS_SUCCESSFULLY: 'Get events successfully',
   GET_CREATED_EVENTS_SUCCESSFULLY: 'Get created events successfully',
@@ -143,7 +142,8 @@ export const EVENTS_MESSAGES = {
   PUBLISH_EVENT_SUCCESS: 'Publish event successfully',
   PUBLISH_EVENT_ONLY_ALLOWED_ON_DRAFT: 'Publish event only allowed on draft',
 
-  UPDATE_EVENT_SUCCESS: 'Update event successfully'
+  UPDATE_EVENT_SUCCESS: 'Update event successfully',
+  UPLOAD_EVENT_POSTER_SUCCESS: 'Upload event poster successfully'
 } as const
 
 export const MEDIAS_MESSAGES = {

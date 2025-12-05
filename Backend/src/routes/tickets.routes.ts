@@ -38,7 +38,7 @@ ticketsRouter.post(
 
 /**
  * Scan an attendee's ticket QR code
- * - Method: PATCH
+ * - Method: POST
  * - Path: /scan
  * - Protected: requires `Authorization: Bearer <access_token>` and organizer role
  * - Body: `{ qr_code_token: string }`
@@ -46,8 +46,8 @@ ticketsRouter.post(
  * - Action: marks ticket as checked-in when valid
  * - Success: 200 with scanned ticket info
  */
-ticketsRouter.patch(
-  '/',
+ticketsRouter.post(
+  '/scan',
   accessTokenValidator,
   organizerValidator,
   scanTicketValidator,

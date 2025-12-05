@@ -12,6 +12,7 @@ import { TokenPayload } from '~/models/requests/users.requests'
 import Event from '~/models/schemas/Event.schema'
 
 import eventService from '~/services/events.services'
+import mediasService from '~/services/medias.services'
 import { UUIDv4 } from '~/types/common'
 import { EventStatus } from '~/types/domain'
 
@@ -144,6 +145,27 @@ export const updateEventDetailsController = async (
   const result = await eventService.updateEvent(event_id, req.body)
   res.json({
     message: EVENTS_MESSAGES.UPDATE_EVENT_SUCCESS,
+    result
+  })
+}
+
+/**
+ * Upload event poster controller
+ * - Route: POST /organizer/:event_id/poster
+ * - Protected: requires organizer Authorization header
+ * - Params: `event_id` (UUID)
+ * - Payload: multipart/form-data with a single `image` file field
+ * - Action: uploads event poster and returns uploaded poster event
+ */
+export const uploadEventPosterController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const event_id = (req.event as Event[])[0].id
+  const poster_url = await mediasService.uploadImage(req)
+  const result = await eventService.uploadEventPoster(event_id, poster_url[0].url)
+  res.json({
+    message: EVENTS_MESSAGES.UPLOAD_EVENT_POSTER_SUCCESS,
     result
   })
 }

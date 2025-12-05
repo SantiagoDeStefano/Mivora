@@ -7,7 +7,8 @@ import {
   getOrSearchEventsController,
   getOrSearchEventsWithStatusController,
   publishEventController,
-  updateEventDetailsController
+  updateEventDetailsController,
+  uploadEventPosterController
 } from '~/controllers/events.controllers'
 import { accessTokenValidator, organizerValidator } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
@@ -21,7 +22,8 @@ import {
   publishEventStatusValidator,
   searchValidator,
   updateEventStatusValidator,
-  updateEventValidator
+  updateEventValidator,
+  uploadEventPosterStatusValidator
 } from '~/middlewares/events.middlewares'
 
 const eventsRouter = Router()
@@ -41,6 +43,25 @@ eventsRouter.post(
   organizerValidator,
   createEventValidator,
   wrapRequestHandler(createEventController)
+)
+
+/**
+ * Update poster image (organizer only)
+ * - Method: PUT
+ * - Path: /organizer/:event_id/poster
+ * - Protected: requires `Authorization: Bearer <access_token>` and organizer role
+ * - Params: `event_id` in URL (validated by `eventIdValidator`)
+ * - Payload: multipart/form-data with a single `image` file field
+ * - Validations: `updateEventStatusValidator`, `updateEventValidator`
+ * - Success: 200 with updated event data
+ */
+eventsRouter.put(
+  '/:event_id/poster',
+  accessTokenValidator,
+  organizerValidator,
+  eventIdValidator,
+  uploadEventPosterStatusValidator,
+  wrapRequestHandler(uploadEventPosterController)
 )
 
 /**

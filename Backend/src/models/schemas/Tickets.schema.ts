@@ -7,7 +7,7 @@ export interface TicketType extends pg.QueryResultRow {
   id?: UUIDv4
   event_id: UUIDv4
   user_id: UUIDv4
-  qr_code_token: string
+  qr_code_token?: string
   status?: TicketStatus
   booked_at?: Date
   // null when havent check in

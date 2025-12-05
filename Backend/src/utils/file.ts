@@ -88,7 +88,7 @@ export const handleUploadImage = (req: Request) => {
         )
       }
       const file = (files.image as File[])[0]
-      const MAX_SIZE = 1000 * 1024 // 1 MB
+      const MAX_SIZE = 5000 * 1024 // 5 MB
 
       // Check file size
       if (file.size > MAX_SIZE) {

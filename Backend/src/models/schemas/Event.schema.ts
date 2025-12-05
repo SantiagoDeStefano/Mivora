@@ -37,7 +37,9 @@ export default class Event {
     this.organizer_id = event.organizer_id
     this.title = event.title
     this.description = event.description || 'Welcome to my party!'
-    this.poster_url = event.poster_url || '/default-poster-link-that-i-havent-get'
+    this.poster_url =
+      event.poster_url ||
+      'https://mivora-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/avatar-images/gfu4o33ca43nvcwyv4vay18m1.jpg'
     this.location_text = event.location_text
     this.start_at = event.start_at
     this.end_at = event.end_at
