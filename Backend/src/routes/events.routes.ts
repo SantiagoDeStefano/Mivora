@@ -1,26 +1,25 @@
 import { Router } from 'express'
 import {
   cancelEventController,
+  changeEventStatusController,
   createEventController,
   getEventDetailsController,
   getOrSearchEventsController,
-  publishEventController,
   updateEventDetailsController,
   uploadEventPosterController
 } from '~/controllers/events.controllers'
 import { accessTokenValidator, organizerValidator } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
 import {
-  cancelEventStatusValidator,
   createEventValidator,
   eventIdValidator,
   getPublishedEventStatusValidator,
   paginationValidator,
-  publishEventStatusValidator,
   searchValidator,
   updateEventStatusValidator,
   updateEventValidator,
-  uploadEventPosterStatusValidator
+  uploadEventPosterStatusValidator,
+  validateEventStatus
 } from '~/middlewares/events.middlewares'
 
 const eventsRouter = Router()
@@ -107,39 +106,22 @@ eventsRouter.get(
 )
 
 /**
- * Publish an event (mark status as 'published')
+ * Publish or cancel or draft an event (mark status as 'published' or 'canceled' or 'draft') (organizer only)
  * - Method: PATCH
- * - Path: /organizer/:event_id/publish
+ * - Path: /:event_id
  * - Protected: requires `Authorization: Bearer <access_token>` and organizer role
- * - Params: `event_id` in URL
- * - Validations: `publishEventStatusValidator`
+ * - Params: `event_id` in URL (validated by `eventIdValidator`)
+ * - Body: { status: 'published' } or { status: 'canceled' } or { status: 'draft' }
+ * - Validations: `validateEventStatus`
  * - Success: 200 with updated event status
  */
 eventsRouter.patch(
-  '/:event_id/publish',
+  '/:event_id/status',
   accessTokenValidator,
   organizerValidator,
   eventIdValidator,
-  publishEventStatusValidator,
-  wrapRequestHandler(publishEventController)
-)
-
-/**
- * Cancel an event (mark status as 'canceled')
- * - Method: PATCH
- * - Path: /organizer/:event_id/cancel
- * - Protected: requires `Authorization: Bearer <access_token>` and organizer role
- * - Params: `event_id` in URL
- * - Validations: `cancelEventStatusValidator`
- * - Success: 200 with updated event status
- */
-eventsRouter.patch(
-  '/:event_id/cancel',
-  accessTokenValidator,
-  organizerValidator,
-  eventIdValidator,
-  cancelEventStatusValidator,
-  wrapRequestHandler(cancelEventController)
+  validateEventStatus,
+  wrapRequestHandler(changeEventStatusController)
 )
 
 export default eventsRouter

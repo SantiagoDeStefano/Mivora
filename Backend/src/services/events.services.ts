@@ -254,6 +254,30 @@ class EventService {
     return event.rows[0]
   }
 
+  async changeEventStatus(event_id: UUIDv4, status: EventStatus) {
+    const event = await databaseService.events(
+      `
+        UPDATE events
+        SET status = $1
+        WHERE id = $2
+        RETURNING
+          id,
+          title,
+          description,
+          poster_url,
+          location_text,
+          start_at,
+          end_at,
+          price_cents,
+          checked_in,
+          capacity,
+          status
+      `,
+      [status, event_id]
+    )
+    return event.rows[0]
+  }
+
   /**
    * Mark an event as published
    * - Input: `event_id`

@@ -121,7 +121,9 @@ export const EVENTS_MESSAGES = {
   EVENT_STATUS_MUST_BE_DRAFT_PUBLISHED_CANCELED: "Event's status must be draft, published, or canceled",
   EVENT_CREATED_SUCCESSFULLY: 'Event created successfully',
   EVENT_NOT_FOUND: 'Event not found',
+  EVENT_INVALID_STATUS_TRANSITION: 'Invalid event status transition',
   EVENT_POSTER_ONLY_ALLOWED_ON_DRAFT: 'Event poster only allowed on draft',
+  EVENT_STATUS_IS_REQUIRED: "Event's status is required",
 
   GET_EVENTS_SUCCESSFULLY: 'Get events successfully',
   GET_CREATED_EVENTS_SUCCESSFULLY: 'Get created events successfully',

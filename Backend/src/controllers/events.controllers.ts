@@ -176,9 +176,10 @@ export const uploadEventPosterController = async (
  * - Protected: requires organizer Authorization header
  * - Action: marks event as published and returns updated event
  */
-export const publishEventController = async (req: Request, res: Response): Promise<void> => {
+export const changeEventStatusController = async (req: Request, res: Response): Promise<void> => {
   const event_id = (req.event as Event[])[0].id
-  const result = await eventService.publishEvent(event_id)
+  const status = req.body.status as EventStatus
+  const result = await eventService.changeEventStatus(event_id, status)
   res.json({
     message: EVENTS_MESSAGES.PUBLISH_EVENT_SUCCESS,
     result

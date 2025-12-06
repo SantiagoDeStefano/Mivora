@@ -455,26 +455,6 @@ export const uploadEventPosterStatusValidator = changeEventStatusValidator(
 )
 
 /**
- * Guard: publishEventStatusValidator
- * - Ensures event is in `draft` before publishing
- */
-export const publishEventStatusValidator = changeEventStatusValidator(
-  'draft',
-  EVENTS_MESSAGES.PUBLISH_EVENT_ONLY_ALLOWED_ON_DRAFT,
-  HTTP_STATUS.CONFLICT
-)
-
-/**
- * Guard: cancelEventStatusValidator
- * - Ensures event is in `published` before allowing cancellation
- */
-export const cancelEventStatusValidator = changeEventStatusValidator(
-  'published',
-  EVENTS_MESSAGES.CANCEL_EVENT_ONLY_ALLOWED_ON_PUBLISHED,
-  HTTP_STATUS.CONFLICT
-)
-
-/**
  * Guard: getPublishedEventStatusValidator
  * - Ensures event is in `published` when returning public event details
  */
@@ -482,4 +462,49 @@ export const getPublishedEventStatusValidator = changeEventStatusValidator(
   'published',
   EVENTS_MESSAGES.GET_EVENT_DETAILS_IS_ONLY_ON_PUBLISHED,
   HTTP_STATUS.CONFLICT
+)
+
+/**
+ * Guard: changeEventStatusValidator
+ * - Ensures event have suitable status before allowing changes
+ */
+export const validateEventStatus = validate(
+  checkSchema(
+    {
+      status: {
+        notEmpty: {
+          errorMessage: EVENTS_MESSAGES.EVENT_STATUS_IS_REQUIRED
+        },
+        isString: {
+          errorMessage: EVENTS_MESSAGES.EVENT_STATUS_MUST_BE_STRING
+        },
+        isIn: {
+          options: [event_statuts],
+          errorMessage: EVENTS_MESSAGES.EVENT_STATUS_MUST_BE_DRAFT_PUBLISHED_CANCELED
+        },
+        custom: {
+          options: async (value, { req }) => {
+            const eventStatus = (req.event as Event[])[0].status
+            const nextStatus = value
+
+            const allowedTransitions: Record<string, string[]> = {
+              draft: ['published'],
+              published: ['canceled'],
+              canceled: ['draft']
+            }
+
+            if (!allowedTransitions[eventStatus].includes(nextStatus)) {
+              throw new ErrorWithStatus({
+                message: EVENTS_MESSAGES.EVENT_INVALID_STATUS_TRANSITION,
+                status: HTTP_STATUS.CONFLICT
+              })
+            }
+
+            return true
+          }
+        }
+      }
+    },
+    ['body']
+  )
 )
