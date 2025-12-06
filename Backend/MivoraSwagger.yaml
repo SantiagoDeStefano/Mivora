@@ -298,13 +298,74 @@ paths:
                             example: organizer
                           msg:
                             type: string
-                            example: User already have this role
+                            example: User must be verified to be organizer
                           path:
                             type: string
                             example: role
                           location:
                             type: string
                             example: body
+  /users/me/avatar:
+    put:
+      tags:
+        - users
+      summary: Update current user's avatar
+      operationId: updateUserAvatar
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: User avatar updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Avatar updated successfully
+                  result:
+                    $ref: '#/components/schemas/UserProfile'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Validation error
+                  errors:
+                    type: object
+                    properties:
+                      role:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                            example: field
+                          value:
+                            example: null
+                          msg:
+                            type: string
+                            example: Image type is not valid
+                          path:
+                            type: string
+                            example: image
+                          location:
+                            type: string
+                            example: files
 
   /events:
     post:
@@ -360,10 +421,10 @@ components:
       properties:
         email:
           type: string
-          example: TNTV@gmail.com
+          example: TNTV10@gmail.com
         password:
           type: string
-          example: qiefhuasdsa@23irQ
+          example: Thaovy85.
     RegisterBody:
       type: object
       properties:
@@ -372,13 +433,13 @@ components:
           example: 'Lam Uyen Phuong'
         email:
           type: string
-          example: 'TNTV1@gmail.com@gmail.com'
+          example: 'TNTV12@gmail.com'
         password:
           type: string
-          example: 'qiefhuasdsa@23irQ'
+          example: 'Thaovy85.'
         confirm_password:
           type: string
-          example: 'qiefhuasdsa@23irQ'
+          example: 'Thaovy85.'
     AuthenticateSuccessfully:
       type: object
       properties:
@@ -414,14 +475,11 @@ components:
             - organizer
     UpdateUserRequest:
       type: object
-      required: [name, avatar_url, role]
+      required: [name, role]
       properties:
         name:
           type: string
           example: Pham Khoi Nguyen
-        avatar_url:
-          type: string
-          example: example_avt_url
         role:
           type: string
           enum: [attendee, organizer]

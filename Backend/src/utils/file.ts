@@ -6,6 +6,7 @@ import fs from 'fs'
 import ErrorWithStatus, { EntityError } from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { USERS_MESSAGES } from '~/constants/messages'
+import { reject } from 'lodash'
 
 export const initFolder = () => {
   ;[UPLOAD_IMAGE_TEMP_DIR].forEach((dir) => {
@@ -24,19 +25,18 @@ export const getNameFromFullname = (fullname: string) => {
 }
 
 export const handleUploadImage = (req: Request) => {
+  let rejectedByType = false
   const form = formidable({
     uploadDir: UPLOAD_IMAGE_TEMP_DIR,
-    // maxFiles: 1, // Max 1 files a time
     keepExtensions: true,
-    // maxFileSize: 1000 * 1024, //1 MB
-    // maxTotalFileSize: 1 * 1000 * 1024, //1 MB
 
     filter: function ({ name, originalFilename, mimetype }) {
       const valid = name === 'image' && Boolean(mimetype?.includes('image/'))
       if (!valid) {
-        form.emit('error' as any, new Error('File type is not valid') as any)
+        rejectedByType = true
+        return false
       }
-      return valid
+      return true
     }
   })
 
@@ -44,6 +44,21 @@ export const handleUploadImage = (req: Request) => {
     form.parse(req, (err, fields, files) => {
       if (err) {
         return reject(err)
+      }
+      if ((!files.image || (files.image as File[]).length === 0) && rejectedByType) {
+        return reject(
+          new EntityError({
+            errors: {
+              image: {
+                type: 'field',
+                value: null,
+                msg: USERS_MESSAGES.IMAGE_TYPE_IS_NOT_VALID, // define this
+                path: 'image',
+                location: 'files'
+              }
+            }
+          })
+        )
       }
 
       // Check if image file is provided
@@ -103,7 +118,7 @@ export const handleUploadImage = (req: Request) => {
               image: {
                 type: 'field',
                 value: file.originalFilename,
-                msg: USERS_MESSAGES.IMAGE_MUST_BE_LESS_THAN_1MB,
+                msg: USERS_MESSAGES.IMAGE_MUST_BE_LESS_THAN_5MB,
                 path: 'image',
                 location: 'files'
               }
