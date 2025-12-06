@@ -1,4 +1,4 @@
-import { EVENTS_MESSAGES, USERS_MESSAGES, TICKETS_MESSAGES } from '../constants/messages'
+import { EVENTS_MESSAGES, USERS_MESSAGES, TICKETS_MESSAGES, MEDIAS_MESSAGES } from '../constants/messages'
 import LIMIT_MIN_MAX from '../constants/limits'
 import * as yup from 'yup'
 
@@ -85,9 +85,6 @@ export const updateMe = yup.object({
   role: yup.string().oneOf(['attendee', 'organizer'])
 })
 
-export const updateAvatar = yup.object({
-  image: yup.mixed().required(USERS_MESSAGES.IMAGE_IS_REQUIRED  )
-})
 
 export const resetPasswordSchema = yup.object({
   password: yup
@@ -137,56 +134,97 @@ export const createEvent = yup.object({
   title: yup
     .string()
     .required(EVENTS_MESSAGES.EVENT_TITLE_IS_REQUIRED)
-    .min(LIMIT_MIN_MAX.EVENT_TITLE_MIN, EVENTS_MESSAGES.EVENT_TITLE_MUST_BE_BETWEEN_6_AND_50)
-    .max(LIMIT_MIN_MAX.EVENT_TITLE_MAX, EVENTS_MESSAGES.EVENT_TITLE_MUST_BE_BETWEEN_6_AND_50)
+    .min(
+      LIMIT_MIN_MAX.EVENT_TITLE_MIN,
+      EVENTS_MESSAGES.EVENT_TITLE_MUST_BE_BETWEEN_6_AND_50
+    )
+    .max(
+      LIMIT_MIN_MAX.EVENT_TITLE_MAX,
+      EVENTS_MESSAGES.EVENT_TITLE_MUST_BE_BETWEEN_6_AND_50
+    )
     .trim(),
+
   description: yup
     .string()
-    .min(LIMIT_MIN_MAX.EVENT_DESCRIPTION_MIN, EVENTS_MESSAGES.EVENT_DESCRIPTION_MUST_BE_BETWEEN_10_AND_100)
-    .max(LIMIT_MIN_MAX.EVENT_DESCRIPTION_MAX, EVENTS_MESSAGES.EVENT_DESCRIPTION_MUST_BE_BETWEEN_10_AND_100)
+    .required(EVENTS_MESSAGES.EVENT_DESCRIPTION_MUST_BE_BETWEEN_10_AND_100)
+    .min(
+      LIMIT_MIN_MAX.EVENT_DESCRIPTION_MIN,
+      EVENTS_MESSAGES.EVENT_DESCRIPTION_MUST_BE_BETWEEN_10_AND_100
+    )
+    .max(
+      LIMIT_MIN_MAX.EVENT_DESCRIPTION_MAX,
+      EVENTS_MESSAGES.EVENT_DESCRIPTION_MUST_BE_BETWEEN_10_AND_100
+    )
     .trim(),
-    poster_url: yup
+
+  poster_url: yup
     .string()
-    .min(LIMIT_MIN_MAX.EVENT_POSTER_URL_MIN, EVENTS_MESSAGES.EVENT_POSTER_URL_MUST_BE_BETWEEN_4_AND_400)
-    .max(LIMIT_MIN_MAX.EVENT_POSTER_URL_MAX, EVENTS_MESSAGES.EVENT_POSTER_URL_MUST_BE_BETWEEN_4_AND_400)
-    .trim(),
-    location_text: yup
+    .trim()
+    .notRequired()
+    .min(
+      LIMIT_MIN_MAX.EVENT_POSTER_URL_MIN,
+      EVENTS_MESSAGES.EVENT_POSTER_URL_MUST_BE_BETWEEN_4_AND_400
+    )
+    .max(
+      LIMIT_MIN_MAX.EVENT_POSTER_URL_MAX,
+      EVENTS_MESSAGES.EVENT_POSTER_URL_MUST_BE_BETWEEN_4_AND_400
+    ),
+
+  location_text: yup
     .string()
     .required(EVENTS_MESSAGES.EVENT_LOCATION_TEXT_IS_REQUIRED)
-    .min(LIMIT_MIN_MAX.EVENT_LOCATION_MIN, EVENTS_MESSAGES.EVENT_LOCATION_TEXT_MUST_BE_BETWEEN_5_AND_100)
-    .max(LIMIT_MIN_MAX.EVENT_LOCATION_MAX, EVENTS_MESSAGES.EVENT_LOCATION_TEXT_MUST_BE_BETWEEN_5_AND_100)
+    .min(
+      LIMIT_MIN_MAX.EVENT_LOCATION_MIN,
+      EVENTS_MESSAGES.EVENT_LOCATION_TEXT_MUST_BE_BETWEEN_5_AND_100
+    )
+    .max(
+      LIMIT_MIN_MAX.EVENT_LOCATION_MAX,
+      EVENTS_MESSAGES.EVENT_LOCATION_TEXT_MUST_BE_BETWEEN_5_AND_100
+    )
     .trim(),
+
   start_at: yup
-    .string()
-    .required(EVENTS_MESSAGES.EVENT_START_AT_IS_REQUIRED)
-    .matches(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/, EVENTS_MESSAGES.EVENT_START_AT_MUST_BE_ISO8601)
-    .transform((value) => new Date(value)),
+    .date()
+    .typeError(EVENTS_MESSAGES.EVENT_START_AT_MUST_BE_ISO8601)
+    .required(EVENTS_MESSAGES.EVENT_START_AT_IS_REQUIRED),
+
   end_at: yup
-    .string()
+    .date()
+    .typeError(EVENTS_MESSAGES.EVENT_END_AT_MUST_BE_ISO8601)
     .required(EVENTS_MESSAGES.EVENT_END_AT_IS_REQUIRED)
-    .matches(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/, EVENTS_MESSAGES.EVENT_END_AT_MUST_BE_ISO8601)
-    .transform((value) => new Date(value))
-    .test(
-      'end-at-after-start-at',
-      EVENTS_MESSAGES.EVENT_END_AT_MUST_BE_AFTER_START_AT,
-      function (value) {
-        const { start_at } = this.parent
-        if (!start_at) return true
-        return value > start_at
-      }
+    .min(
+      yup.ref('start_at'),
+      EVENTS_MESSAGES.EVENT_END_AT_MUST_BE_AFTER_START_AT
     ),
+
   price_cents: yup
     .number()
-    .required(EVENTS_MESSAGES.EVENT_PRICE_IS_REQUIRED)
+    .typeError(EVENTS_MESSAGES.EVENT_PRICE_MUST_BE_NUMERIC)
+    .required(EVENTS_MESSAGES.EVENT_PRICE_MUST_BE_NUMERIC)
     .min(0, EVENTS_MESSAGES.EVENT_PRICE_MUST_BE_POSITIVE)
     .integer(EVENTS_MESSAGES.EVENT_PRICE_MUST_BE_NUMERIC),
-    capacity: yup
+
+  capacity: yup
     .number()
-    .required(EVENTS_MESSAGES.EVENT_CAPACITY_IS_REQUIRED)
-    .min(0, EVENTS_MESSAGES.EVENT_CAPACITY_MUST_BE_POSITIVE)
+    .typeError(EVENTS_MESSAGES.EVENT_CAPACITY_MUST_BE_NUMBER)
+    .required(EVENTS_MESSAGES.EVENT_CAPACITY_MUST_BE_NUMBER)
+    .min(1, EVENTS_MESSAGES.EVENT_CAPACITY_MUST_BE_POSITIVE)
     .integer(EVENTS_MESSAGES.EVENT_CAPACITY_MUST_BE_NUMBER)
 })
 
+export const uploadEventPoster = yup.object({
+  image: yup
+    .mixed()
+    .required(MEDIAS_MESSAGES.IMAGE_IS_REQUIRED)
+    .test('fileType', MEDIAS_MESSAGES.IMAGE_TYPE_IS_NOT_VALID, (value) => {
+      if (!value) return false
+      return value instanceof File && value.type.startsWith('image/')
+    })
+    .test('fileSize', MEDIAS_MESSAGES.IMAGE_MUST_BE_LESS_THAN_5MB, (value) => {
+      if (!value) return false
+      return value instanceof File && value.size <= 5000 * 1024
+    })
+})
 
 export const updateEvent = yup.object({
   title: yup
@@ -232,6 +270,19 @@ export const updateEvent = yup.object({
     
   price_cents: yup.number().min(0, 'Price must be non-negative'),
   capacity: yup.number().min(0, 'Capacity must be non-negative')
+})
+
+export const updateEventPoster = yup.object({
+  image: yup
+    .mixed()
+    .test('fileType', MEDIAS_MESSAGES.IMAGE_TYPE_IS_NOT_VALID, (value) => {
+      if (!value) return false
+      return value instanceof File && value.type.startsWith('image/')
+    })
+    .test('fileSize', MEDIAS_MESSAGES.IMAGE_MUST_BE_LESS_THAN_5MB, (value) => {
+      if (!value) return false
+      return value instanceof File && value.size <= 5000 * 1024
+    })
 })
 
 export const publishEvent = yup.object({
@@ -284,16 +335,25 @@ export const getTicketDetails = yup.object({
     )
     .transform((value) => value.toLowerCase())
 })
+
+export const scanTicket = yup.object({
+  qr_code_token: yup.string().required(TICKETS_MESSAGES.QR_CODE_TOKEN_REQUIRED)
+  .trim()
+})
+
 // --- TYPES ---
 export type RegisterSchema = Required<yup.InferType<typeof registerSchema>>
 export type LoginSchema = Required<yup.InferType<typeof loginSchema>>
 
 export type UpdateMeSchema = yup.InferType<typeof updateMe>
-export type UpdateAvatarSchema = yup.InferType<typeof updateAvatar>
 export type ResetPasswordSchema = Required<yup.InferType<typeof resetPasswordSchema>>
 
+export type CreateEventSchema = yup.InferType<typeof createEvent>
+export type UploadEventPosterSchema = yup.InferType<typeof uploadEventPoster>
 export type UpdateEventSchema = yup.InferType<typeof updateEvent>
+export type UpdateEventPosterSchema = yup.InferType<typeof updateEventPoster>
 export type PublishEventSchema = yup.InferType<typeof publishEvent>
 export type CancelEventSchema = yup.InferType<typeof cancelEvent>
+
 export type BookTicketSchema = Required<yup.InferType<typeof bookTicket>>
 export type GetOrSearchMyTicketsSchema = yup.InferType<typeof getOrSearchMyTickets>

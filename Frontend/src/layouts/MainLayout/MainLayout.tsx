@@ -1,6 +1,7 @@
 import Footer from '../../components/Footer'
 import Header from '../../components/Header'
 import NavHeader from '../../components/NavHeader'
+import PageTransition from '../../components/PageTransition/PageTransition'
 import { useContext } from 'react'
 import { AppContext } from '../../contexts/app.context'
 
@@ -14,7 +15,9 @@ export default function MainLayout({ children }: Props) {
   return (
     <div>
       {isAuthenticated ? <NavHeader /> : <Header />}
-      {children}
+      <PageTransition>
+        {children}
+      </PageTransition>
       <Footer />
     </div>
   )

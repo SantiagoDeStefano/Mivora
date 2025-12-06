@@ -42,8 +42,6 @@ export const USERS_MESSAGES = {
   INVALID_USER_ID: 'Invalid user ID',
   INVALID_USERNAME: 'Username must be between 4-15 characters and contain only letters, numbers, underscore',
   INVALID_EMAIL_VERIFY_TOKEN: 'Invalid email verification token',
-  IMAGE_IS_REQUIRED: 'Image is required',
-  IMAGE_MUST_BE_LESS_THAN_1MB: 'Image must be less than 1MB',
 
   LOGIN_SUCCESS: 'Login successfully',
   LOGOUT_SUCCESS: 'Logout successfully',
@@ -56,7 +54,6 @@ export const USERS_MESSAGES = {
 
   OLD_PASSWORD_DOES_NOT_MATCH: 'Old password does not match',
   ONE_USER_PER_EVENT_ONLY: 'One user per event only',
-  ONLY_ONE_IMAGE_IS_ALLOWED: 'Only one image is allowed',
 
   PASSWORD_IS_REQUIRED: 'Password is required',
   PASSWORD_MUST_BE_A_STRING: 'Password must be a string',
@@ -111,8 +108,10 @@ export const EVENTS_MESSAGES = {
   EVENT_LOCATION_TEXT_IS_REQUIRED: "Event's location text is required",
   EVENT_LOCATION_TEXT_MUST_BE_STRING: "Event's location text must be string",
   EVENT_LOCATION_TEXT_MUST_BE_BETWEEN_5_AND_100: "Event's location text must be between 5 and 100",
+  EVENT_START_AT_IS_REQUIRED: "Event's start at is required",
   EVENT_START_AT_MUST_BE_ISO8601: "Event's start at must be ISO8601",
   EVENT_END_AT_MUST_BE_ISO8601: "Event's end at must be ISO8601",
+  EVENT_END_AT_IS_REQUIRED: "Event's end at is required",
   EVENT_END_AT_MUST_BE_AFTER_START_AT: "Event's end at must be after start at",
   EVENT_PRICE_MUST_BE_NUMERIC: "Event's price must be numeric",
   EVENT_PRICE_MUST_BE_POSITIVE: "Event's price must be positive",
@@ -122,10 +121,12 @@ export const EVENTS_MESSAGES = {
   EVENT_STATUS_MUST_BE_DRAFT_PUBLISHED_CANCELED: "Event's status must be draft, published, or canceled",
   EVENT_CREATED_SUCCESSFULLY: 'Event created successfully',
   EVENT_NOT_FOUND: 'Event not found',
+  EVENT_POSTER_ONLY_ALLOWED_ON_DRAFT: 'Event poster only allowed on draft',
 
   GET_EVENTS_SUCCESSFULLY: 'Get events successfully',
   GET_CREATED_EVENTS_SUCCESSFULLY: 'Get created events successfully',
   GET_EVENT_DETAILS_IS_ONLY_ON_PUBLISHED: "Get event's details is only on published",
+  GET_CREATED_EVENTS_DETAILS_SUCCESSFULLY: "Get created event's details successfully",
 
   SEARCH_MUST_BE_STRING: 'Search values must be string',
 
@@ -138,22 +139,31 @@ export const EVENTS_MESSAGES = {
   PUBLISH_EVENT_SUCCESS: 'Publish event successfully',
   PUBLISH_EVENT_ONLY_ALLOWED_ON_DRAFT: 'Publish event only allowed on draft',
 
-  UPDATE_EVENT_SUCCESS: 'Update event successfully'
+  UPDATE_EVENT_SUCCESS: 'Update event successfully',
+  UPLOAD_EVENT_POSTER_SUCCESS: 'Upload event poster successfully'
 } as const
 
 export const MEDIAS_MESSAGES = {
-  IMAGE_UPLOAD_SUCCESS: 'Image uploaded successfully'
+  IMAGE_UPLOAD_SUCCESS: 'Image uploaded successfully',
+  IMAGE_TYPE_IS_NOT_VALID: 'Image type is not valid',
+  IMAGE_IS_REQUIRED: 'Image is required',
+  IMAGE_MUST_BE_LESS_THAN_5MB: 'Image must be less than 5MB',
+  ONLY_ONE_IMAGE_IS_ALLOWED: 'Only one image is allowed'
 } as const
 
 export const TICKETS_MESSAGES = {
   BOOK_TICKET_SUCCESS: 'Book ticket successfully',
+
+  EVENT_STATUS_NOT_PUBLISHED: "Event's status is not published",
+
   GET_TICKETS_SUCCESSFULLY: 'Get tickets successfully',
+  GET_TICKETS_DETAILS_SUCCESSFULLY: 'Get ticket details successfully',
 
   TICKET_ALREADY_CHECKED_IN: 'Ticket already checked in',
+  TICKET_NOT_FOUND: 'Ticket not found',
 
   QR_CODE_TOKEN_REQUIRED: 'QR code token is required',
 
-  TICKET_NOT_FOUND: 'Ticket not found',
   TICKET_SCANNED_SUCCESS: 'Ticket scanned successfully',
   TICKET_STATUS_MUST_BE_BOOKED_CHECKED_IN: 'Ticket status must be booked or checked in',
 

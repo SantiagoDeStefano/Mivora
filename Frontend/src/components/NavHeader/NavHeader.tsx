@@ -64,7 +64,12 @@ export default function NavHeader() {
 
         {/* Desktop nav + search */}
         <nav className='hidden items-center gap-1 md:flex'>
-          <NavLink to='/' className={navLink} end>
+          <NavLink
+            to='/'
+            className={navLink}
+            end
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          >
             Home
           </NavLink>
 
@@ -154,12 +159,17 @@ export default function NavHeader() {
                   >
                     My Account
                   </button>
+                  {isOrganizer && (
+                    <>
                   <button
                     onClick={() => navigate(path.scan_ticket)}
                     className='text-left w-full px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-gray-800'
                   >
                     Scan tickets
                   </button>
+                  </>
+                  )}
+                  
                   <button
                     onClick={handleLogout}
                     className='text-left w-full px-3 py-2 rounded-lg text-sm text-pink-500 hover:bg-gray-800'
