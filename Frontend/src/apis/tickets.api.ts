@@ -36,9 +36,13 @@ export type GetOrSearchMyTicketsSchema = {
   q?: string
 }
 
+export interface ScanTicketResult {
+  ticket: TicketApi
+}
+
 const ticketsApi = {
   bookTicket: (event_id: string) => {
-    return http.post<SuccessResponse<BookTicketResult>>('/tickets/', { event_id })
+    return http.post<SuccessResponse<BookTicketResult>>('/tickets/book', { event_id })
   },
   getMyTickets: (limit: number = 20, page: number = 1) => {
     return http.get<SuccessResponse<GetMyTicketsResponse>>('/tickets', { params: { limit, page } })
@@ -48,6 +52,9 @@ const ticketsApi = {
   },
   getTicketDetails: (ticket_id: string) => {
     return http.get<SuccessResponse<TicketApi>>(`/tickets/${ticket_id}`)
+  },
+  scanTicket: (qr_code_token: string) => {
+    return http.post<SuccessResponse<ScanTicketResult>>('/tickets/scan', { qr_code_token })
   }
 }
 

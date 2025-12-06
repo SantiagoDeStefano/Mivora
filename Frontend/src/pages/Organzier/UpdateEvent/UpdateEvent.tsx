@@ -1,13 +1,19 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import * as yup from 'yup'
 import Button from '../../../components/Button'
 import Container from '../../../components/Container/Container'
 import Card from '../../../components/Card/Card'
 import { useNavigate, useParams } from 'react-router-dom'
 import eventsApi from '../../../apis/events.api'
-import http from '../../../utils/http'
 import path from '../../../constants/path'
 import usersApi from '../../../apis/users.api'
+import {
+  updateEvent,
+  updateEventPoster,
+  UpdateEventSchema,
+  UpdateEventPosterSchema
+} from '../../../utils/rules' // chỉnh path cho đúng
 
 export default function UpdateEventPage() {
   const { id } = useParams<{ id: string }>()
@@ -16,7 +22,7 @@ export default function UpdateEventPage() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [locationText, setLocationText] = useState('')
-  const [startAt, setStartAt] = useState('')
+  const [startAt, setStartAt] = useState('') // 'YYYY-MM-DDTHH:mm'
   const [endAt, setEndAt] = useState('')
   const [price, setPrice] = useState('')
   const [capacity, setCapacity] = useState('')
@@ -44,7 +50,8 @@ export default function UpdateEventPage() {
     end_at: 'End time',
     price_cents: 'Price',
     capacity: 'Capacity',
-    status: 'Status'
+    status: 'Status',
+    image: 'Poster image'
   }
 
   // Load event details
@@ -73,7 +80,9 @@ export default function UpdateEventPage() {
         setPosterUrl(data.poster_url ?? '')
 
         setStartAt(
-          data.start_at ? new Date(data.start_at).toISOString().slice(0, 16) : ''
+          data.start_at
+            ? new Date(data.start_at).toISOString().slice(0, 16)
+            : ''
         )
         setEndAt(
           data.end_at ? new Date(data.end_at).toISOString().slice(0, 16) : ''
@@ -104,162 +113,217 @@ export default function UpdateEventPage() {
     }
   }, [id])
 
+  const buildUpdatePayload = (): UpdateEventSchema & { status?: string } => {
+    const payload: any = {}
+
+    const titleTrimmed = title.trim()
+    if (titleTrimmed !== '') {
+      payload.title = titleTrimmed
+    }
+
+    const descriptionTrimmed = description.trim()
+    if (descriptionTrimmed !== '') {
+      payload.description = descriptionTrimmed
+    }
+
+    const locationTrimmed = locationText.trim()
+    if (locationTrimmed !== '') {
+      payload.location_text = locationTrimmed
+    }
+
+    if (posterUrl.trim() !== '') {
+      payload.poster_url = posterUrl.trim()
+    }
+
+    // updateEvent expects start_at / end_at dạng string 'YYYY-MM-DDTHH:mm'
+    if (startAt) {
+      payload.start_at = startAt
+    }
+    if (endAt) {
+      payload.end_at = endAt
+    }
+
+    const priceTrimmed = price.trim()
+    if (priceTrimmed !== '') {
+      // Để Yup .number() tự xử lý NaN/typeError
+      payload.price_cents = Number(priceTrimmed)
+    }
+
+    const capacityTrimmed = capacity.trim()
+    if (capacityTrimmed !== '') {
+      payload.capacity = Number(capacityTrimmed)
+    }
+
+    if (status) {
+      payload.status = status
+    }
+
+    return payload
+  }
+
+  const mapYupErrorsToMessages = (err: yup.ValidationError): string[] => {
+    const messages: string[] = []
+
+    if (err.inner && err.inner.length > 0) {
+      err.inner.forEach((e) => {
+        if (!e.path) {
+          messages.push(e.message)
+          return
+        }
+
+        const label = fieldLabelMap[e.path] || e.path
+        messages.push(`${label}: ${e.message}`)
+      })
+    } else if (err.message) {
+      messages.push(err.message)
+    }
+
+    return messages
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!id) return
 
-    const messages: string[] = []
+    setError(null)
 
-    const titleTrimmed = title.trim()
-    if (!titleTrimmed) {
-      messages.push('Title is required.')
-    } else {
-      if (titleTrimmed.length < 3) {
-        messages.push('Title must be at least 3 characters')
+    const payload = buildUpdatePayload()
+
+    try {
+      // FE validate payload bằng updateEvent
+      const validated = await updateEvent.validate(payload, {
+        abortEarly: false,
+        stripUnknown: true
+      })
+
+      // transform: start_at / end_at đã được schema đổi thành Date (do transform)
+      const apiPayload: any = { ...validated }
+
+      if ((validated.start_at as any) instanceof Date) {
+        apiPayload.start_at = (validated.start_at as unknown as Date).toISOString()
       }
-      if (titleTrimmed.length > 120) {
-        messages.push('Title must be at most 120 characters')
+      if ((validated.end_at as any) instanceof Date) {
+        apiPayload.end_at = (validated.end_at as unknown as Date).toISOString()
       }
-    }
 
-    const descriptionTrimmed = description.trim()
-    const locationTrimmed = locationText.trim()
+      setSubmitting(true)
 
-    // Bạn có thể cho phép location trống, nhưng đa số event cần địa điểm
-    if (!locationTrimmed) {
-      messages.push('Location is required.')
-    }
+      try {
+        const res = await eventsApi.updateEvent(id, apiPayload)
 
-    // Thời gian: schema chỉ yêu cầu date, nhưng UX hợp lý hơn là bắt buộc và end > start
-    if (!startAt || !endAt) {
-      messages.push('Start and end time are required.')
-    } else {
-      const start = new Date(startAt)
-      const end = new Date(endAt)
-      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-        messages.push('Invalid date/time.')
-      } else if (end <= start) {
-        messages.push('End time must be after start time.')
+        if (res?.data?.result) {
+          console.log('Event updated:', res.data.result)
+          navigate(path.organizer_created_event_details.replace(':id', id))
+        } else {
+          console.warn('Update event: unexpected response shape', res)
+          setError(['Event updated, but response was unexpected.'])
+        }
+      } catch (apiErr) {
+        if (axios.isAxiosError(apiErr)) {
+          const statusCode = apiErr.response?.status
+          const data = apiErr.response?.data as any
+
+          console.error('Update event failed:', {
+            status: statusCode,
+            data
+          })
+
+          const messages: string[] = []
+
+          const rawErrors =
+            (data && (data.errors || data.error || data.validationErrors)) ||
+            null
+
+          if (rawErrors && typeof rawErrors === 'object') {
+            for (const [field, value] of Object.entries(rawErrors)) {
+              const label = fieldLabelMap[field] || field
+              const text = Array.isArray(value)
+                ? value.join(', ')
+                : typeof value === 'string'
+                ? value
+                : JSON.stringify(value)
+              messages.push(`${label}: ${text}`)
+            }
+          }
+
+          const fallback =
+            (data && (data.message || data.error || data.detail)) ||
+            'Unknown error'
+
+          if (!messages.length) {
+            messages.push(fallback)
+          }
+
+          setError(messages)
+        } else {
+          console.error('Update event failed (non-axios):', apiErr)
+          setError(['Unknown error.'])
+        }
+      } finally {
+        setSubmitting(false)
       }
-    }
-
-    let priceNumber: number | undefined
-    if (price !== '') {
-      const n = Number(price)
-      if (isNaN(n)) {
-        messages.push('Price must be a number.')
-      } else if (n < 0) {
-        // đúng message trong schema
-        messages.push('Price must be non-negative')
-      } else {
-        priceNumber = n
+    } catch (err) {
+      if (err instanceof yup.ValidationError) {
+        const messages = mapYupErrorsToMessages(err)
+        setError(messages)
+        return
       }
-    }
 
-    let capacityNumber: number | undefined
-    if (capacity !== '') {
-      const n = Number(capacity)
-      if (isNaN(n)) {
-        messages.push('Capacity must be a number.')
-      } else if (n < 0) {
-        // đúng message trong schema
-        messages.push('Capacity must be non-negative')
-      } else {
-        capacityNumber = n
+      console.error('Unexpected validation error:', err)
+      setError(['Validation failed.'])
+    }
+  }
+
+  const handlePosterChange = async (ev: React.ChangeEvent<HTMLInputElement>) => {
+    const file = ev.target.files?.[0] ?? null
+    setPosterError(null)
+
+    const payload: UpdateEventPosterSchema = { image: file as any }
+
+    try {
+      await updateEventPoster.validate(payload, {
+        abortEarly: false,
+        stripUnknown: true
+      })
+    } catch (err) {
+      if (err instanceof yup.ValidationError) {
+        const message =
+          err.inner.map((e) => e.message).filter(Boolean).join(' | ') ||
+          err.message
+        setPosterError(message)
+        return
       }
-    }
 
-    if (messages.length > 0) {
-      setError(messages)
+      console.error('Unexpected poster validation error', err)
+      setPosterError('Upload failed')
       return
     }
 
-    setSubmitting(true)
-    setError(null)
+    if (!file) {
+      // với schema hiện tại, thực tế không vào được đây, nhưng cứ để cho rõ
+      setPosterError('Image is required')
+      return
+    }
 
     try {
-      const payload: any = {
-        title: titleTrimmed,
-        // description/location/poster_url: trim theo schema, nhưng không bắt buộc
-        ...(descriptionTrimmed && { description: descriptionTrimmed }),
-        ...(locationTrimmed && { location_text: locationTrimmed }),
-        ...(posterUrl && { poster_url: posterUrl })
-      }
+      setUploadingPoster(true)
 
-      if (startAt) {
-        const start = new Date(startAt)
-        payload.start_at = start.toISOString()
-      }
-      if (endAt) {
-        const end = new Date(endAt)
-        payload.end_at = end.toISOString()
-      }
+      // dùng API upload poster chung (giống create)
+      const res = await eventsApi.uploadEventPoster(file)
+      const result = res?.data?.result
 
-      if (typeof priceNumber === 'number') {
-        payload.price_cents = Math.round(priceNumber * 100)
-      }
-
-      if (typeof capacityNumber === 'number') {
-        payload.capacity = capacityNumber
-      }
-
-      if (status) {
-        payload.status = status
-      }
-
-      console.log('Update event payload:', payload)
-
-      const res = await eventsApi.updateEvent(id, payload)
-
-      if (res?.data?.result) {
-        console.log('Event updated:', res.data.result)
-        navigate(path.organizer_created_event_details.replace(':id', id))
+      if (Array.isArray(result) && result[0]?.url) {
+        setPosterUrl(result[0].url)
+      } else if (result?.url) {
+        setPosterUrl(result.url)
       } else {
-        console.warn('Update event: unexpected response shape', res)
-        setError(['Event updated, but response was unexpected.'])
+        setPosterError('Upload failed: unexpected response')
       }
-    } catch (err) {
-      if (axios.isAxiosError(err)) {
-        const statusCode = err.response?.status
-        const data = err.response?.data as any
-
-        console.error('Update event failed:', {
-          status: statusCode,
-          data
-        })
-
-        let messages: string[] = []
-
-        const rawErrors =
-          (data && (data.errors || data.error || data.validationErrors)) || null
-
-        if (rawErrors && typeof rawErrors === 'object') {
-          for (const [field, value] of Object.entries(rawErrors)) {
-            const label = fieldLabelMap[field] || field
-            const text = Array.isArray(value)
-              ? value.join(', ')
-              : typeof value === 'string'
-              ? value
-              : JSON.stringify(value)
-            messages.push(`${label}: ${text}`)
-          }
-        }
-
-        const fallback =
-          (data && (data.message || data.error || data.detail)) ||
-          'Unknown error'
-
-        if (!messages.length) {
-          messages.push(fallback)
-        }
-
-        setError(messages)
-      } else {
-        console.error('Update event failed (non-axios):', err)
-        setError(['Unknown error.'])
-      }
+    } catch (err: any) {
+      console.error('Poster upload error', err)
+      setPosterError(err?.message || 'Upload failed')
     } finally {
-      setSubmitting(false)
+      setUploadingPoster(false)
     }
   }
 
@@ -302,7 +366,6 @@ export default function UpdateEventPage() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className={inputBase}
-                  required
                 />
               </div>
 
@@ -344,35 +407,7 @@ export default function UpdateEventPage() {
                   id="poster"
                   accept="image/*"
                   className="mt-1 block w-full text-sm text-gray-300"
-                  onChange={async (ev) => {
-                    const file = ev.target.files && ev.target.files[0]
-                    setPosterError(null)
-                    if (!file) return
-
-                    const form = new FormData()
-                    form.append('image', file)
-
-                    try {
-                      setUploadingPoster(true)
-                      const res = await http.post('/medias/image', form, {
-                        headers: { 'Content-Type': 'multipart/form-data' }
-                      })
-                      const result = res?.data?.result
-
-                      if (Array.isArray(result) && result[0]?.url) {
-                        setPosterUrl(result[0].url)
-                      } else if (result?.url) {
-                        setPosterUrl(result.url)
-                      } else {
-                        setPosterError('Upload failed: unexpected response')
-                      }
-                    } catch (err: any) {
-                      console.error('Poster upload error', err)
-                      setPosterError(err?.message || 'Upload failed')
-                    } finally {
-                      setUploadingPoster(false)
-                    }
-                  }}
+                  onChange={handlePosterChange}
                 />
 
                 {uploadingPoster && (
