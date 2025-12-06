@@ -125,7 +125,7 @@ export const scanTicketValidator = validate(
  * - If the user is not the organizer, responds with 403 and `TICKETS_MESSAGES.USER_IS_NOT_EVENT_ORGANIZER`.
  * - Calls `next()` when authorized.
  */
-export const eventCreatorValidator = async (req: Request, res: Response, next: NextFunction) => {
+export const ticketEventCreatorValidator = async (req: Request, res: Response, next: NextFunction) => {
   const { id: event_id } = (req.ticket as Ticket[])[0]
   const { user_id } = req.decoded_authorization as TokenPayload
   const events = await databaseService.events(
@@ -199,17 +199,9 @@ export const ticketIdValidator = validate(
             const ticketResult = await databaseService.events(
               `
                 SELECT 
-                  tickets.id, 
-                  events.title as event_title,
-                  events.status as event_status,
-                  tickets.status as ticket_status, 
-                  tickets.status, 
-                  tickets.checked_in_at, 
-                  tickets.price_cents, 
-                  tickets.qr_code_token
+                  id
                 FROM tickets 
-                JOIN events ON events.id = tickets.event_id
-                WHERE tickets.id=$1
+                WHERE id=$1
               `,
               [values]
             )
@@ -219,15 +211,8 @@ export const ticketIdValidator = validate(
                 message: TICKETS_MESSAGES.TICKET_NOT_FOUND
               })
             }
-            const qr_code = await qrCode.generateQrTicketCode(ticketResult.rows[0].qr_code_token)
-            const { qr_code_token: token, ...ticketWithoutToken } = ticketResult.rows[0]
 
-            const ticket = {
-              ...ticketWithoutToken,
-              qr_code
-            }
-
-            req.ticket = ticket
+            req.ticket = ticketResult.rows
             return true
           }
         }
@@ -236,3 +221,32 @@ export const ticketIdValidator = validate(
     ['params']
   )
 )
+
+export const ticketOwnerValidator = async (req: Request, res: Response, next: NextFunction) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const ticketOwnerResult = await databaseService.tickets(`SELECT user_id FROM tickets WHERE user_id=$1`, [user_id])
+  if (ticketOwnerResult.rows.length <= 0) {
+    return next(
+      new ErrorWithStatus({
+        message: TICKETS_MESSAGES.CURRENT_USER_IS_NOT_TICKET_OWNER,
+        status: HTTP_STATUS.FORBIDDEN
+      })
+    )
+  }
+  next()
+}
+
+export const cancelTicketStatusValidator = async (req: Request, res: Response, next: NextFunction) => {
+  const { id: ticket_id } = (req.ticket as Ticket[])[0]
+  console.log(ticket_id)
+  const ticket = await databaseService.tickets(`SELECT status FROM tickets WHERE id=$1`, [ticket_id])
+  if (ticket.rows[0].status != 'booked') {
+    return next(
+      new ErrorWithStatus({
+        message: TICKETS_MESSAGES.ONLY_BOOKED_TICKETS_CAN_BE_CANCELED,
+        status: HTTP_STATUS.FORBIDDEN
+      })
+    )
+  }
+  next()
+}

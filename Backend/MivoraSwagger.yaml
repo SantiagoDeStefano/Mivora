@@ -320,7 +320,7 @@ paths:
             schema:
               type: object
               properties:
-                avatar:
+                image:
                   type: string
                   format: binary
       responses:
@@ -366,6 +366,384 @@ paths:
                           location:
                             type: string
                             example: files
+  /users/me/email-verification:
+    post:
+      tags:
+        - users
+      summary: Send email verification to current user
+      operationId: sendEmailVerification
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Verification email sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Check your email for verification link
+        '409':
+          description: User is already verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Email already verified
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Access token is required'
+  /users/verify-email:
+    post:
+      tags:
+        - users
+      summary: Verify user's email with token
+      operationId: verifyUserEmail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email_verify_token:
+                  type: string
+                  example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNGI3ZDJhNWMtMjk2ZS00ODAwLWIxOWQtNTEzY2JkMWUxNDEwIiwidmVyaWZ5IjoidW52ZXJpZmllZCIsInRva2VuX3R5cGUiOjMsImlhdCI6MTc2NTAxNTU3NCwiZXhwIjoxNzY1MTAxOTc0fQ.hzi2bkjdYr2wDN-r_uPohUoJgJ0drayfc8TzlGrzsZI'
+      responses:
+        '200':
+          description: Email verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Email verified successfully
+                  result:
+                    type: object
+                    properties:
+                      access_token:
+                        type: string
+                        example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNGI3ZDJhNWMtMjk2ZS00ODAwLWIxOWQtNTEzY2JkMWUxNDEwIiwidmVyaWZ5IjoidmVyaWZpZWQiLCJ0b2tlbl90eXBlIjowLCJpYXQiOjE3NjUwMTYxMTIsImV4cCI6MTc2NTAxODgxMn0.BCSWP6KUNrR2nG_9h9PWvLWOpGEVfHQ6ZaRZ4DxCD4g'
+                      refresh_token:
+                        type: string
+                        example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNGI3ZDJhNWMtMjk2ZS00ODAwLWIxOWQtNTEzY2JkMWUxNDEwIiwidmVyaWZ5IjoidmVyaWZpZWQiLCJ0b2tlbl90eXBlIjoxLCJpYXQiOjE3NjUwMTYxMTIsImV4cCI6MTc2NjMxMjExMn0.e67JpJKuKsfr4DURghupc3icjPGLOHhnYlpQWHSOMjU'
+        '401':
+          description: Invalid email verification token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid email verification token
+  /users/forgot-password:
+    post:
+      tags:
+        - users
+      summary: Send forgot password email to user
+      operationId: sendForgotPasswordEmail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: TNTV10@gmail.com
+      responses:
+        '200':
+          description: Forgot password email sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Check your email for password reset link
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Validation error'
+                  errors:
+                    type: object
+                    properties:
+                      email:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                            example: 'field'
+                          value:
+                            type: string
+                            example: 'Non-existent-Email@gmail.com'
+                          msg:
+                            type: string
+                            example: 'User not found'
+                          path:
+                            type: string
+                            example: 'email'
+                          location:
+                            type: string
+                            example: 'body'
+  /users/verify-forgot-password-token:
+    post:
+      tags:
+        - users
+      summary: Verify forgot password token
+      operationId: verifyForgotPasswordToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                forgot_password_token:
+                  type: string
+                  example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNGE2NDVjNmMtODEyNS00MTA5LWE2YzctMGE4MGNiZjM4ZjhlIiwidG9rZW5fdHlwZSI6MiwidmVyaWZ5IjoidmVyaWZpZWQiLCJpYXQiOjE3NjE1NzMxNjYsImV4cCI6MTc2MTU3NDA2Nn0.DyejkOFQcwuW5O3bTeAUtutBoxxwtVLcBjNgBFn7to0'
+      responses:
+        '200':
+          description: Verify forgot password token successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Verify forgot password token successfully
+        '401':
+          description: Invalid signature
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid signature
+  /users/reset-password:
+    post:
+      tags:
+        - users
+      summary: Reset user's password
+      operationId: resetUserPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: Thaovy86.
+                confirm_password:
+                  type: string
+                  example: Thaovy85.
+                forgot_password_token:
+                  type: string
+                  example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiOWFhZWY1YTYtZjllYS00NThiLThlMzEtNThjZDlmYmQ3ZmE0IiwidG9rZW5fdHlwZSI6MiwidmVyaWZ5IjoidmVyaWZpZWQiLCJpYXQiOjE3NjUwMTY4MzQsImV4cCI6MTc2NTAxNzczNH0.RpkinTJJi3Ay5uXiilNGYOozckQAiMpYLI3X0FKk7Ec'
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password reset successfully
+        '401':
+          description: Invalid forgot password token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid forgot password token
+  /users/me/events:
+    get:
+      tags:
+        - users
+      summary: Get current user's events
+      operationId: getMyEvents
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+
+            default: 20
+          description: Number of items per page
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+      responses:
+        '200':
+          description: Events retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Events retrieved successfully
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Event'
+                    example:
+                      events:
+                        - id: e59fee5d-db78-4bcc-9074-d5bcd42ddfa0
+                          title: Smart static intranet
+                          description: >-
+                            Volo ipsum vulticulus cohors teres. Cervus tantum amet advoco dicta
+                            apparatus bestia concido sequi territo. Ventosus ascisco comminor
+                            voluptate cado teneo.
+                            Varius utpote peccatus patria tandem sint vigor turbo utpote atavus.
+                            Tero blandior incidunt sordeo villa demens conqueror cunabula thesaurus
+                            cometes. Auxilium demens vesper coniecto rem ater quo subvenio utpote
+                            demoror.
+                            Omnis animadverto sub ad cunae verto amicitia vero quibusdam
+                            assumenda. Abeo vilicus angulus conatus ustulo unde titulus. Rem
+                            contigo casso cattus tribuo templum terra.
+                          poster_url: https://picsum.photos/seed/LuVSo/800/600?blur=3
+                          location_text: Abeworth, Guatemala
+                          start_at: 2025-12-11T01:58:08.075Z
+                          end_at: 2025-12-11T07:58:08.075Z
+                          price_cents: 13187
+                          checked_in: 24
+                          capacity: 83
+                          status: draft
+                          total_count: '108'
+
+                        - id: d1f9bf07-3758-4b07-b655-87adeb8efccc
+                          title: Sustainable regional intranet
+                          description: >-
+                            Virgo aranea sollers charisma acerbitas calcar ventito carcer. Aperiam
+                            toties ager tametsi cohibeo sono labore auctus. Delicate auxilium ante.
+                          poster_url: https://picsum.photos/seed/FS5AHgd1ng/800/600?grayscale&blur=1
+                          location_text: Stammfort, Burundi
+                          start_at: 2025-12-04T05:46:13.176Z
+                          end_at: 2025-12-04T10:46:13.176Z
+                          price_cents: 12508
+                          checked_in: 17
+                          capacity: 436
+                          status: published
+                          total_count: '108'
+
+                        - id: a8d29ecd-03ae-4b61-a98b-31bcc2f44c17
+                          title: Organic heuristic moderator
+                          description: >-
+                            Alii suus deserunt curatio cicuta bibo thymbra velociter arbitro
+                            undique. Ulciscor caterva alii. Tendo caritas thorax tabula avaritia
+                            non alienus adulatio suppono pecus.
+                          poster_url: https://picsum.photos/seed/br7m7jNSyI/800/600?grayscale&blur=10
+                          location_text: New Ahmed, Andorra
+                          start_at: 2025-12-30T16:36:52.278Z
+                          end_at: 2025-12-30T18:36:52.278Z
+                          price_cents: 19286
+                          checked_in: 14
+                          capacity: 365
+                          status: published
+                          total_count: '108'
+
+        '403':
+          description: Must be organizer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Must be organizer'
+  /users/me/events/{event_id}:
+    get:
+      tags:
+        - users
+      summary: Get current user's event by ID
+      operationId: getMyEventById
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the event to retrieve
+          example: d36974fe-b895-47e4-a6d0-0d126fbaa604
+      responses:
+        '200':
+          description: Event retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Event retrieved successfully
+                  result:
+                    $ref: '#/components/schemas/Event'
+        '403':
+          description: Must be organizer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Current user is not event's organizer
+        '404':
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Event not found
 
   /events:
     post:
@@ -461,15 +839,15 @@ components:
         email:
           type: string
           format: email
-          example: TNTV_6@gmail.com
+          example: TNTV11@gmail.com
         avatar_url:
           type: string
-          example: example_avt_url
+          example: https://mivora-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/avatar-images/l8pwojtt1ingzb8e2vycka40a.jpg
         role:
           type: array
           items:
             type: string
-            enum: [attendee, organizer]
+            enum: [attendee]
           example:
             - attendee
             - organizer

@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import {
   bookTicketController,
+  cancelTicketController,
   getOrSearchTicketWithStatusController,
   getTicketDetailsController,
   scanTicketController
@@ -8,10 +9,12 @@ import {
 import { eventIdValidator, paginationValidator, searchValidator } from '~/middlewares/events.middlewares'
 import {
   bookTicketValidator,
-  eventCreatorValidator,
+  ticketEventCreatorValidator,
   getTicketStatusValidator,
   scanTicketValidator,
-  ticketIdValidator
+  ticketIdValidator,
+  ticketOwnerValidator,
+  cancelTicketStatusValidator,
 } from '~/middlewares/tickets.middlewares'
 import { accessTokenValidator, organizerValidator } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
@@ -39,7 +42,7 @@ ticketsRouter.post(
 /**
  * Scan an attendee's ticket QR code
  * - Method: POST
- * - Path: /scan
+ * - Path: /check-in
  * - Protected: requires `Authorization: Bearer <access_token>` and organizer role
  * - Body: `{ qr_code_token: string }`
  * - Validations: `scanTicketValidator` checks QR payload; `eventCreatorValidator` ensures the scanner is the event creator
@@ -47,11 +50,11 @@ ticketsRouter.post(
  * - Success: 200 with scanned ticket info
  */
 ticketsRouter.post(
-  '/scan',
+  '/check-in',
   accessTokenValidator,
   organizerValidator,
   scanTicketValidator,
-  eventCreatorValidator,
+  ticketEventCreatorValidator,
   wrapRequestHandler(scanTicketController)
 )
 
@@ -86,7 +89,26 @@ ticketsRouter.get(
   '/:ticket_id',
   accessTokenValidator,
   ticketIdValidator,
+  ticketOwnerValidator,
   wrapRequestHandler(getTicketDetailsController)
+)
+
+/**
+ * Change ticket status to canceled
+ * - Method: PATCH
+ * - Path: /:ticket_id/cancel
+ * - Protected: requires `Authorization: Bearer <access_token>`
+ * - Params: `ticket_id` (validated by `ticketIdValidator`)
+ * - Action: returns detailed ticket information if the requester is authorized
+ * - Success: 200 with ticket details
+ */
+ticketsRouter.patch(
+  '/:ticket_id/cancel',
+  accessTokenValidator,
+  ticketIdValidator,
+  ticketOwnerValidator,
+  cancelTicketStatusValidator,
+  wrapRequestHandler(cancelTicketController)
 )
 
 export default ticketsRouter

@@ -1,5 +1,5 @@
 import { checkSchema, ParamSchema } from 'express-validator'
-import { USERS_MESSAGES } from '~/constants/messages'
+import { EVENTS_MESSAGES, TICKETS_MESSAGES, USERS_MESSAGES } from '~/constants/messages'
 import { validate } from '~/utils/validation'
 import { UserRole } from '~/types/domain'
 import { hashPassword } from '~/utils/crypto'
@@ -403,7 +403,7 @@ export const sendEmailValidator = async (req: Request, res: Response, next: Next
     return next(
       new ErrorWithStatus({
         message: USERS_MESSAGES.EMAIL_ALREADY_VERIFIED,
-        status: HTTP_STATUS.OK
+        status: HTTP_STATUS.CONFLICT
       })
     )
   }
@@ -527,3 +527,33 @@ export const resetPasswordValidator = validate(
     ['body']
   )
 )
+
+/**
+ * Ensure the requester is the organizer (event creator) for the event's details.
+ * - Expects `req.params.event_id` to be present (provided by `eventIdValidator`).
+ * - Loads the organizer_id from the events table for the event and compares it
+ *   with the authenticated `user_id` (from `req.decoded_authorization`).
+ * - If the user is not the organizer, responds with 403 and `EVENTS.MUST_BE_ORGANIZER`.
+ * - Calls `next()` when authorized.
+ */
+export const eventEventCreatorValidator = async (req: Request, res: Response, next: NextFunction) => {
+  const event_id = req.params.event_id
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const events = await databaseService.events(
+    `
+      SELECT organizer_id 
+      FROM events 
+      WHERE id = $1
+    `,
+    [event_id]
+  )
+  if (user_id != events.rows[0].organizer_id) {
+    return next(
+      new ErrorWithStatus({
+        message: TICKETS_MESSAGES.USER_IS_NOT_EVENT_ORGANIZER,
+        status: HTTP_STATUS.FORBIDDEN
+      })
+    )
+  }
+  next()
+}

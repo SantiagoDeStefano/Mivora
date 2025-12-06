@@ -3,6 +3,7 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { TICKETS_MESSAGES } from '~/constants/messages'
 import {
   BookTicketRequestBody,
+  CancelTicketParams,
   ScanTicketRequestBody,
   SearchTicketWithStatus
 } from '~/models/requests/tickets.requests'
@@ -11,6 +12,7 @@ import { TokenPayload } from '~/models/requests/users.requests'
 import Event from '~/models/schemas/Event.schema'
 import Ticket from '~/models/schemas/Tickets.schema'
 import ticketsService from '~/services/tickets.services'
+import { UUIDv4 } from '~/types/common'
 
 export const bookTicketController = async (
   req: Request<ParamsDictionary, unknown, BookTicketRequestBody>,
@@ -45,9 +47,11 @@ export const getOrSearchTicketWithStatusController = async (
 ): Promise<void> => {
   const limit = Number(req.query.limit)
   const page = Number(req.query.page)
+  const user_id = (req.decoded_authorization as TokenPayload).user_id
   const status = req.query.status
   const search = req.query.q
-  const result = await ticketsService.getOrSearchTicketWithStatus(limit, page, search, status)
+  const result = await ticketsService.getOrSearchTicketWithStatus(limit, page, user_id, search, status)
+  console.log(user_id)
   res.json({
     message: TICKETS_MESSAGES.GET_TICKETS_SUCCESSFULLY,
     result: {
@@ -59,16 +63,25 @@ export const getOrSearchTicketWithStatusController = async (
   })
 }
 
-export const getTicketDetailsController = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  const ticketData = req.ticket
-  const ticket = {
-    ...ticketData
-  }
+export const getTicketDetailsController = async (req: Request, res: Response): Promise<void> => {
+  console.log(req.ticket)
+  const { id: ticket_id } = (req.ticket as Ticket[])[0]
+
+  const ticket = await ticketsService.getTicketDetails(ticket_id)
   res.json({
     message: TICKETS_MESSAGES.GET_TICKETS_DETAILS_SUCCESSFULLY,
     result: ticket
+  })
+}
+
+export const cancelTicketController = async (
+  req: Request<ParamsDictionary, unknown, CancelTicketParams>,
+  res: Response
+): Promise<void> => {
+  const ticket_id = req.params.ticket_id as UUIDv4
+  const result = await ticketsService.cancelTicket(ticket_id)
+  res.json({
+    message: TICKETS_MESSAGES.TICKET_CANCELED_SUCCESSFULLY,
+    result
   })
 }

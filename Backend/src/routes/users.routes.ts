@@ -14,10 +14,11 @@ import {
   verifyEmailController,
   verifyForgotPasswordController
 } from '~/controllers/users.controllers'
-import { getEventStatusValidator, paginationValidator, searchValidator } from '~/middlewares/events.middlewares'
+import { eventIdValidator, getEventStatusValidator, paginationValidator, searchValidator } from '~/middlewares/events.middlewares'
 import {
   accessTokenValidator,
   emailVerifyTokenValidator,
+  eventEventCreatorValidator,
   forgotPasswordValidator,
   loginValidator,
   organizerValidator,
@@ -126,6 +127,8 @@ usersRouter.get(
   '/me/events/:event_id',
   accessTokenValidator,
   organizerValidator,
+  eventIdValidator,
+  eventEventCreatorValidator,
   wrapRequestHandler(getCreatedEventDetailsController)
 )
 
