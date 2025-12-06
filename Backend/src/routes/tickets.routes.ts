@@ -8,7 +8,7 @@ import {
 import { eventIdValidator, paginationValidator, searchValidator } from '~/middlewares/events.middlewares'
 import {
   bookTicketValidator,
-  eventCreatorValidator,
+  ticketEventCreatorValidator,
   getTicketStatusValidator,
   scanTicketValidator,
   ticketIdValidator
@@ -51,7 +51,7 @@ ticketsRouter.post(
   accessTokenValidator,
   organizerValidator,
   scanTicketValidator,
-  eventCreatorValidator,
+  ticketEventCreatorValidator,
   wrapRequestHandler(scanTicketController)
 )
 

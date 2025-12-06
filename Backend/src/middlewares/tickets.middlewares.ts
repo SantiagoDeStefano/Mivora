@@ -125,7 +125,7 @@ export const scanTicketValidator = validate(
  * - If the user is not the organizer, responds with 403 and `TICKETS_MESSAGES.USER_IS_NOT_EVENT_ORGANIZER`.
  * - Calls `next()` when authorized.
  */
-export const eventCreatorValidator = async (req: Request, res: Response, next: NextFunction) => {
+export const ticketEventCreatorValidator = async (req: Request, res: Response, next: NextFunction) => {
   const { id: event_id } = (req.ticket as Ticket[])[0]
   const { user_id } = req.decoded_authorization as TokenPayload
   const events = await databaseService.events(
