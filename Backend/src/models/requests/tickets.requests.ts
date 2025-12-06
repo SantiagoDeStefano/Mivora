@@ -1,6 +1,7 @@
 import { UUIDv4 } from '~/types/common'
 import { Pagination } from './events.requests'
 import { TicketStatus } from '~/types/domain'
+import Ticket from '../schemas/Tickets.schema'
 
 // Body
 export interface BookTicketRequestBody {
@@ -8,10 +9,15 @@ export interface BookTicketRequestBody {
 }
 
 export interface ScanTicketRequestBody {
-  ticket: UUIDv4
+  ticket: Ticket[]
 }
 
 export interface SearchTicketWithStatus extends Pagination {
   status?: TicketStatus
   q?: string
+}
+
+// Params
+export interface CancelTicketParams {
+  ticket_id: UUIDv4
 }

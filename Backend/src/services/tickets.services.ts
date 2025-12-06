@@ -27,24 +27,36 @@ class TicketsService {
     const qr_code_token = await qrCode.createQrTicketToken(new_ticket.id, event_id, user_id)
     const newTicket = await databaseService.tickets(
       `
-        INSERT INTO tickets(
-          id,
-          event_id,
-          user_id,
-          qr_code_token,
-          status,
-          checked_in_at,
-          price_cents
+        WITH inserted_ticket AS (
+          INSERT INTO tickets(
+            id,
+            event_id,
+            user_id,
+            qr_code_token,
+            status,
+            checked_in_at,
+            price_cents
+          )
+          VALUES ($1, $2, $3, $4, $5, $6, $7)
+          RETURNING
+            id,
+            event_id,
+            user_id,
+            status,
+            checked_in_at,
+            price_cents,
+            qr_code_token
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-        RETURNING
-          id,
-          event_id,
-          user_id,
-          status,
-          checked_in_at,
-          price_cents,
-          qr_code_token
+        SELECT
+          inserted_ticket.id,
+          events.title AS event_title,
+          events.status AS event_status,
+          inserted_ticket.status AS ticket_status,
+          inserted_ticket.checked_in_at,
+          inserted_ticket.price_cents,
+          inserted_ticket.qr_code_token
+        FROM inserted_ticket
+        JOIN events ON events.id = inserted_ticket.event_id;
       `,
       [
         new_ticket.id,
@@ -77,16 +89,19 @@ class TicketsService {
     const ticketResult = await databaseService.tickets(
       `
         UPDATE tickets
-        SET status = $1,
-            checked_in_at = $2
-        WHERE id = $3
+        SET tickets.status = $1,
+            tickets.checked_in_at = $2
+        FROM events
+        WHERE tickets.id = $3
+        AND tickets.event_id = events.id
         RETURNING
-          id,
-          event_id,
-          user_id,
-          status,
-          checked_in_at,
-          price_cents
+          tickets.id, 
+          events.title as event_title, 
+          events.status as event_status,
+          tickets.status as ticket_status, 
+          tickets.checked_in_at, 
+          tickets.price_cents, 
+          tickets.qr_code_token,
       `,
       ['checked_in', new Date(), ticket_id]
     )
@@ -109,7 +124,13 @@ class TicketsService {
    * - For each row, replaces the stored `qr_code_token` with a generated `qr_code`.
    * - Returns `{ tickets, totalTickets }` where `totalTickets` is the full result count.
    */
-  async getOrSearchTicketWithStatus(limit: number, page: number, search?: string, status?: TicketStatus) {
+  async getOrSearchTicketWithStatus(
+    limit: number,
+    page: number,
+    user_id: UUIDv4,
+    search?: string,
+    status?: TicketStatus
+  ) {
     const statusParam = status ?? null // null = "all statuses"
     const searchParam = search ?? null // null = "no search"
     const ticketsResult = await databaseService.tickets(
@@ -129,10 +150,12 @@ class TicketsService {
           tickets.status = COALESCE($1::ticket_status, tickets.status)
           AND
           events.title ILIKE COALESCE('%' || $2::text || '%', events.title)
+          AND
+          tickets.user_id = $3
         ORDER BY tickets.created_at DESC, tickets.id DESC
-        LIMIT $3 OFFSET $4
+        LIMIT $4 OFFSET $5
       `,
-      [statusParam, searchParam, limit, limit * (page - 1)]
+      [statusParam, searchParam, user_id, limit, limit * (page - 1)]
     )
     const totalTickets = ticketsResult.rows.length > 0 ? Number(ticketsResult.rows[0].total_count) : 0
     const tickets = await Promise.all(
@@ -150,6 +173,59 @@ class TicketsService {
     )
 
     return { tickets, totalTickets }
+  }
+
+  async getTicketDetails(ticket_id: UUIDv4) {
+    const ticketResult = await databaseService.tickets(
+      `
+        SELECT
+          tickets.id,
+          events.title AS event_title,
+          events.status AS event_status,
+          tickets.status AS ticket_status,
+          tickets.checked_in_at,
+          tickets.price_cents,
+          tickets.qr_code_token
+        FROM tickets
+        JOIN events ON tickets.event_id = events.id
+        WHERE tickets.id = $1
+      `,
+      [ticket_id]
+    )
+    const qr_code = await qrCode.generateQrTicketCode(ticketResult.rows[0].qr_code_token)
+    const { qr_code_token, ...ticketWithoutToken } = ticketResult.rows[0]
+    return {
+      ...ticketWithoutToken,
+      qr_code
+    }
+  }
+
+  async cancelTicket(ticket_id: UUIDv4) {
+    const ticketResult = await databaseService.tickets(
+      `
+        UPDATE tickets
+        SET status = 'canceled'
+        FROM events
+        WHERE tickets.id = $1
+        AND tickets.event_id = events.id
+        RETURNING
+          tickets.id, 
+          events.title as event_title, 
+          events.status as event_status,
+          tickets.status as ticket_status, 
+          tickets.checked_in_at, 
+          tickets.price_cents, 
+          tickets.qr_code_token
+      `,
+      [ticket_id]
+    )
+    const ticket = ticketResult.rows[0]
+    const qr_code = await qrCode.generateQrTicketCode(ticket.qr_code_token)
+    const { qr_code_token, ...ticketWithoutToken } = ticket
+    return {
+      ...ticketWithoutToken,
+      qr_code
+    }
   }
 }
 

@@ -268,7 +268,6 @@ class EventService {
         WHERE id = $1
         RETURNING
           id,
-          organizer_id,
           title,
           description,
           poster_url,
@@ -299,7 +298,6 @@ class EventService {
         WHERE id = $1
         RETURNING
           id,
-          organizer_id,
           title,
           description,
           poster_url,
@@ -349,7 +347,6 @@ class EventService {
         WHERE id = $2
         RETURNING
           id,
-          organizer_id,
           title,
           description,
           poster_url,

@@ -31,10 +31,9 @@ function generateFakeEvent(): FakeEvent {
   return {
     id: uuidv4() as UUIDv4,
     organizer_id: faker.helpers.arrayElement([
-      '2d0ae3c7-a849-48f0-bb3a-ec155fc4f485',
-      '88945d98-a228-42fe-89c8-f82c20bfc808',
-      '0eb6571e-26d3-4059-b448-e746693d45d8',
-      '96024adc-79ea-4559-ac59-2b76ead8c771'
+      '08d176d8-1f08-4be4-bafd-15829965f371',
+      '9aaef5a6-f9ea-458b-8e31-58cd9fbd7fa4',
+      'd4799870-60c3-42cb-99dc-d1abf6e9fe7f'
     ]) as UUIDv4,
     title: faker.company.catchPhrase(),
     description: faker.lorem.paragraphs({ min: 1, max: 3 }),

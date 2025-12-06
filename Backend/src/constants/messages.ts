@@ -153,6 +153,9 @@ export const MEDIAS_MESSAGES = {
 
 export const TICKETS_MESSAGES = {
   BOOK_TICKET_SUCCESS: 'Book ticket successfully',
+  ONLY_BOOKED_TICKETS_CAN_BE_CANCELED: 'Only booked tickets can be canceled',
+
+  CURRENT_USER_IS_NOT_TICKET_OWNER: 'Current user is not ticket owner',
 
   EVENT_STATUS_NOT_PUBLISHED: "Event's status is not published",
 
@@ -161,6 +164,7 @@ export const TICKETS_MESSAGES = {
 
   TICKET_ALREADY_CHECKED_IN: 'Ticket already checked in',
   TICKET_NOT_FOUND: 'Ticket not found',
+  TICKET_CANCELED_SUCCESSFULLY: 'Ticket canceled successfully',
 
   QR_CODE_TOKEN_REQUIRED: 'QR code token is required',
 

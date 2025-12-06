@@ -2,10 +2,8 @@ import { Router } from 'express'
 import {
   cancelEventController,
   createEventController,
-  getCreatedEventDetailsController,
   getEventDetailsController,
   getOrSearchEventsController,
-  getOrSearchEventsWithStatusController,
   publishEventController,
   updateEventDetailsController,
   uploadEventPosterController
@@ -16,7 +14,6 @@ import {
   cancelEventStatusValidator,
   createEventValidator,
   eventIdValidator,
-  getEventStatusValidator,
   getPublishedEventStatusValidator,
   paginationValidator,
   publishEventStatusValidator,
@@ -93,7 +90,6 @@ eventsRouter.patch(
  * - Success: 200 with paginated list of published events
  */
 eventsRouter.get('/', paginationValidator, searchValidator, wrapRequestHandler(getOrSearchEventsController))
-
 
 /**
  * Get details for a published event
