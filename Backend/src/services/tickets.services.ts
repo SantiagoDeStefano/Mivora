@@ -200,13 +200,13 @@ class TicketsService {
     }
   }
 
-  async cancelTicket(ticket_id: UUIDv4) {
+  async cancelTicket(ticket_id: UUIDv4, ticketStatus: string) {
     const ticketResult = await databaseService.tickets(
       `
         UPDATE tickets
-        SET status = 'canceled'
+        SET status = $1
         FROM events
-        WHERE tickets.id = $1
+        WHERE tickets.id = $2
         AND tickets.event_id = events.id
         RETURNING
           tickets.id, 
@@ -217,7 +217,7 @@ class TicketsService {
           tickets.price_cents, 
           tickets.qr_code_token
       `,
-      [ticket_id]
+      [ticketStatus, ticket_id]
     )
     const ticket = ticketResult.rows[0]
     const qr_code = await qrCode.generateQrTicketCode(ticket.qr_code_token)

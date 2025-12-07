@@ -97,6 +97,7 @@ export const EVENTS_MESSAGES = {
   CHANGE_EVENT_ONLY_ALLOWED_ON_DRAFT: 'Change event only allowed on draft',
   CANCEL_EVENT_ONLY_ALLOWED_ON_PUBLISHED: 'Cancel event only allowed on published',
   CANCEL_EVENT_SUCCESS: 'Cancel event successfully',
+  CHANGE_EVENT_STATUS_SUCCESS: 'Change event status successfully',
 
   EVENT_TITLE_IS_REQUIRED: "Event's title is required",
   EVENT_TITLE_MUST_BE_STRING: "Event's title must be string",
@@ -124,6 +125,9 @@ export const EVENTS_MESSAGES = {
   EVENT_INVALID_STATUS_TRANSITION: 'Invalid event status transition',
   EVENT_POSTER_ONLY_ALLOWED_ON_DRAFT: 'Event poster only allowed on draft',
   EVENT_STATUS_IS_REQUIRED: "Event's status is required",
+  EVENT_LOCATION_IS_REQUIRED: "Event's location is required",
+  EVENT_PRICE_IS_REQUIRED: "Event's price is required",
+  EVENT_CAPACITY_IS_REQUIRED: "Event's capacity is required",
 
   GET_EVENTS_SUCCESSFULLY: 'Get events successfully',
   GET_CREATED_EVENTS_SUCCESSFULLY: 'Get created events successfully',

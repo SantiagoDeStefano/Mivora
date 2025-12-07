@@ -4,6 +4,7 @@ import { TICKETS_MESSAGES } from '~/constants/messages'
 import {
   BookTicketRequestBody,
   CancelTicketParams,
+  CancelTicketRequestBody,
   ScanTicketRequestBody,
   SearchTicketWithStatus
 } from '~/models/requests/tickets.requests'
@@ -75,11 +76,12 @@ export const getTicketDetailsController = async (req: Request, res: Response): P
 }
 
 export const cancelTicketController = async (
-  req: Request<ParamsDictionary, unknown, CancelTicketParams>,
+  req: Request<CancelTicketParams, unknown, CancelTicketRequestBody>,
   res: Response
 ): Promise<void> => {
   const ticket_id = req.params.ticket_id as UUIDv4
-  const result = await ticketsService.cancelTicket(ticket_id)
+  const ticketStatus = req.body.status
+  const result = await ticketsService.cancelTicket(ticket_id, ticketStatus)
   res.json({
     message: TICKETS_MESSAGES.TICKET_CANCELED_SUCCESSFULLY,
     result

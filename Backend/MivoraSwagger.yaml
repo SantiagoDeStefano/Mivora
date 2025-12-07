@@ -20,6 +20,8 @@ tags:
     description: Everything about Users's requests
   - name: events
     description: Everything about Event's requests
+  - name: ticket
+    description: Everything about Ticket's requests
 paths:
   /users/login:
     post:
@@ -603,7 +605,6 @@ paths:
           required: false
           schema:
             type: integer
-
             default: 20
           description: Number of items per page
         - name: page
@@ -746,6 +747,135 @@ paths:
                     example: Event not found
 
   /events:
+    get:
+      tags:
+        - events
+      summary: Get all published events
+      operationId: getAllPublishedEvents
+      parameters:
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+            default: 20
+          description: Number of items per page
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: q
+          in: query
+          required: false
+          example: Syn
+          schema:
+            type: string
+          description: Search query for event title
+      responses:
+        '200':
+          description: Get events successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Get events successfully
+                  result:
+                    type: object
+                    properties:
+                      events:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              format: uuid
+                              example: 3b1bf6c6-4fa0-4026-95a2-be76908d1f5d
+                            organizer_name:
+                              type: string
+                              example: Lam Uyen Phuong
+                            title:
+                              type: string
+                              example: MEOMEOMEO
+                            description:
+                              type: string
+                              example: tại sao lá cây lại có màu xanh
+                            poster_url:
+                              type: string
+                              format: uri
+                              example: https://example.com/poster.jpg
+                            location_text:
+                              type: string
+                              example: 123 Main Street, San Francisco, CA
+                            start_at:
+                              type: string
+                              format: date-time
+                              example: 2025-12-06T14:03:00.000Z
+                            end_at:
+                              type: string
+                              format: date-time
+                              example: 2025-12-13T14:03:00.000Z
+                            price_cents:
+                              type: integer
+                              example: 34300
+                            checked_in:
+                              type: integer
+                              example: 0
+                            capacity:
+                              type: integer
+                              example: 3434
+                            status:
+                              type: string
+                              example: published
+                            total_count:
+                              type: string
+                              example: '158'
+                      limit:
+                        type: integer
+                        example: 20
+                      page:
+                        type: integer
+                        example: 1
+                      total_page:
+                        type: integer
+                        example: 8
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Validation error
+                  errors:
+                    type: object
+                    properties:
+                      q:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                            example: field
+                          value:
+                            type: string
+                            example: '0'
+                          msg:
+                            type: string
+                            example: Search length must be between 3 and 20
+                          path:
+                            type: string
+                            example: q
+                          location:
+                            type: string
+                            example: query
     post:
       tags:
         - events
@@ -758,7 +888,31 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Event'
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Tech Innovation Summit 2027
+                description:
+                  type: string
+                  example: A conference exploring emerging technologies and innovation trends.
+                location_text:
+                  type: string
+                  example: 123 Main Street, San Francisco, CA
+                start_at:
+                  type: string
+                  format: date-time
+                  example: 2025-12-06T11:49:27.918Z
+                end_at:
+                  type: string
+                  format: date-time
+                  example: 2025-12-06T11:49:28.918Z
+                price_cents:
+                  type: integer
+                  example: 2500
+                capacity:
+                  type: integer
+                  example: 150
       responses:
         '200':
           description: Event created successfully
@@ -772,8 +926,9 @@ paths:
                     example: Event created successfully
                   result:
                     $ref: '#/components/schemas/Event'
+
         '403':
-          description: Event creator must be organizer
+          description: Must be organizer
           content:
             application/json:
               schema:
@@ -781,9 +936,9 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: 'Event creator must be organizer'
-        '401':
-          description: Unauthorized
+                    example: 'Must be organizer'
+        '422':
+          description: Unprocessable Entity
           content:
             application/json:
               schema:
@@ -791,7 +946,463 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: 'Access token is required'
+                    example: Validation error
+                  errors:
+                    type: object
+                    properties:
+                      price_cents:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                            example: field
+                          msg:
+                            type: string
+                            example: Event's price is required
+                          path:
+                            type: string
+                            example: price_cents
+                          location:
+                            type: string
+                            example: body
+  /events/{event_id}:
+    get:
+      tags:
+        - events
+      summary: Get published event by ID
+      operationId: getEventById
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the event to retrieve
+          example: 406347ea-6902-4983-87cb-d67e4628dbfd
+      responses:
+        '200':
+          description: Get event successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Get events successfully
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        example: 406347ea-6902-4983-87cb-d67e4628dbfd
+                      organizer_name:
+                        type: string
+                        example: Tran Ngoc Thao Vy
+                      title:
+                        type: string
+                        example: Implemented leading edge strategy
+                      description:
+                        type: string
+                        example: >
+                          Cerno volva adulatio pecus deprimo synagoga thymum aranea defleo.
+                          Maiores venio cariosus vallum velut acsi accusator substantia.
+                          Expedita repellat aestivus.
+                      poster_url:
+                        type: string
+                        format: uri
+                        example: https://picsum.photos/seed/Nn7peLXM/800/600?grayscale&blur=4
+                      location_text:
+                        type: string
+                        example: Lake Mikeboro, Austria
+                      start_at:
+                        type: string
+                        format: date-time
+                        example: 2025-12-06T11:49:27.909Z
+                      end_at:
+                        type: string
+                        format: date-time
+                        example: 2025-12-10T15:30:04.593Z
+                      price_cents:
+                        type: integer
+                        example: 16583
+                      checked_in:
+                        type: integer
+                        example: 48
+                      capacity:
+                        type: integer
+                        example: 176
+                      status:
+                        type: string
+                        example: published
+
+        '409':
+          description: Event poster only allowed on draft
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Event poster only allowed on draft
+        '403':
+          description: Current user is not event's organizer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Current user is not event's organizer"
+    patch:
+      tags:
+        - events
+      summary: Update an event by ID
+      operationId: updateEventById
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the event to update
+          example: a29a9e03-ba2a-4ed0-8262-ed9d32d89b3b
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Updated event title
+                description:
+                  type: string
+                  example: A conference exploring emerging technologies and innovation trends.
+                location_text:
+                  type: string
+                  example: 123 Main Street, San Francisco, CA
+                start_at:
+                  type: string
+                  format: date-time
+                  example: 2025-11-20T09:00:00Z
+                end_at:
+                  type: string
+                  format: date-time
+                  example: 2025-11-20T17:00:00Z
+                price_cents:
+                  type: integer
+                  example: 2500
+                capacity:
+                  type: integer
+                  example: 150
+
+      responses:
+        '200':
+          description: Update event successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Update event successfully
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        example: a29a9e03-ba2a-4ed0-8262-ed9d32d89b3b
+                      title:
+                        type: string
+                        example: Updated event's details
+                      description:
+                        type: string
+                        example: A conference exploring emerging technologies and innovation trends.
+                      poster_url:
+                        type: string
+                        format: uri
+                        example: https://picsum.photos/seed/8gkZD9lo4/800/600?grayscale&blur=6
+                      location_text:
+                        type: string
+                        example: 123 Main Street, San Francisco, CA
+                      start_at:
+                        type: string
+                        format: date-time
+                        example: 2025-11-20T09:00:00.000Z
+                      end_at:
+                        type: string
+                        format: date-time
+                        example: 2025-11-20T17:00:00.000Z
+                      price_cents:
+                        type: integer
+                        example: 2500
+                      checked_in:
+                        type: integer
+                        example: 27
+                      capacity:
+                        type: integer
+                        example: 150
+                      status:
+                        type: string
+                        example: draft
+
+        '409':
+          description: Change event only allowed on draft
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Change event only allowed on draft
+
+        '403':
+          description: Current user is not event's organizer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Current user is not event's organizer"
+
+        '404':
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Event not found
+  /events/{event_id}/poster:
+    put:
+      tags:
+        - events
+      summary: Update event's poster image
+      operationId: updateEventPoster
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the event to update poster
+          example: a29a9e03-ba2a-4ed0-8262-ed9d32d89b3b
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Upload event poster successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Upload event poster successfully
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        example: a29a9e03-ba2a-4ed0-8262-ed9d32d89b3b
+                      title:
+                        type: string
+                        example: Updated event's details
+                      description:
+                        type: string
+                        example: A conference exploring emerging technologies and innovation trends.
+                      poster_url:
+                        type: string
+                        format: uri
+                        example: https://mivora-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/avatar-images/chy2p6xp44t0yesln51zjfngc.jpg
+                      location_text:
+                        type: string
+                        example: 123 Main Street, San Francisco, CA
+                      start_at:
+                        type: string
+                        format: date-time
+                        example: 2025-11-20T09:00:00.000Z
+                      end_at:
+                        type: string
+                        format: date-time
+                        example: 2025-11-20T17:00:00.000Z
+                      price_cents:
+                        type: integer
+                        example: 2500
+                      checked_in:
+                        type: integer
+                        example: 27
+                      capacity:
+                        type: integer
+                        example: 150
+                      status:
+                        type: string
+                        example: draft
+
+        '403':
+          description: Current user is not event's organizer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Current user is not event's organizer"
+        '404':
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Event not found
+  /events/{event_id}/status:
+    patch:
+      tags:
+        - events
+      summary: Update event status
+      operationId: updateEventStatus
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the event to update
+          example: 74ef51f2-65a5-4df3-90f4-d703dc0aab0e
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [published, canceled, draft]
+                  example: published
+              required: [status]
+      responses:
+        '200':
+          description: Change event status successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Change event status successfully
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        example: 74ef51f2-65a5-4df3-90f4-d703dc0aab0e
+                      title:
+                        type: string
+                        example: Universal cohesive help-desk
+                      description:
+                        type: string
+                        example: >
+                          Traho arguo tendo tristis quas. Tabella subiungo adicio molestias
+                          atrox succedo cribro thymbra aptus. Atavus reiciendis caelestis
+                          commodi cura creo deputo voluntarius.
+                      poster_url:
+                        type: string
+                        format: uri
+                        example: https://picsum.photos/seed/lyclLl9Cj/800/600?blur=8
+                      location_text:
+                        type: string
+                        example: North Kelley, Cambodia
+                      start_at:
+                        type: string
+                        format: date-time
+                        example: 2025-12-06T11:49:27.914Z
+                      end_at:
+                        type: string
+                        format: date-time
+                        example: 2025-12-16T14:15:26.710Z
+                      price_cents:
+                        type: integer
+                        example: 38526
+                      checked_in:
+                        type: integer
+                        example: 17
+                      capacity:
+                        type: integer
+                        example: 432
+                      status:
+                        type: string
+                        enum: [published, canceled, draft]
+                        example: published
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Validation error
+                  errors:
+                    type: object
+                    properties:
+                      status:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                            example: field
+                          value:
+                            type: string
+                            example: publishasded
+                          msg:
+                            type: string
+                            example: Event's status must be draft, published, or canceled
+                          path:
+                            type: string
+                            example: status
+                          location:
+                            type: string
+                            example: body
+
 components:
   schemas:
     LoginBody:
@@ -864,39 +1475,32 @@ components:
           example: organizer
     Event:
       type: object
-      required:
-        - title
-        - location_text
-        - start_at
-        - end_at
-        - price_cents
-        - capacity
       properties:
-        organizer_id:
+        id:
           type: string
           format: uuid
-          example: 1a2b3c4d-5678-90ab-cdef-1234567890ab
+          example: 6a2f69f9-321b-4c73-adc5-eba50c761bdc
         title:
           type: string
-          example: Tech Innovation Summit 2025
+          example: Tech Innovation Summit 2027
         description:
           type: string
           example: A conference exploring emerging technologies and innovation trends.
         poster_url:
           type: string
           format: uri
-          example: https://example.com/posters/tech-summit-2025.jpg
+          example: https://mivora-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/avatar-images/gfu4o33ca43nvcwyv4vay18m1.jpg
         location_text:
           type: string
           example: 123 Main Street, San Francisco, CA
         start_at:
           type: string
           format: date-time
-          example: 2025-11-20T09:00:00Z
+          example: 2025-12-06T11:49:27.918Z
         end_at:
           type: string
           format: date-time
-          example: 2025-11-20T17:00:00Z
+          example: 2025-12-06T11:49:28.918Z
         price_cents:
           type: integer
           example: 2500
@@ -908,49 +1512,7 @@ components:
           example: 150
         status:
           type: string
-          enum: [draft, published, canceled]
           example: draft
-    UserVerifyStatus:
-      type: integer
-      description: |
-        User verification status:
-        - 0 = Unverified
-        - 1 = Verified
-        - 2 = Banned
-      enum: [0, 1, 2]
-    MediaType:
-      type: integer
-      description: |
-        Media type:
-        - 0 = Image
-        - 1 = Video
-        - 2 = HLS
-      enum: [0, 1, 2]
-    EncodingStatus:
-      type: integer
-      description: |
-        Video encoding status:
-        - 0 = Pending
-        - 1 = Processing
-        - 2 = Successfully
-        - 3 = Failed
-      enum: [0, 1, 2, 3]
-    TweetType:
-      type: integer
-      description: |
-        Tweet type:
-        - 0 = Tweet
-        - 1 = Retweet
-        - 2 = Comment
-        - 3 = QuoteTweet
-      enum: [0, 1, 2, 3]
-    TweetAudience:
-      type: integer
-      description: |
-        Audience visibility setting:
-        - 0 = Everyone
-        - 1 = TwitterCircle
-      enum: [0, 1]
   securitySchemes:
     BearerAuth:
       type: http

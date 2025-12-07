@@ -12,12 +12,11 @@ class EventService {
    * - Returns: created event object (id, title, description, poster_url, location_text, start_at, end_at, price_cents, checked_in, capacity, status)
    */
   async createEvent(organizer_id: UUIDv4, body: CreateEventRequestBody) {
-    const { title, description, poster_url, location_text, start_at, end_at, price_cents, capacity } = body
+    const { title, description, location_text, start_at, end_at, price_cents, capacity } = body
     const new_event = new Event({
       organizer_id,
       title,
       description,
-      poster_url,
       location_text,
       start_at,
       end_at,
@@ -223,7 +222,7 @@ class EventService {
    * - Returns: updated event object
    */
   async updateEvent(event_id: UUIDv4, body: UpdateEventDetailsBody) {
-    const { title, description, poster_url, location_text, start_at, end_at, price_cents, capacity } = body
+    const { title, description, location_text, start_at, end_at, price_cents, capacity } = body
     const event = await databaseService.events(
       `
         UPDATE events
@@ -254,6 +253,12 @@ class EventService {
     return event.rows[0]
   }
 
+  /**
+   * Change an event's status
+   * - Inputs: `event_id`, `status`
+   * - Action: updates the event's status and returns the updated record
+   * - Returns: updated event object
+   */
   async changeEventStatus(event_id: UUIDv4, status: EventStatus) {
     const event = await databaseService.events(
       `

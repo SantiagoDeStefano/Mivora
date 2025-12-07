@@ -6,7 +6,7 @@ export interface TicketApi {
   id: string
   event_title: string
   event_status: string
-  ticket_status: 'booked' | 'checked_in'
+  ticket_status: 'booked' | 'checked_in' | 'canceled'
   checked_in_at: string | null
   price_cents: number
   qr_code: string
@@ -15,7 +15,7 @@ export interface TicketApi {
 }
 
 export interface Ticket extends Omit<TicketApi, 'ticket_status'> {
-  status: 'booked' | 'checked_in'
+  status: 'booked' | 'checked_in' | 'canceled'
 }
 
 export interface BookTicketResult {
@@ -32,7 +32,7 @@ export interface GetMyTicketsResponse {
 export type GetOrSearchMyTicketsSchema = {
   limit?: number
   page?: number
-  status?: 'booked' | 'checked_in'
+  status?: 'booked' | 'checked_in' | 'canceled'
   q?: string
 }
 
@@ -42,7 +42,7 @@ export interface ScanTicketResult {
 
 const ticketsApi = {
   bookTicket: (event_id: string) => {
-    return http.post<SuccessResponse<BookTicketResult>>('/tickets/book', { event_id })
+    return http.post<SuccessResponse<BookTicketResult>>('/tickets', { event_id })
   },
   getMyTickets: (limit: number = 20, page: number = 1) => {
     return http.get<SuccessResponse<GetMyTicketsResponse>>('/tickets', { params: { limit, page } })
@@ -55,6 +55,9 @@ const ticketsApi = {
   },
   scanTicket: (qr_code_token: string) => {
     return http.post<SuccessResponse<ScanTicketResult>>('/tickets/scan', { qr_code_token })
+  },
+  cancelTicket: (ticket_id: string) => {
+    return http.patch<SuccessResponse<null>>(`/tickets/${ticket_id}`, { status: 'canceled' })
   }
 }
 

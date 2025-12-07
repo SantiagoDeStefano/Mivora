@@ -54,23 +54,12 @@ export const createEventValidator = validate(
         },
         trim: true
       },
-      poster_url: {
-        optional: { options: { nullable: true } },
-        isString: {
-          errorMessage: EVENTS_MESSAGES.EVENT_POSTER_URL_MUST_BE_STRING
-        },
-        isLength: {
-          options: {
-            min: LIMIT_MIN_MAX.EVENT_POSTER_URL_MIN,
-            max: LIMIT_MIN_MAX.EVENT_POSTER_URL_MAX
-          },
-          errorMessage: EVENTS_MESSAGES.EVENT_POSTER_URL_MUST_BE_BETWEEN_4_AND_400
-        },
-        trim: true
-      },
       location_text: {
+        notEmpty: {
+          errorMessage: EVENTS_MESSAGES.EVENT_LOCATION_IS_REQUIRED
+        },
         isString: {
-          errorMessage: EVENTS_MESSAGES
+          errorMessage: EVENTS_MESSAGES.EVENT_LOCATION_TEXT_MUST_BE_STRING
         },
         isLength: {
           options: {
@@ -112,6 +101,9 @@ export const createEventValidator = validate(
         }
       },
       price_cents: {
+        notEmpty: {
+          errorMessage: EVENTS_MESSAGES.EVENT_PRICE_IS_REQUIRED
+        },
         isNumeric: {
           errorMessage: EVENTS_MESSAGES.EVENT_PRICE_MUST_BE_NUMERIC
         },
@@ -124,6 +116,9 @@ export const createEventValidator = validate(
         }
       },
       capacity: {
+        notEmpty: {
+          errorMessage: EVENTS_MESSAGES.EVENT_CAPACITY_IS_REQUIRED
+        },
         isNumeric: {
           errorMessage: EVENTS_MESSAGES.EVENT_CAPACITY_MUST_BE_NUMBER
         },
@@ -133,16 +128,6 @@ export const createEventValidator = validate(
             return value > 0
           },
           errorMessage: EVENTS_MESSAGES.EVENT_CAPACITY_MUST_BE_POSITIVE
-        }
-      },
-      status: {
-        optional: { options: { nullable: true } },
-        isString: {
-          errorMessage: EVENTS_MESSAGES.EVENT_STATUS_MUST_BE_STRING
-        },
-        isIn: {
-          options: [event_statuts],
-          errorMessage: EVENTS_MESSAGES.EVENT_STATUS_MUST_BE_DRAFT_PUBLISHED_CANCELED
         }
       }
     },
@@ -185,20 +170,6 @@ export const updateEventValidator = validate(
             max: LIMIT_MIN_MAX.EVENT_DESCRIPTION_MAX
           },
           errorMessage: EVENTS_MESSAGES.EVENT_DESCRIPTION_MUST_BE_BETWEEN_10_AND_100
-        },
-        trim: true
-      },
-      poster_url: {
-        optional: { options: { nullable: true } },
-        isString: {
-          errorMessage: EVENTS_MESSAGES.EVENT_POSTER_URL_MUST_BE_STRING
-        },
-        isLength: {
-          options: {
-            min: LIMIT_MIN_MAX.EVENT_POSTER_URL_MIN,
-            max: LIMIT_MIN_MAX.EVENT_POSTER_URL_MAX
-          },
-          errorMessage: EVENTS_MESSAGES.EVENT_POSTER_URL_MUST_BE_BETWEEN_4_AND_400
         },
         trim: true
       },

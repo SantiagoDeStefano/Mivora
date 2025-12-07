@@ -34,7 +34,6 @@ export interface GetEventsResponse {
   total_page: number
 }
 
-
 const eventsApi = {
   getEvents: (limit: number = 20, page: number = 1) => {
     return http.get<SuccessResponse<GetEventsResponse>>('/events', {
@@ -48,11 +47,11 @@ const eventsApi = {
     return http.get<SuccessResponse<GetEventsResponse>>('/events', {
       params: { q, limit, page }
     })
-  },  
+  },
   createEvent: (payload: CreateEventPayload) => {
     return http.post('/events', payload)
   },
-  
+
   uploadEventPoster: (file: File) => {
     const formData = new FormData()
     formData.append('image', file)
@@ -63,17 +62,19 @@ const eventsApi = {
       }
     })
   },
-  
+
   updateEvent: (event_id: string, body: any) => {
     return http.patch<SuccessResponse<Event>>(`/events/${event_id}`, body)
   },
   publishEvent: (event_id: string) => {
-    return http.patch<SuccessResponse<Event>>(`/events/${event_id}/publish`)
+    return http.patch<SuccessResponse<Event>>(`/events/${event_id}`, { status: 'published' })
   },
   cancelEvent: (event_id: string) => {
-    return http.patch<SuccessResponse<Event>>(`/events/${event_id}/cancel`)
+    return http.patch<SuccessResponse<Event>>(`/events/${event_id}`, { status: 'canceled' })
+  },
+  draftEvent: (event_id: string) => {
+    return http.patch<SuccessResponse<Event>>(`/events/${event_id}`, { status: 'draft' })
   }
 }
 
 export default eventsApi
-

@@ -50,7 +50,7 @@ ticketsRouter.post(
  * - Success: 200 with scanned ticket info
  */
 ticketsRouter.post(
-  '/check-in',
+  '/check-ins',
   accessTokenValidator,
   organizerValidator,
   scanTicketValidator,
@@ -99,11 +99,12 @@ ticketsRouter.get(
  * - Path: /:ticket_id/cancel
  * - Protected: requires `Authorization: Bearer <access_token>`
  * - Params: `ticket_id` (validated by `ticketIdValidator`)
+ * - Body: `{ status: 'canceled' }`
  * - Action: returns detailed ticket information if the requester is authorized
  * - Success: 200 with ticket details
  */
 ticketsRouter.patch(
-  '/:ticket_id/cancel',
+  '/:ticket_id',
   accessTokenValidator,
   ticketIdValidator,
   ticketOwnerValidator,

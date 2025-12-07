@@ -5,7 +5,6 @@ import { Query } from 'express-serve-static-core'
 export interface CreateEventRequestBody {
   title: string
   description?: string
-  poster_url?: string
   location_text: string
   start_at: Date
   end_at: Date
@@ -16,7 +15,6 @@ export interface CreateEventRequestBody {
 export interface UpdateEventDetailsBody {
   title?: string
   description?: string
-  poster_url?: string
   location_text?: string
   start_at?: Date
   end_at?: Date

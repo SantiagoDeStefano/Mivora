@@ -1,6 +1,5 @@
 import { Router } from 'express'
 import {
-  cancelEventController,
   changeEventStatusController,
   createEventController,
   getEventDetailsController,
@@ -8,7 +7,7 @@ import {
   updateEventDetailsController,
   uploadEventPosterController
 } from '~/controllers/events.controllers'
-import { accessTokenValidator, organizerValidator } from '~/middlewares/users.middlewares'
+import { accessTokenValidator, eventEventCreatorValidator, organizerValidator } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
 import {
   createEventValidator,
@@ -56,6 +55,7 @@ eventsRouter.put(
   accessTokenValidator,
   organizerValidator,
   eventIdValidator,
+  eventEventCreatorValidator,
   uploadEventPosterStatusValidator,
   wrapRequestHandler(uploadEventPosterController)
 )
@@ -75,6 +75,7 @@ eventsRouter.patch(
   accessTokenValidator,
   organizerValidator,
   eventIdValidator,
+  eventEventCreatorValidator,
   updateEventStatusValidator,
   updateEventValidator,
   wrapRequestHandler(updateEventDetailsController)
@@ -120,6 +121,7 @@ eventsRouter.patch(
   accessTokenValidator,
   organizerValidator,
   eventIdValidator,
+  eventEventCreatorValidator,
   validateEventStatus,
   wrapRequestHandler(changeEventStatusController)
 )

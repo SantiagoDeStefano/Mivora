@@ -181,23 +181,7 @@ export const changeEventStatusController = async (req: Request, res: Response): 
   const status = req.body.status as EventStatus
   const result = await eventService.changeEventStatus(event_id, status)
   res.json({
-    message: EVENTS_MESSAGES.PUBLISH_EVENT_SUCCESS,
-    result
-  })
-}
-
-/**
- * Cancel event controller
- * - Route: PATCH /organizer/:event_id/cancel
- * - Protected: requires organizer Authorization header
- * - Action: marks event as canceled and returns updated event
- */
-
-export const cancelEventController = async (req: Request, res: Response): Promise<void> => {
-  const event_id = (req.event as Event[])[0].id
-  const result = await eventService.cancelEvent(event_id)
-  res.json({
-    message: EVENTS_MESSAGES.CANCEL_EVENT_SUCCESS,
+    message: EVENTS_MESSAGES.CHANGE_EVENT_STATUS_SUCCESS,
     result
   })
 }
