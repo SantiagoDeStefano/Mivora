@@ -1,3 +1,4 @@
+// ScanTicket.tsx
 import { useRef, useState } from 'react'
 import QRScanner from '../../components/QRScanner'
 import ticketsApi from '../../apis/tickets.api'
@@ -22,19 +23,8 @@ export default function ScanTicketPage() {
     // Prevent repeated scans + block while API is running
     if (lastQR.current === trimmed || loading) return
 
-    // Validate with yup schema
-    try {
-      await scanTicketSchema.validate(
-        { qr_code_token: trimmed },
-        { abortEarly: false }
-      )
-    } catch {
-      setError('Invalid QR code')
-      return
-    }
-
     lastQR.current = trimmed
-    setActive(false)
+    setActive(false) // stop scanner while we call API
     setLoading(true)
     setError(null)
     setMessage(null)
@@ -45,8 +35,8 @@ export default function ScanTicketPage() {
       const ticket = res.data.result.ticket
 
       setMessage('Ticket scanned successfully')
+      // navigation will unmount page, so no need to reactivate scanner
       navigate(`/tickets/${ticket.id}`)
-      
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||
@@ -57,19 +47,31 @@ export default function ScanTicketPage() {
       // Allow scanning again after failure
       lastQR.current = null
       setLoading(false)
+      setActive(true)
     }
   }
 
+  const handleScannerError = (err: unknown) => {
+    // optional: you can log or show a separate error
+    console.error('Scanner error', err)
+  }
+
+  // ScanTicket.tsx (only the JSX part shown)
   return (
     <div className='p-4 space-y-4'>
-      <QRScanner onScan={handleScan} />
+      <QRScanner
+        onScan={handleScan}
+        onError={handleScannerError}
+        active={active && !loading}
+        allowUpload
+      />
 
       {loading && <p>Checking ticket…</p>}
 
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {error && <p className='text-red-500 text-sm'>{error}</p>}
 
-      {message && <p className="text-green-600 text-sm">{message}</p>}
+      {message && <p className='text-green-600 text-sm'>{message}</p>}
     </div>
   )
-}
 
+}

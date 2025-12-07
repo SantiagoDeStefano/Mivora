@@ -1,32 +1,100 @@
 // src/components/qr/QRScanner.tsx
-import { useEffect } from 'react'
-import { Html5QrcodeScanner } from 'html5-qrcode'
+import { useEffect, useRef } from 'react'
+import QrScanner from 'qr-scanner'
 
 type QRScannerProps = {
   onScan: (text: string) => void
   onError?: (err: unknown) => void
+  active?: boolean
+  allowUpload?: boolean
 }
 
-export default function QRScanner({ onScan, onError }: QRScannerProps) {
-  useEffect(() => {
-    const scanner = new Html5QrcodeScanner('qr-reader', {
-      fps: 10,
-      qrbox: 250
-    }, false)
+export default function QRScanner({
+  onScan,
+  onError,
+  active = true,
+  allowUpload = false
+}: QRScannerProps) {
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const scannerRef = useRef<QrScanner | null>(null)
 
-    scanner.render(
-      (decodedText) => {
-        onScan(decodedText)
+  useEffect(() => {
+    // If not active, make sure scanner is stopped/destroyed
+    if (!active) {
+      if (scannerRef.current) {
+        scannerRef.current.stop()
+        scannerRef.current.destroy()
+        scannerRef.current = null
+      }
+      return
+    }
+
+    if (!videoRef.current) return
+
+    const scanner = new QrScanner(
+      videoRef.current,
+      (result) => {
+        onScan(result.data)
       },
-      (err) => {
-        if (onError) onError(err)
+      {
+        onDecodeError: (err) => {
+          if (onError) onError(err)
+        },
+        preferredCamera: 'environment'
       }
     )
 
-    return () => {
-      scanner.clear().catch(() => undefined)
-    }
-  }, [onScan, onError])
+    scannerRef.current = scanner
 
-  return <div id='qr-reader' />
+    scanner.start().catch((err) => {
+      onError?.(err)
+    })
+
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.stop()
+        scannerRef.current.destroy()
+        scannerRef.current = null
+      }
+    }
+  }, [active, onScan, onError])
+
+  const handleFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      const result = await QrScanner.scanImage(file, {
+        returnDetailedScanResult: true
+      })
+      onScan(result.data)
+    } catch (err) {
+      onError?.(err)
+    } finally {
+      // allow re-uploading the same file
+      e.target.value = ''
+    }
+  }
+
+  return (
+    <div>
+      <video
+        ref={videoRef}
+        style={{ width: '100%', maxWidth: 400 }}
+        muted
+        playsInline
+      />
+      {allowUpload && (
+        <div className='mt-2'>
+          <input
+            type='file'
+            accept='image/*'
+            onChange={handleFileChange}
+          />
+        </div>
+      )}
+    </div>
+  )
 }

@@ -54,10 +54,10 @@ const ticketsApi = {
     return http.get<SuccessResponse<TicketApi>>(`/tickets/${ticket_id}`)
   },
   scanTicket: (qr_code_token: string) => {
-    return http.post<SuccessResponse<ScanTicketResult>>('/tickets/scan', { qr_code_token })
+    return http.post<SuccessResponse<ScanTicketResult>>('/tickets/check-ins', { qr_code_token })
   },
   cancelTicket: (ticket_id: string) => {
-    return http.patch<SuccessResponse<null>>(`/tickets/${ticket_id}`, { status: 'canceled' })
+    return http.patch<SuccessResponse<null>>(`/tickets/${ticket_id}/status`, { status: 'canceled' })
   }
 }
 

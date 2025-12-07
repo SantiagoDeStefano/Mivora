@@ -89,8 +89,8 @@ class TicketsService {
     const ticketResult = await databaseService.tickets(
       `
         UPDATE tickets
-        SET tickets.status = $1,
-            tickets.checked_in_at = $2
+        SET status = $1,
+            checked_in_at = $2
         FROM events
         WHERE tickets.id = $3
         AND tickets.event_id = events.id
@@ -101,7 +101,7 @@ class TicketsService {
           tickets.status as ticket_status, 
           tickets.checked_in_at, 
           tickets.price_cents, 
-          tickets.qr_code_token,
+          tickets.qr_code_token
       `,
       ['checked_in', new Date(), ticket_id]
     )
