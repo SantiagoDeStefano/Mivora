@@ -1,5 +1,8 @@
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
+import { TokenPayload } from '~/models/requests/users.requests'
+import { UUIDv4 } from '~/types/common'
+import { getIO } from '~/utils/socket'
 import { TICKETS_MESSAGES } from '~/constants/messages'
 import {
   BookTicketRequestBody,
@@ -8,12 +11,9 @@ import {
   ScanTicketRequestBody,
   SearchTicketWithStatus
 } from '~/models/requests/tickets.requests'
-import { TokenPayload } from '~/models/requests/users.requests'
-
 import Event from '~/models/schemas/Event.schema'
 import Ticket from '~/models/schemas/Tickets.schema'
 import ticketsService from '~/services/tickets.services'
-import { UUIDv4 } from '~/types/common'
 
 export const bookTicketController = async (
   req: Request<ParamsDictionary, unknown, BookTicketRequestBody>,
@@ -36,7 +36,16 @@ export const scanTicketController = async (
 ): Promise<void> => {
   const ticketData = (req.ticket as Ticket[])[0]
   const ticket_id = ticketData.id
+  const ticket_owner_id = ticketData.user_id
+  console.log(ticket_owner_id)
+
   await ticketsService.scanTicket(ticket_id)
+
+  const io = getIO()
+  io.to(ticket_owner_id).emit('reload_after_scan', {
+    redirect: true
+  })
+
   res.json({
     message: TICKETS_MESSAGES.TICKET_SCANNED_SUCCESS
   })
@@ -52,7 +61,6 @@ export const getOrSearchTicketWithStatusController = async (
   const status = req.query.status
   const search = req.query.q
   const result = await ticketsService.getOrSearchTicketWithStatus(limit, page, user_id, search, status)
-  console.log(user_id)
   res.json({
     message: TICKETS_MESSAGES.GET_TICKETS_SUCCESSFULLY,
     result: {
@@ -65,7 +73,6 @@ export const getOrSearchTicketWithStatusController = async (
 }
 
 export const getTicketDetailsController = async (req: Request, res: Response): Promise<void> => {
-  console.log(req.ticket)
   const { id: ticket_id } = (req.ticket as Ticket[])[0]
 
   const ticket = await ticketsService.getTicketDetails(ticket_id)

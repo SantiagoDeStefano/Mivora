@@ -42,22 +42,22 @@ export interface ScanTicketResult {
 
 const ticketsApi = {
   bookTicket: (event_id: string) => {
-    return http.post<SuccessResponse<BookTicketResult>>('/tickets', { event_id })
+    return http.post<SuccessResponse<BookTicketResult>>('/api/v1/tickets', { event_id })
   },
   getMyTickets: (limit: number = 20, page: number = 1) => {
-    return http.get<SuccessResponse<GetMyTicketsResponse>>('/tickets', { params: { limit, page } })
+    return http.get<SuccessResponse<GetMyTicketsResponse>>('/api/v1/tickets', { params: { limit, page } })
   },
   searchMyTickets: (body: GetOrSearchMyTicketsSchema) => {
-    return http.get<SuccessResponse<GetMyTicketsResponse>>('/tickets', { params: body })
+    return http.get<SuccessResponse<GetMyTicketsResponse>>('/api/v1/tickets', { params: body })
   },
   getTicketDetails: (ticket_id: string) => {
-    return http.get<SuccessResponse<TicketApi>>(`/tickets/${ticket_id}`)
+    return http.get<SuccessResponse<TicketApi>>(`/api/v1/tickets/${ticket_id}`)
   },
   scanTicket: (qr_code_token: string) => {
-    return http.post<SuccessResponse<ScanTicketResult>>('/tickets/check-ins', { qr_code_token })
+    return http.post<SuccessResponse<ScanTicketResult>>('/api/v1/tickets/check-ins', { qr_code_token })
   },
   cancelTicket: (ticket_id: string) => {
-    return http.patch<SuccessResponse<null>>(`/tickets/${ticket_id}/status`, { status: 'canceled' })
+    return http.patch<SuccessResponse<null>>(`/api/v1/tickets/${ticket_id}/status`, { status: 'canceled' })
   }
 }
 

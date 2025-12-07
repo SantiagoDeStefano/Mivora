@@ -121,6 +121,7 @@ export const scanTicketValidator = validate(
                 `
                   SELECT 
                     tickets.id, 
+                    tickets.user_id,
                     tickets.status as ticket_status, 
                     events.status as event_status 
                   FROM tickets
@@ -283,7 +284,6 @@ export const ticketOwnerValidator = async (req: Request, res: Response, next: Ne
 
 export const cancelTicketStatusValidator = async (req: Request, res: Response, next: NextFunction) => {
   const { id: ticket_id } = (req.ticket as Ticket[])[0]
-  console.log(ticket_id)
   const ticket = await databaseService.tickets(`SELECT status FROM tickets WHERE id=$1`, [ticket_id])
   if (ticket.rows[0].status != 'booked') {
     return next(

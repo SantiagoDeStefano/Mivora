@@ -23,7 +23,7 @@ tags:
   - name: ticket
     description: Everything about Ticket's requests
 paths:
-  /users/login:
+  /api/v1/users/login:
     post:
       tags:
         - users
@@ -82,7 +82,7 @@ paths:
                             type: string
                             example: 'body'
       security: []
-  /users/register:
+  /api/v1/users/register:
     post:
       tags:
         - users
@@ -146,7 +146,7 @@ paths:
                           location:
                             type: string
                             example: 'body'
-  /users/refresh-token:
+  /api/v1/users/refresh-token:
     post:
       tags:
         - users
@@ -186,7 +186,7 @@ paths:
                   message:
                     type: string
                     example: 'Used refresh token or does not exist'
-  /users/logout:
+  /api/v1/users/logout:
     post:
       tags:
         - users
@@ -228,7 +228,7 @@ paths:
                   message:
                     type: string
                     example: 'Used refresh token or does not exist'
-  /users/me:
+  /api/v1/users/me:
     get:
       tags:
         - users
@@ -307,7 +307,7 @@ paths:
                           location:
                             type: string
                             example: body
-  /users/me/avatar:
+  /api/v1/users/me/avatar:
     put:
       tags:
         - users
@@ -368,7 +368,7 @@ paths:
                           location:
                             type: string
                             example: files
-  /users/me/email-verification:
+  /api/v1/users/me/email-verification:
     post:
       tags:
         - users
@@ -407,7 +407,7 @@ paths:
                   message:
                     type: string
                     example: 'Access token is required'
-  /users/verify-email:
+  /api/v1/users/verify-email:
     post:
       tags:
         - users
@@ -453,7 +453,7 @@ paths:
                   message:
                     type: string
                     example: Invalid email verification token
-  /users/forgot-password:
+  /api/v1/users/forgot-password:
     post:
       tags:
         - users
@@ -511,7 +511,7 @@ paths:
                           location:
                             type: string
                             example: 'body'
-  /users/verify-forgot-password-token:
+  /api/v1/users/verify-forgot-password-token:
     post:
       tags:
         - users
@@ -548,7 +548,7 @@ paths:
                   message:
                     type: string
                     example: Invalid signature
-  /users/reset-password:
+  /api/v1/users/reset-password:
     post:
       tags:
         - users
@@ -591,7 +591,7 @@ paths:
                   message:
                     type: string
                     example: Invalid forgot password token
-  /users/me/events:
+  /api/v1/users/me/events:
     get:
       tags:
         - users
@@ -699,7 +699,7 @@ paths:
                   message:
                     type: string
                     example: 'Must be organizer'
-  /users/me/events/{event_id}:
+  /api/v1/users/me/events/{event_id}:
     get:
       tags:
         - users
@@ -791,7 +791,7 @@ paths:
                     type: string
                     example: Event not found
 
-  /events:
+  /api/v1/events:
     get:
       tags:
         - events
@@ -1010,7 +1010,7 @@ paths:
                           location:
                             type: string
                             example: body
-  /events/{event_id}:
+  /api/v1/events/{event_id}:
     get:
       tags:
         - events
@@ -1233,7 +1233,7 @@ paths:
                   message:
                     type: string
                     example: Event not found
-  /events/{event_id}/poster:
+  /api/v1/events/{event_id}/poster:
     put:
       tags:
         - events
@@ -1332,7 +1332,7 @@ paths:
                   message:
                     type: string
                     example: Event not found
-  /events/{event_id}/status:
+  /api/v1/events/{event_id}/status:
     patch:
       tags:
         - events
@@ -1448,7 +1448,7 @@ paths:
                             type: string
                             example: body
 
-  /tickets:
+  /api/v1/tickets:
     post:
       tags:
         - ticket
@@ -1656,7 +1656,7 @@ paths:
                           location:
                             type: string
                             example: query
-  /tickets/{ticket_id}:
+  /api/v1/tickets/{ticket_id}:
     get:
       tags:
         - ticket
@@ -1724,7 +1724,7 @@ paths:
                   message:
                     type: string
                     example: Current user is not ticket owner
-  /tickets/{ticket_id}/status:
+  /api/v1/tickets/{ticket_id}/status:
     patch:
       tags:
         - ticket
@@ -1793,7 +1793,7 @@ paths:
                   message:
                     type: string
                     example: Only booked tickets can be canceled
-  /tickets/check-ins:
+  /api/v1/tickets/check-ins:
     post:
       tags:
         - ticket

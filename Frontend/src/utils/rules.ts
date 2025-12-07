@@ -314,7 +314,7 @@ export const getOrSearchMyTickets = yup.object({
   page: yup.number().integer().min(1, EVENTS_MESSAGES.NUMBER_OF_PAGE_MUST_BE_GREATER_THAN_0).optional(),
   status: yup
     .string()
-    .oneOf(['booked', 'checked_in'], TICKETS_MESSAGES.TICKET_STATUS_MUST_BE_BOOKED_CHECKED_IN)
+    .oneOf(['booked', 'checked_in', 'canceled'], TICKETS_MESSAGES.TICKET_STATUS_MUST_BE_BOOKED_CHECKED_IN)
     .optional(),
   q: yup
     .string()

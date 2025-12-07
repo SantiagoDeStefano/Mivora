@@ -3,16 +3,12 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Container from '../../components/Container/Container'
 import path from '../../constants/path'
-import ticketsApi, {
-  Ticket,
-  TicketApi,
-  GetMyTicketsResponse
-} from '../../apis/tickets.api'
+import ticketsApi, { Ticket, TicketApi, GetMyTicketsResponse } from '../../apis/tickets.api'
 import { GetOrSearchMyTicketsSchema } from '../../utils/rules'
+import { socket } from '../../utils/socket'
 
 // UUID v4 giống rule getTicketDetails
-const TICKET_ID_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+const TICKET_ID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 const LIMIT = 50
 
@@ -74,11 +70,7 @@ export default function MyTicketDetails() {
         setTickets(all)
       } catch (err: any) {
         console.error('Failed to load tickets for reels:', err)
-        setError(
-          err?.response?.data?.message ||
-            err?.response?.data?.error ||
-            'Failed to load tickets.'
-        )
+        setError(err?.response?.data?.message || err?.response?.data?.error || 'Failed to load tickets.')
       } finally {
         setLoading(false)
         setIsRefetching(false)
@@ -134,6 +126,20 @@ export default function MyTicketDetails() {
     return () => window.removeEventListener('keydown', onKey)
   }, [id, tickets, loading, navigate])
 
+  useEffect(() => {
+    const handler = () => {
+      console.log('reload_after_scan received, reloading page')
+      // FORCE reloading the current route
+      navigate(0)  // <-- this is React Router's reload
+    }
+
+    socket.on('reload_after_scan', handler)
+
+    return () => {
+      socket.off('reload_after_scan', handler)
+    }
+  }, [])
+
   // Loading UI
   if (loading) {
     return (
@@ -157,12 +163,8 @@ export default function MyTicketDetails() {
         <Container>
           <div className='max-w-2xl mx-auto flex items-center justify-center min-h-[70vh]'>
             <div className='w-full rounded-3xl border border-red-700/70 bg-red-900/40 px-6 py-8 text-center shadow-xl'>
-              <h1 className='text-xl sm:text-2xl font-semibold text-red-100'>
-                Ticket not found
-              </h1>
-              <p className='mt-2 text-sm text-red-200'>
-                {error || 'We could not find your tickets.'}
-              </p>
+              <h1 className='text-xl sm:text-2xl font-semibold text-red-100'>Ticket not found</h1>
+              <p className='mt-2 text-sm text-red-200'>{error || 'We could not find your tickets.'}</p>
               <div className='mt-5 flex flex-wrap justify-center gap-3'>
                 <button
                   onClick={() => navigate(path.my_tickets)}
@@ -207,20 +209,14 @@ export default function MyTicketDetails() {
                     'w-full rounded-[28px] border bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900',
                     'px-6 py-7 sm:px-8 sm:py-9 shadow-[0_18px_60px_rgba(15,23,42,0.9)]',
                     'transform transition-transform duration-300',
-                    isActive
-                      ? 'scale-100 border-slate-700 ring-4 ring-pink-500/30'
-                      : 'scale-95 border-slate-800'
+                    isActive ? 'scale-100 border-slate-700 ring-4 ring-pink-500/30' : 'scale-95 border-slate-800'
                   ].join(' ')}
                 >
                   {/* Header strip */}
                   <div className='mb-5 rounded-2xl bg-gradient-to-r from-pink-500 via-fuchsia-500 to-indigo-500 px-4 py-3 flex items-center justify-between'>
                     <div>
-                      <p className='text-[11px] font-medium uppercase tracking-[0.16em] text-pink-50/80'>
-                        Ticket
-                      </p>
-                      <p className='text-sm font-semibold text-white line-clamp-1'>
-                        {ticket.event_title}
-                      </p>
+                      <p className='text-[11px] font-medium uppercase tracking-[0.16em] text-pink-50/80'>Ticket</p>
+                      <p className='text-sm font-semibold text-white line-clamp-1'>{ticket.event_title}</p>
                     </div>
                     <span className='inline-flex items-center rounded-full bg-black/30 px-3 py-1 text-[11px] font-medium text-pink-50'>
                       {ticket.status === 'checked_in' ? 'Checked-in' : 'Booked'}
@@ -232,41 +228,28 @@ export default function MyTicketDetails() {
                     {/* Left info */}
                     <div className='flex-1 space-y-3'>
                       <div>
-                        <p className='text-[11px] uppercase tracking-wide text-slate-400'>
-                          Event
-                        </p>
-                        <p className='mt-1 text-xl sm:text-2xl font-semibold text-slate-50'>
-                          {ticket.event_title}
-                        </p>
+                        <p className='text-[11px] uppercase tracking-wide text-slate-400'>Event</p>
+                        <p className='mt-1 text-xl sm:text-2xl font-semibold text-slate-50'>{ticket.event_title}</p>
                         {ticket.event_status && (
                           <p className='mt-1 text-xs text-slate-400'>
-                            Status:{' '}
-                            <span className='font-medium text-slate-200'>
-                              {ticket.event_status}
-                            </span>
+                            Status: <span className='font-medium text-slate-200'>{ticket.event_status}</span>
                           </p>
                         )}
                       </div>
 
                       <div className='pt-2 space-y-1'>
                         <p className='text-xs text-slate-400'>Price</p>
-                        <p className='text-2xl font-semibold text-slate-50'>
-                          {formatPrice(ticket.price_cents)}
-                        </p>
+                        <p className='text-2xl font-semibold text-slate-50'>{formatPrice(ticket.price_cents)}</p>
                       </div>
 
                       <div className='pt-2 space-y-1'>
                         <p className='text-xs text-slate-400'>Checked in</p>
-                        <p className='text-sm font-medium text-slate-100'>
-                          {formatCheckedIn(ticket.checked_in_at)}
-                        </p>
+                        <p className='text-sm font-medium text-slate-100'>{formatCheckedIn(ticket.checked_in_at)}</p>
                       </div>
 
                       <div className='pt-2 space-y-1'>
                         <p className='text-xs text-slate-400'>Ticket ID</p>
-                        <p className='text-[11px] font-mono text-slate-300 break-all'>
-                          {ticket.id}
-                        </p>
+                        <p className='text-[11px] font-mono text-slate-300 break-all'>{ticket.id}</p>
                       </div>
                     </div>
 
@@ -299,9 +282,7 @@ export default function MyTicketDetails() {
                         Back to my tickets
                       </button>
                     </div>
-                    <p className='text-[11px] text-slate-400'>
-                      Use ↑ / ↓ or PageUp / PageDown to switch tickets
-                    </p>
+                    <p className='text-[11px] text-slate-400'>Use ↑ / ↓ or PageUp / PageDown to switch tickets</p>
                   </div>
                 </div>
               </div>

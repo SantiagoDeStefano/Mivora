@@ -1,6 +1,7 @@
 import { defaultErrorHandler } from './middlewares/errors.middlewares'
 import { envConfig } from './constants/config'
 import { initFolder } from './utils/file'
+import { createServer } from 'http'
 
 // import '~/utils/fake'
 import databaseService from './services/database.services'
@@ -13,13 +14,13 @@ import swaggerUi from 'swagger-ui-express'
 import cors from 'cors'
 import mediasRouter from './routes/medias.routes'
 import ticketsRouter from './routes/tickets.routes'
+import initSocket from './utils/socket'
 
 const file = fs.readFileSync('MivoraSwagger.yaml', 'utf8')
 const swaggerDocument = YAML.parse(file)
-
 const PORT = Number(envConfig.port)
-
 const app = express()
+const httpServer = createServer(app)
 app.use(
   cors({
     origin: ['http://localhost:4000', 'http://localhost:5173', 'http://26.35.82.76:4000', 'http://26.73.34.56:5173'],
@@ -31,16 +32,17 @@ initFolder()
 
 app.use(express.json())
 app.use('/mivora/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
-app.use('/users', usersRouter)
-app.use('/events', eventsRouter)
-app.use('/tickets', ticketsRouter)
-app.use('/medias', mediasRouter)
+app.use('/api/v1/users', usersRouter)
+app.use('/api/v1/events', eventsRouter)
+app.use('/api/v1/tickets', ticketsRouter)
+app.use('/api/v1/medias', mediasRouter)
 
 databaseService.verifyConnection()
 
 app.use(defaultErrorHandler)
+initSocket(httpServer)
 
 // Start the server
-app.listen(PORT, '0.0.0.0', () => {
+httpServer.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running at http://localhost:${PORT}`)
 })

@@ -9,7 +9,7 @@ import ticketsApi, { Ticket, TicketApi } from '../../apis/tickets.api'
 import { SuccessResponse } from '../../types/response.types'
 import { GetOrSearchMyTicketsSchema } from '../../utils/rules'
 
-type TicketStatus = 'booked' | 'checked_in'
+type TicketStatus = 'booked' | 'checked_in' | 'canceled'
 
 type GetMyTicketsResult = {
   tickets: TicketApi[]
@@ -158,9 +158,7 @@ export default function MyTicketsPage() {
         {/* Controls: search + filter */}
         <div className='mt-6 flex flex-wrap items-center gap-3'>
           <div className='flex-1 min-w-[200px]'>
-            <label className='block text-xs font-medium text-gray-300 mb-1'>
-              Search tickets
-            </label>
+            <label className='block text-xs font-medium text-gray-300 mb-1'>Search tickets</label>
             <div className='relative'>
               <input
                 className='w-full rounded-lg border border-gray-700 px-3 py-2 text-sm text-gray-100 shadow-sm outline-none focus:border-gray-600 focus:ring-1 focus:ring-gray-700 bg-gray-900'
@@ -169,14 +167,10 @@ export default function MyTicketsPage() {
                 onChange={(e) => setSearchInput(e.target.value)}
               />
               {isRefetching && (
-                <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400'>
-                  Searching…
-                </span>
+                <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400'>Searching…</span>
               )}
             </div>
-            <p className='mt-1 text-[11px] text-gray-400'>
-              Search applies when length is between 3 and 20 characters.
-            </p>
+            <p className='mt-1 text-[11px] text-gray-400'>Search applies when length is between 3 and 20 characters.</p>
           </div>
 
           <div className='mt-3 flex items-center gap-2'>
@@ -194,9 +188,7 @@ export default function MyTicketsPage() {
                     type='button'
                     className={[
                       'rounded-full px-3 py-1 font-medium transition-colors',
-                      active
-                        ? 'bg-gray-800 text-gray-100 shadow-sm'
-                        : 'text-gray-300 hover:text-gray-100'
+                      active ? 'bg-gray-800 text-gray-100 shadow-sm' : 'text-gray-300 hover:text-gray-100'
                     ].join(' ')}
                     onClick={() => setStatusFilter(opt.value)}
                   >
@@ -243,9 +235,7 @@ export default function MyTicketsPage() {
                     <td className='px-3 py-3 font-medium'>
                       {ticket.event_title || (ticket as any).title || 'Untitled event'}
                     </td>
-                    <td className='px-3 py-3 text-gray-300'>
-                      {formatPrice(ticket.price_cents)}
-                    </td>
+                    <td className='px-3 py-3 text-gray-300'>{formatPrice(ticket.price_cents)}</td>
                     <td className='px-3 py-3'>
                       {ticket.status === 'checked_in' ? (
                         <Badge tone='success'>Checked-in</Badge>
@@ -253,9 +243,7 @@ export default function MyTicketsPage() {
                         <Badge tone='neutral'>Booked</Badge>
                       )}
                     </td>
-                    <td className='px-3 py-3 text-gray-300'>
-                      {formatCheckedIn(ticket.checked_in_at)}
-                    </td>
+                    <td className='px-3 py-3 text-gray-300'>{formatCheckedIn(ticket.checked_in_at)}</td>
                     <td className='px-3 py-3'>
                       <div className='flex items-center justify-end gap-2'>
                         <button
