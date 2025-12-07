@@ -37,27 +37,27 @@ export interface GetEventsResponse {
 
 const eventsApi = {
   getEvents: (limit: number = 20, page: number = 1) => {
-    return http.get<SuccessResponse<GetEventsResponse>>('/api/v1/events', {
+    return http.get<SuccessResponse<GetEventsResponse>>('/events', {
       params: { limit, page }
     })
   },
   getEventDetails: (event_id: string) => {
-    return http.get<SuccessResponse<Event>>(`/api/v1/events/${event_id}`)
+    return http.get<SuccessResponse<Event>>(`/events/${event_id}`)
   },
   searchEvents: (q: string, limit: number = 20, page: number = 1) => {
-    return http.get<SuccessResponse<GetEventsResponse>>('/api/v1/events', {
+    return http.get<SuccessResponse<GetEventsResponse>>('/events', {
       params: { q, limit, page }
     })
   },
   createEvent: (payload: CreateEventPayload) => {
-    return http.post('/api/v1/events', payload)
+    return http.post('/events', payload)
   },
 
   uploadEventPoster: (file: File) => {
     const formData = new FormData()
     formData.append('image', file)
 
-    return http.post('/api/v1/medias/image', formData, {
+    return http.post('/medias/image', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -65,16 +65,16 @@ const eventsApi = {
   },
 
   updateEvent: (event_id: string, body: any) => {
-    return http.patch<SuccessResponse<Event>>(`/api/v1/events/${event_id}`, body)
+    return http.patch<SuccessResponse<Event>>(`/events/${event_id}`, body)
   },
   publishEvent: (event_id: string) => {
-    return http.patch<SuccessResponse<Event>>(`/api/v1/events/${event_id}/status`, { status: 'published' })
+    return http.patch<SuccessResponse<Event>>(`/events/${event_id}/status`, { status: 'published' })
   },
   cancelEvent: (event_id: string) => {
-    return http.patch<SuccessResponse<Event>>(`/api/v1/events/${event_id}/status`, { status: 'canceled' })
+    return http.patch<SuccessResponse<Event>>(`/events/${event_id}/status`, { status: 'canceled' })
   },
   draftEvent: (event_id: string) => {
-    return http.patch<SuccessResponse<Event>>(`/api/v1/events/${event_id}/status`, { status: 'draft' })
+    return http.patch<SuccessResponse<Event>>(`/events/${event_id}/status`, { status: 'draft' })
   }
 }
 

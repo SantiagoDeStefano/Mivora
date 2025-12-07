@@ -139,7 +139,7 @@ export default function EventDetailsPage() {
             <span className="text-gray-100 font-medium">{ev.title}</span>
           </nav>
 
-          {/* Cover */}
+          {/* Cover */}ư
           <div className="overflow-hidden rounded-2xl border border-gray-800 bg-gray-900">
             <div className="relative">
               {ev.poster_url ? (

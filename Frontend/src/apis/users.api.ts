@@ -20,55 +20,55 @@ export type ResetPasswordPayload = {
 }
 const usersApi = {
   registerAccount: (body: RegisterSchema) => {
-    return http.post<AuthResponse>('/api/v1/users/register', body)
+    return http.post<AuthResponse>('/users/register', body)
   },
   loginAccount: (body: LoginSchema) => {
-    return http.post<AuthResponse>('/api/v1/users/login', body)
+    return http.post<AuthResponse>('/users/login', body)
   },
   logout: (body: RefreshTokenRequest) => {
-    return http.post<MessageOnly>('/api/v1/users/logout', body)
+    return http.post<MessageOnly>('/users/logout', body)
   },
   refreshToken: (body: RefreshTokenRequest) => {
-    return http.post<AuthResponse>('/api/v1/users/refresh-token', body)
+    return http.post<AuthResponse>('/users/refresh-token', body)
   },
   getMe: () => {
-    return http.get<GetMeResponse>('/api/v1/users/me')
+    return http.get<GetMeResponse>('/users/me')
   },
   updateMe: (body: UpdateMeSchema) => {
-    return http.patch<GetMeResponse>('/api/v1/users/me', body)
+    return http.patch<GetMeResponse>('/users/me', body)
   },
   updateAvatar: (formData: FormData) => {
-    return http.put<GetMeResponse>('/api/v1/users/me/avatar', formData, {
+    return http.put<GetMeResponse>('/users/me/avatar', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
     })
   },
   sendVerifyEmail: () => {
-    return http.post<MessageOnly>('/api/v1/users/me/email-verification')
+    return http.post<MessageOnly>('/users/me/email-verification')
   },
   forgotPassword: (email: string) => {
-    return http.post<MessageOnly>('/api/v1/users/forgot-password', { email })
+    return http.post<MessageOnly>('/users/forgot-password', { email })
   },
   verifyEmail: (body: EmailTokenRequest) => {
-    return http.post<MessageOnly>('/api/v1/users/verify-email', body)
+    return http.post<MessageOnly>('/users/verify-email', body)
   },
   verifyForgotPassword: (body: ForgotPasswordRequest) => {
-    return http.post<MessageOnly>('/api/v1/users/verify-forgot-password', body)
+    return http.post<MessageOnly>('/users/verify-forgot-password', body)
   },
   resetPassword: (body: ResetPasswordPayload) => {
-    return http.post<MessageOnly>('/api/v1/users/reset-password', body)
+    return http.post<MessageOnly>('/users/reset-password', body)
   },
   searchEventsOrganizer: (q: string, limit: number = 20, page: number = 1) => {
-    return http.get<SuccessResponse<GetEventsResponse>>('/api/v1/users/me/events', {
+    return http.get<SuccessResponse<GetEventsResponse>>('/users/me/events', {
       params: { q, limit, page }
     })
   },
   getCreatedEventDetails: (event_id: string) => {
-    return http.get<SuccessResponse<Event>>(`/api/v1/users/me/events/${event_id}`)
+    return http.get<SuccessResponse<Event>>(`/users/me/events/${event_id}`)
   },
   getCreatedEvents: (limit: number = 20, page: number = 1) => {
-    return http.get<SuccessResponse<GetEventsResponse>>('/api/v1/users/me/events', {
+    return http.get<SuccessResponse<GetEventsResponse>>('/users/me/events', {
       params: { limit, page }
     })
   }
