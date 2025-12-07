@@ -1,7 +1,7 @@
 import { NextFunction } from 'express-serve-static-core'
 import { TokenPayload } from '~/models/requests/users.requests'
 import { Request, Response } from 'express'
-import { EVENTS_MESSAGES, TICKETS_MESSAGES, USERS_MESSAGES } from '~/constants/messages'
+import { EVENTS_MESSAGES, TICKETS_MESSAGES } from '~/constants/messages'
 import { validate } from '~/utils/validation'
 import { checkSchema } from 'express-validator'
 import { verifyToken } from '~/utils/jwt'
@@ -16,9 +16,8 @@ import Event from '~/models/schemas/Event.schema'
 import ErrorWithStatus from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { isValidUUIDv4 } from '~/utils/uuid'
-import qrCode from '~/services/qrcode.services'
 
-const ticket_status: TicketStatus[] = ['booked', 'checked_in']
+const ticket_status: TicketStatus[] = ['booked', 'checked_in', 'canceled']
 
 /**
  * Ensure the authenticated user hasn't already booked the specified event.
@@ -31,15 +30,45 @@ const ticket_status: TicketStatus[] = ['booked', 'checked_in']
 export const bookTicketValidator = async (req: Request, res: Response, next: NextFunction) => {
   const { user_id } = req.decoded_authorization as TokenPayload
   const event_id = (req.event as Event[])[0].id
+  console.log(event_id, user_id)
   const userEventCount = await databaseService.tickets(
-    `SELECT COUNT(id) FROM tickets WHERE user_id=$1 AND event_id=$2`,
+    `
+      SELECT
+        events.status,
+        events.organizer_id,
+        (
+          SELECT COUNT(*)
+          FROM tickets
+          WHERE tickets.user_id = $1
+            AND tickets.event_id = $2
+        ) AS ticket_count
+      FROM events
+      WHERE events.id = $2
+    `,
     [user_id, event_id]
   )
-  if (userEventCount.rows[0].count >= 1) {
+  if(user_id === userEventCount.rows[0].organizer_id) {
     return next(
       new ErrorWithStatus({
-        message: USERS_MESSAGES.ONE_USER_PER_EVENT_ONLY,
+        message: TICKETS_MESSAGES.EVENT_CREATOR_CANNOT_BOOK_TICKET,
         status: HTTP_STATUS.FORBIDDEN
+      })
+    )
+  }
+  if(userEventCount.rows[0].status != 'published') {
+    return next(
+      new ErrorWithStatus({
+        message: TICKETS_MESSAGES.EVENT_STATUS_NOT_PUBLISHED,
+        status: HTTP_STATUS.FORBIDDEN
+      })
+    )
+  }
+  const ticketCount = Number(userEventCount.rows[0].ticket_count)
+  if (ticketCount >= 1) {
+    return next(
+      new ErrorWithStatus({
+        message: TICKETS_MESSAGES.ONE_USER_PER_EVENT_ONLY,
+        status: HTTP_STATUS.CONFLICT
       })
     )
   }

@@ -53,7 +53,6 @@ export const USERS_MESSAGES = {
   NAME_MUST_BE_A_STRING: 'Name must be a string',
 
   OLD_PASSWORD_DOES_NOT_MATCH: 'Old password does not match',
-  ONE_USER_PER_EVENT_ONLY: 'One user per event only',
 
   PASSWORD_IS_REQUIRED: 'Password is required',
   PASSWORD_MUST_BE_A_STRING: 'Password must be a string',
@@ -159,11 +158,14 @@ export const MEDIAS_MESSAGES = {
 
 export const TICKETS_MESSAGES = {
   BOOK_TICKET_SUCCESS: 'Book ticket successfully',
+
   ONLY_BOOKED_TICKETS_CAN_BE_CANCELED: 'Only booked tickets can be canceled',
+  ONE_USER_PER_EVENT_ONLY: 'One user per event only',
 
   CURRENT_USER_IS_NOT_TICKET_OWNER: 'Current user is not ticket owner',
 
   EVENT_STATUS_NOT_PUBLISHED: "Event's status is not published",
+  EVENT_CREATOR_CANNOT_BOOK_TICKET: "Event's creator cannot book ticket",
 
   GET_TICKETS_SUCCESSFULLY: 'Get tickets successfully',
   GET_TICKETS_DETAILS_SUCCESSFULLY: 'Get ticket details successfully',
@@ -178,4 +180,5 @@ export const TICKETS_MESSAGES = {
   TICKET_STATUS_MUST_BE_BOOKED_CHECKED_IN: 'Ticket status must be booked or checked in',
 
   USER_IS_NOT_EVENT_ORGANIZER: "Current user is not event's organizer"
+
 }

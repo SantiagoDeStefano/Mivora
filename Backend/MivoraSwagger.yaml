@@ -1403,6 +1403,352 @@ paths:
                             type: string
                             example: body
 
+  /tickets:
+    post:
+      tags:
+        - ticket
+      summary: Book a ticket to an event
+      operationId: bookTicket
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event_id:
+                  type: string
+                  format: uuid
+                  example: ba6e6578-da2d-4317-a605-279f9c207228
+      responses:
+        '200':
+          description: Book ticket successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Book ticket successfully
+                  result:
+                    type: object
+                    properties:
+                      ticket:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            format: uuid
+                            example: c341339e-6277-464a-a35c-7a09184ca600
+                          event_title:
+                            type: string
+                            example: Grass-roots dedicated hierarchy
+                          event_status:
+                            type: string
+                            enum: [booked, canceled, checked_in]
+                            example: published
+                          ticket_status:
+                            type: string
+                            enum: [booked, canceled, checked_in]
+                            example: booked
+                          checked_in_at:
+                            type: string
+                            format: date-time
+                            nullable: true
+                            example: null
+                          price_cents:
+                            type: integer
+                            example: 31315
+                          qr_code:
+                            type: string
+                            description: Ticket QR code as data URL (base64 image)
+                            example: data:image/png;base64,<base64-data>
+        '403':
+          description: Event's creator cannot book ticket
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Event's creator cannot book ticket
+        '409':
+          description: One user per event only
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: One user per event only
+    get:
+      tags:
+        - ticket
+      summary: Get all tickets of the current user
+      operationId: getMyTickets
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+            default: 20
+          description: Number of items per page
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: status
+          in: query
+          required: false
+          example: canceled
+          schema:
+            type: string
+          description: Filter tickets by status (booked, canceled, checked_in)
+        - name: q
+          in: query
+          required: false
+          example: Implemented
+          schema:
+            type: string
+          description: Search query for event title
+      responses:
+        '200':
+          description: Get tickets successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Get tickets successfully
+                  result:
+                    type: object
+                    properties:
+                      tickets:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              format: uuid
+                              example: d6de9a12-b3b1-4ea0-a1a3-d0823408a1ae
+                            event_title:
+                              type: string
+                              example: Implemented leading edge strategy
+                            event_status:
+                              type: string
+                              enum: [published, draft, canceled]
+                              example: published
+                            ticket_status:
+                              type: string
+                              enum: [booked, canceled, checked_in]
+                              example: canceled
+                            checked_in_at:
+                              type: string
+                              format: date-time
+                              nullable: true
+                              example: null
+                            price_cents:
+                              type: integer
+                              example: 16583
+                            total_count:
+                              type: string
+                              example: '1'
+                            qr_code:
+                              type: string
+                              description: Base64 QR code image (data URL)
+                              example: data:image/png;base64,<base64>
+                      limit:
+                        type: integer
+                        example: 20
+                      page:
+                        type: integer
+                        example: 1
+                      total_page:
+                        type: integer
+                        example: 1
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Validation error
+                  errors:
+                    type: object
+                    properties:
+                      status:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                            example: field
+                          value:
+                            type: string
+                            example: canceledasda
+                          msg:
+                            type: string
+                            example: Ticket status must be booked or checked in
+                          path:
+                            type: string
+                            example: status
+                          location:
+                            type: string
+                            example: query
+  /tickets/{ticket_id}:
+    get:
+      tags:
+        - ticket
+      summary: Get ticket by ID
+      operationId: getTicketById
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: ticket_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the ticket to retrieve
+          example: c341339e-6277-464a-a35c-7a09184ca600
+      responses:
+        '200':
+          description: Get ticket details successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Get ticket details successfully
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        example: 625897d7-4440-4dab-9d60-74ac26a8aae9
+                      event_title:
+                        type: string
+                        example: Organic heuristic moderator
+                      event_status:
+                        type: string
+                        enum: [published, draft, canceled]
+                        example: published
+                      ticket_status:
+                        type: string
+                        enum: [booked, canceled, checked_in]
+                        example: booked
+                      checked_in_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                        example: null
+                      price_cents:
+                        type: integer
+                        example: 19286
+                      qr_code:
+                        type: string
+                        description: Base64 QR code image (data URL)
+                        example: data:image/png;base64,<base64>
+        '403':
+          description: Current user is not ticket owner
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Current user is not ticket owner
+  /tickets/{ticket_id}/status:
+    patch:
+      tags:
+        - ticket
+      summary: Check in a ticket by ID
+      operationId: checkInTicket
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: ticket_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the ticket to check in
+          example: c341339e-6277-464a-a35c-7a09184ca600
+      responses:
+        '200':
+          description: Ticket canceled successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Ticket canceled successfully
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        example: 625897d7-4440-4dab-9d60-74ac26a8aae9
+                      event_title:
+                        type: string
+                        example: Organic heuristic moderator
+                      event_status:
+                        type: string
+                        enum: [published, draft, canceled]
+                        example: published
+                      ticket_status:
+                        type: string
+                        enum: [booked, canceled, checked_in]
+                        example: canceled
+                      checked_in_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                        example: null
+                      price_cents:
+                        type: integer
+                        example: 19286
+                      qr_code:
+                        type: string
+                        description: Base64 QR code image (data URL)
+                        example: data:image/png;base64,<base64>
+
+        '403':
+          description: Only booked tickets can be canceled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Only booked tickets can be canceled
+
 components:
   schemas:
     LoginBody:

@@ -29,7 +29,7 @@ const ticketsRouter = Router()
  * - Body: `{ event_id: string }`
  * - Validations: `eventIdValidator` ensures the event exists; `bookTicketValidator` validates booking constraints
  * - Action: creates a ticket reservation for the authenticated user
- * - Success: 200/201 with created ticket details
+ * - Success: 200 with created ticket details
  */
 ticketsRouter.post(
   '/',
@@ -104,7 +104,7 @@ ticketsRouter.get(
  * - Success: 200 with ticket details
  */
 ticketsRouter.patch(
-  '/:ticket_id',
+  '/:ticket_id/status',
   accessTokenValidator,
   ticketIdValidator,
   ticketOwnerValidator,
