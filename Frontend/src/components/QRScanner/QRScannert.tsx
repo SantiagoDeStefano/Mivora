@@ -1,4 +1,4 @@
-// src/components/qr/QRScanner.tsx
+
 import { useEffect, useRef } from 'react'
 import QrScanner from 'qr-scanner'
 

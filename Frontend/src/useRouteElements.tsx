@@ -13,6 +13,7 @@ import MePage from './pages/Users/Me'
 import ForgotPasswordModal from './pages/Users/ForgotPassword'
 import ResetPasswordModal from './pages/Users/ResetPassword'
 import ForgotPasswordVerification from './pages/Users/ForgotPasswordVerification/ForgotPasswordVerification'
+import Chat from './pages/Chat/Chat'
 
 // --- Organizer Pages ---
 import CreateEventPage from './pages/Organzier/CreateEvent/CreateEvent'
@@ -43,7 +44,7 @@ import MainLayout from './layouts/MainLayout'
 import RegisterLayout from './layouts/RegisterLayout'
 import UserLayout from './layouts/UserLayout'
 import EmailVerification from './pages/Users/EmailVerification/EmailVerification'
-
+import ChatLayout from './layouts/ChatLayout'
 export default function useRouteElements() {
   const routeElements = useRoutes([
     // ---------------- Guest Pages ----------------
@@ -141,7 +142,16 @@ export default function useRouteElements() {
           path: path.email_verification,
           element: <EmailVerification />
         },
-
+        
+        // Chat
+        {
+          path: path.chat,
+          element: (
+            <ChatLayout>
+              <Chat />
+              </ChatLayout>
+          )
+        },
         // "/profile"
         // element: <ProfilePage /> },
         {

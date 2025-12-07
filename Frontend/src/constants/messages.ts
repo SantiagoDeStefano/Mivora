@@ -53,7 +53,6 @@ export const USERS_MESSAGES = {
   NAME_MUST_BE_A_STRING: 'Name must be a string',
 
   OLD_PASSWORD_DOES_NOT_MATCH: 'Old password does not match',
-  ONE_USER_PER_EVENT_ONLY: 'One user per event only',
 
   PASSWORD_IS_REQUIRED: 'Password is required',
   PASSWORD_MUST_BE_A_STRING: 'Password must be a string',
@@ -97,6 +96,7 @@ export const EVENTS_MESSAGES = {
   CHANGE_EVENT_ONLY_ALLOWED_ON_DRAFT: 'Change event only allowed on draft',
   CANCEL_EVENT_ONLY_ALLOWED_ON_PUBLISHED: 'Cancel event only allowed on published',
   CANCEL_EVENT_SUCCESS: 'Cancel event successfully',
+  CHANGE_EVENT_STATUS_SUCCESS: 'Change event status successfully',
 
   EVENT_TITLE_IS_REQUIRED: "Event's title is required",
   EVENT_TITLE_MUST_BE_STRING: "Event's title must be string",
@@ -121,7 +121,12 @@ export const EVENTS_MESSAGES = {
   EVENT_STATUS_MUST_BE_DRAFT_PUBLISHED_CANCELED: "Event's status must be draft, published, or canceled",
   EVENT_CREATED_SUCCESSFULLY: 'Event created successfully',
   EVENT_NOT_FOUND: 'Event not found',
+  EVENT_INVALID_STATUS_TRANSITION: 'Invalid event status transition',
   EVENT_POSTER_ONLY_ALLOWED_ON_DRAFT: 'Event poster only allowed on draft',
+  EVENT_STATUS_IS_REQUIRED: "Event's status is required",
+  EVENT_LOCATION_IS_REQUIRED: "Event's location is required",
+  EVENT_PRICE_IS_REQUIRED: "Event's price is required",
+  EVENT_CAPACITY_IS_REQUIRED: "Event's capacity is required",
 
   GET_EVENTS_SUCCESSFULLY: 'Get events successfully',
   GET_CREATED_EVENTS_SUCCESSFULLY: 'Get created events successfully',
@@ -154,13 +159,21 @@ export const MEDIAS_MESSAGES = {
 export const TICKETS_MESSAGES = {
   BOOK_TICKET_SUCCESS: 'Book ticket successfully',
 
+  ONLY_BOOKED_TICKETS_CAN_BE_CANCELED: 'Only booked tickets can be canceled',
+  ONE_USER_PER_EVENT_ONLY: 'One user per event only',
+
+  CURRENT_USER_IS_NOT_TICKET_OWNER: 'Current user is not ticket owner',
+
   EVENT_STATUS_NOT_PUBLISHED: "Event's status is not published",
+  EVENT_CREATOR_CANNOT_BOOK_TICKET: "Event's creator cannot book ticket",
+  EVENT_CAPACITY_REACHED: "Event's capacity has been reached",
 
   GET_TICKETS_SUCCESSFULLY: 'Get tickets successfully',
   GET_TICKETS_DETAILS_SUCCESSFULLY: 'Get ticket details successfully',
 
   TICKET_ALREADY_CHECKED_IN: 'Ticket already checked in',
   TICKET_NOT_FOUND: 'Ticket not found',
+  TICKET_CANCELED_SUCCESSFULLY: 'Ticket canceled successfully',
 
   QR_CODE_TOKEN_REQUIRED: 'QR code token is required',
 
@@ -168,4 +181,5 @@ export const TICKETS_MESSAGES = {
   TICKET_STATUS_MUST_BE_BOOKED_CHECKED_IN: 'Ticket status must be booked or checked in',
 
   USER_IS_NOT_EVENT_ORGANIZER: "Current user is not event's organizer"
+
 }

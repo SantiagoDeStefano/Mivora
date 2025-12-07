@@ -13,7 +13,7 @@ import {
   updateEventPoster,
   UpdateEventSchema,
   UpdateEventPosterSchema
-} from '../../../utils/rules' // chỉnh path cho đúng
+} from '../../../utils/rules'
 
 export default function UpdateEventPage() {
   const { id } = useParams<{ id: string }>()
@@ -79,13 +79,16 @@ export default function UpdateEventPage() {
         setLocationText(data.location_text ?? '')
         setPosterUrl(data.poster_url ?? '')
 
+        // convert ISO -> 'YYYY-MM-DDTHH:mm' cho datetime-local
         setStartAt(
           data.start_at
             ? new Date(data.start_at).toISOString().slice(0, 16)
             : ''
         )
         setEndAt(
-          data.end_at ? new Date(data.end_at).toISOString().slice(0, 16) : ''
+          data.end_at
+            ? new Date(data.end_at).toISOString().slice(0, 16)
+            : ''
         )
 
         setPrice(
@@ -135,18 +138,24 @@ export default function UpdateEventPage() {
       payload.poster_url = posterUrl.trim()
     }
 
-    // updateEvent expects start_at / end_at dạng string 'YYYY-MM-DDTHH:mm'
+    // convert từ 'YYYY-MM-DDTHH:mm' -> ISO string cho API
     if (startAt) {
-      payload.start_at = startAt
+      const d = new Date(startAt)
+      payload.start_at = d.toISOString()
     }
+
     if (endAt) {
-      payload.end_at = endAt
+      const d = new Date(endAt)
+      payload.end_at = d.toISOString()
     }
 
     const priceTrimmed = price.trim()
     if (priceTrimmed !== '') {
-      // Để Yup .number() tự xử lý NaN/typeError
-      payload.price_cents = Number(priceTrimmed)
+      // price input là tiền (VD 15.00), API dùng cents
+      const priceNumber = Number(priceTrimmed)
+      payload.price_cents = Number.isNaN(priceNumber)
+        ? NaN
+        : Math.round(priceNumber * 100)
     }
 
     const capacityTrimmed = capacity.trim()
@@ -190,21 +199,14 @@ export default function UpdateEventPage() {
     const payload = buildUpdatePayload()
 
     try {
-      // FE validate payload bằng updateEvent
+      // FE validate payload bằng yup schema updateEvent
       const validated = await updateEvent.validate(payload, {
         abortEarly: false,
         stripUnknown: true
       })
 
-      // transform: start_at / end_at đã được schema đổi thành Date (do transform)
-      const apiPayload: any = { ...validated }
-
-      if ((validated.start_at as any) instanceof Date) {
-        apiPayload.start_at = (validated.start_at as unknown as Date).toISOString()
-      }
-      if ((validated.end_at as any) instanceof Date) {
-        apiPayload.end_at = (validated.end_at as unknown as Date).toISOString()
-      }
+      // Ở đây validated.* đã là đúng type theo schema (string, number,...)
+      const apiPayload = validated
 
       setSubmitting(true)
 
@@ -300,7 +302,6 @@ export default function UpdateEventPage() {
     }
 
     if (!file) {
-      // với schema hiện tại, thực tế không vào được đây, nhưng cứ để cho rõ
       setPosterError('Image is required')
       return
     }
@@ -308,7 +309,6 @@ export default function UpdateEventPage() {
     try {
       setUploadingPoster(true)
 
-      // dùng API upload poster chung (giống create)
       const res = await eventsApi.uploadEventPoster(file)
       const result = res?.data?.result
 
@@ -346,7 +346,6 @@ export default function UpdateEventPage() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Error block */}
               {error && (
                 <div className="mb-2 rounded-lg border border-red-700 bg-red-900/40 p-3 text-red-300 text-sm space-y-1">
                   {error.map((msg, i) => (
@@ -355,7 +354,6 @@ export default function UpdateEventPage() {
                 </div>
               )}
 
-              {/* Title */}
               <div>
                 <label htmlFor="title" className={labelBase}>
                   Event Title
@@ -369,7 +367,6 @@ export default function UpdateEventPage() {
                 />
               </div>
 
-              {/* Description */}
               <div>
                 <label htmlFor="description" className={labelBase}>
                   Description
@@ -383,7 +380,6 @@ export default function UpdateEventPage() {
                 />
               </div>
 
-              {/* Location */}
               <div>
                 <label htmlFor="location" className={labelBase}>
                   Location
@@ -397,7 +393,6 @@ export default function UpdateEventPage() {
                 />
               </div>
 
-              {/* Poster upload */}
               <div>
                 <label htmlFor="poster" className={labelBase}>
                   Poster Image
@@ -429,7 +424,6 @@ export default function UpdateEventPage() {
                 )}
               </div>
 
-              {/* Time */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="startAt" className={labelBase}>
@@ -458,7 +452,6 @@ export default function UpdateEventPage() {
                 </div>
               </div>
 
-              {/* Price + Capacity */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="price" className={labelBase}>

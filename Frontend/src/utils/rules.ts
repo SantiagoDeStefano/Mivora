@@ -130,6 +130,8 @@ export const resetPasswordSchema = yup.object({
     .oneOf([yup.ref('password')], USERS_MESSAGES.CONFIRM_PASSWORD_DOES_NOT_MATCH_PASSWORD)
 })
 
+
+// createEvent
 export const createEvent = yup.object({
   title: yup
     .string()
@@ -161,6 +163,7 @@ export const createEvent = yup.object({
     .string()
     .trim()
     .notRequired()
+    .nullable()
     .min(
       LIMIT_MIN_MAX.EVENT_POSTER_URL_MIN,
       EVENTS_MESSAGES.EVENT_POSTER_URL_MUST_BE_BETWEEN_4_AND_400
@@ -183,31 +186,61 @@ export const createEvent = yup.object({
     )
     .trim(),
 
+  // KHÔNG transform sang Date nữa
   start_at: yup
-    .date()
-    .typeError(EVENTS_MESSAGES.EVENT_START_AT_MUST_BE_ISO8601)
-    .required(EVENTS_MESSAGES.EVENT_START_AT_IS_REQUIRED),
+    .string()
+    .required(EVENTS_MESSAGES.EVENT_START_AT_IS_REQUIRED)
+    .test(
+      'is-iso8601',
+      EVENTS_MESSAGES.EVENT_START_AT_MUST_BE_ISO8601,
+      (value) => {
+        if (!value) return false
+        const d = new Date(value)
+        return !Number.isNaN(d.getTime())
+      }
+    ),
 
   end_at: yup
-    .date()
-    .typeError(EVENTS_MESSAGES.EVENT_END_AT_MUST_BE_ISO8601)
+    .string()
     .required(EVENTS_MESSAGES.EVENT_END_AT_IS_REQUIRED)
-    .min(
-      yup.ref('start_at'),
-      EVENTS_MESSAGES.EVENT_END_AT_MUST_BE_AFTER_START_AT
+    .test(
+      'is-iso8601',
+      EVENTS_MESSAGES.EVENT_END_AT_MUST_BE_ISO8601,
+      (value) => {
+        if (!value) return false
+        const d = new Date(value)
+        return !Number.isNaN(d.getTime())
+      }
+    )
+    .test(
+      'end-at-after-start-at',
+      EVENTS_MESSAGES.EVENT_END_AT_MUST_BE_AFTER_START_AT,
+      function (value) {
+        const { start_at } = this.parent as { start_at?: string }
+        if (!start_at || !value) return true
+
+        const start = new Date(start_at)
+        const end = new Date(value)
+
+        if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+          return false
+        }
+
+        return end > start
+      }
     ),
 
   price_cents: yup
     .number()
     .typeError(EVENTS_MESSAGES.EVENT_PRICE_MUST_BE_NUMERIC)
-    .required(EVENTS_MESSAGES.EVENT_PRICE_MUST_BE_NUMERIC)
+    .required(EVENTS_MESSAGES.EVENT_PRICE_IS_REQUIRED)
     .min(0, EVENTS_MESSAGES.EVENT_PRICE_MUST_BE_POSITIVE)
     .integer(EVENTS_MESSAGES.EVENT_PRICE_MUST_BE_NUMERIC),
 
   capacity: yup
     .number()
     .typeError(EVENTS_MESSAGES.EVENT_CAPACITY_MUST_BE_NUMBER)
-    .required(EVENTS_MESSAGES.EVENT_CAPACITY_MUST_BE_NUMBER)
+    .required(EVENTS_MESSAGES.EVENT_CAPACITY_IS_REQUIRED)
     .min(1, EVENTS_MESSAGES.EVENT_CAPACITY_MUST_BE_POSITIVE)
     .integer(EVENTS_MESSAGES.EVENT_CAPACITY_MUST_BE_NUMBER)
 })
@@ -226,105 +259,244 @@ export const uploadEventPoster = yup.object({
     })
 })
 
+// updateEvent
 export const updateEvent = yup.object({
   title: yup
     .string()
     .trim()
-    .min(LIMIT_MIN_MAX.EVENT_TITLE_MIN, EVENTS_MESSAGES.EVENT_TITLE_MUST_BE_BETWEEN_6_AND_50)
-    .max(LIMIT_MIN_MAX.EVENT_TITLE_MAX, EVENTS_MESSAGES.EVENT_TITLE_MUST_BE_BETWEEN_6_AND_50),
+    .notRequired()
+    .min(
+      LIMIT_MIN_MAX.EVENT_TITLE_MIN,
+      EVENTS_MESSAGES.EVENT_TITLE_MUST_BE_BETWEEN_6_AND_50
+    )
+    .max(
+      LIMIT_MIN_MAX.EVENT_TITLE_MAX,
+      EVENTS_MESSAGES.EVENT_TITLE_MUST_BE_BETWEEN_6_AND_50
+    ),
+
   description: yup
     .string()
-    .min(LIMIT_MIN_MAX.EVENT_DESCRIPTION_MIN, EVENTS_MESSAGES.EVENT_DESCRIPTION_MUST_BE_BETWEEN_10_AND_100)
-    .max(LIMIT_MIN_MAX.EVENT_DESCRIPTION_MAX, EVENTS_MESSAGES.EVENT_DESCRIPTION_MUST_BE_BETWEEN_10_AND_100)
-    .trim(),
+    .trim()
+    .notRequired()
+    .min(
+      LIMIT_MIN_MAX.EVENT_DESCRIPTION_MIN,
+      EVENTS_MESSAGES.EVENT_DESCRIPTION_MUST_BE_BETWEEN_10_AND_100
+    )
+    .max(
+      LIMIT_MIN_MAX.EVENT_DESCRIPTION_MAX,
+      EVENTS_MESSAGES.EVENT_DESCRIPTION_MUST_BE_BETWEEN_10_AND_100
+    ),
+
   poster_url: yup
     .string()
-    .min(LIMIT_MIN_MAX.EVENT_POSTER_URL_MIN, EVENTS_MESSAGES.EVENT_POSTER_URL_MUST_BE_BETWEEN_4_AND_400)
-    .max(LIMIT_MIN_MAX.EVENT_POSTER_URL_MAX, EVENTS_MESSAGES.EVENT_POSTER_URL_MUST_BE_BETWEEN_4_AND_400)
-    .trim(),
+    .trim()
+    .notRequired()
+    .nullable()
+    .min(
+      LIMIT_MIN_MAX.EVENT_POSTER_URL_MIN,
+      EVENTS_MESSAGES.EVENT_POSTER_URL_MUST_BE_BETWEEN_4_AND_400
+    )
+    .max(
+      LIMIT_MIN_MAX.EVENT_POSTER_URL_MAX,
+      EVENTS_MESSAGES.EVENT_POSTER_URL_MUST_BE_BETWEEN_4_AND_400
+    ),
+
   location_text: yup
     .string()
-    .min(LIMIT_MIN_MAX.EVENT_LOCATION_MIN, EVENTS_MESSAGES.EVENT_LOCATION_TEXT_MUST_BE_BETWEEN_5_AND_100)
-    .max(LIMIT_MIN_MAX.EVENT_LOCATION_MAX, EVENTS_MESSAGES.EVENT_LOCATION_TEXT_MUST_BE_BETWEEN_5_AND_100)
-    .trim(),
+    .trim()
+    .notRequired()
+    .min(
+      LIMIT_MIN_MAX.EVENT_LOCATION_MIN,
+      EVENTS_MESSAGES.EVENT_LOCATION_TEXT_MUST_BE_BETWEEN_5_AND_100
+    )
+    .max(
+      LIMIT_MIN_MAX.EVENT_LOCATION_MAX,
+      EVENTS_MESSAGES.EVENT_LOCATION_TEXT_MUST_BE_BETWEEN_5_AND_100
+    ),
+
+  // optional, vẫn validate là ISO bằng Date.parse, KHÔNG transform
   start_at: yup
     .string()
-    .matches(
-      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/,
-      EVENTS_MESSAGES.EVENT_START_AT_MUST_BE_ISO8601
-    )
-    .transform((value) => new Date(value)),
-    end_at: yup
+    .notRequired()
+    .test(
+      'is-iso8601',
+      EVENTS_MESSAGES.EVENT_START_AT_MUST_BE_ISO8601,
+      (value) => {
+        if (!value) return true
+        const d = new Date(value)
+        return !Number.isNaN(d.getTime())
+      }
+    ),
+
+  end_at: yup
     .string()
-    .matches(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/, EVENTS_MESSAGES.EVENT_END_AT_MUST_BE_ISO8601)
-    .transform((value) => new Date(value))
+    .notRequired()
+    .test(
+      'is-iso8601',
+      EVENTS_MESSAGES.EVENT_END_AT_MUST_BE_ISO8601,
+      (value) => {
+        if (!value) return true
+        const d = new Date(value)
+        return !Number.isNaN(d.getTime())
+      }
+    )
     .test(
       'end-at-after-start-at',
       EVENTS_MESSAGES.EVENT_END_AT_MUST_BE_AFTER_START_AT,
       function (value) {
-        const { start_at } = this.parent
-        if (!start_at) return true
-        return value > start_at
+        const { start_at } = this.parent as { start_at?: string }
+        if (!start_at || !value) return true
+
+        const start = new Date(start_at)
+        const end = new Date(value)
+
+        if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+          return false
+        }
+
+        return end > start
       }
     ),
-    
-  price_cents: yup.number().min(0, 'Price must be non-negative'),
-  capacity: yup.number().min(0, 'Capacity must be non-negative')
+
+  price_cents: yup
+    .number()
+    .notRequired()
+    .typeError(EVENTS_MESSAGES.EVENT_PRICE_MUST_BE_NUMERIC)
+    .min(0, EVENTS_MESSAGES.EVENT_PRICE_MUST_BE_POSITIVE)
+    .integer(EVENTS_MESSAGES.EVENT_PRICE_MUST_BE_NUMERIC),
+
+  capacity: yup
+    .number()
+    .notRequired()
+    .typeError(EVENTS_MESSAGES.EVENT_CAPACITY_MUST_BE_NUMBER)
+    .min(1, EVENTS_MESSAGES.EVENT_CAPACITY_MUST_BE_POSITIVE)
+    .integer(EVENTS_MESSAGES.EVENT_CAPACITY_MUST_BE_NUMBER)
 })
 
 export const updateEventPoster = yup.object({
   image: yup
     .mixed()
+    .notRequired()
     .test('fileType', MEDIAS_MESSAGES.IMAGE_TYPE_IS_NOT_VALID, (value) => {
-      if (!value) return false
+      if (!value) return true
       return value instanceof File && value.type.startsWith('image/')
     })
     .test('fileSize', MEDIAS_MESSAGES.IMAGE_MUST_BE_LESS_THAN_5MB, (value) => {
-      if (!value) return false
+      if (!value) return true
       return value instanceof File && value.size <= 5000 * 1024
     })
 })
 
+// 3 schema status giữ nguyên
+export const draftEvent = yup.object({
+  status: yup
+    .string()
+    .required(EVENTS_MESSAGES.EVENT_STATUS_IS_REQUIRED)
+    .oneOf(
+      ['draft'],
+      EVENTS_MESSAGES.EVENT_STATUS_MUST_BE_DRAFT_PUBLISHED_CANCELED
+    )
+})
+
 export const publishEvent = yup.object({
-  status: yup.string().oneOf(['draft'])
+  status: yup
+    .string()
+    .required(EVENTS_MESSAGES.EVENT_STATUS_IS_REQUIRED)
+    .oneOf(
+      ['published'],
+      EVENTS_MESSAGES.EVENT_STATUS_MUST_BE_DRAFT_PUBLISHED_CANCELED
+    )
 })
 
 export const cancelEvent = yup.object({
-  status: yup.string().oneOf(['published'])
+  status: yup
+    .string()
+    .required(EVENTS_MESSAGES.EVENT_STATUS_IS_REQUIRED)
+    .oneOf(
+      ['canceled'],
+      EVENTS_MESSAGES.EVENT_STATUS_MUST_BE_DRAFT_PUBLISHED_CANCELED
+    )
 })
 
+
+const UUID_V4_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+// Book ticket
 export const bookTicket = yup.object({
   event_id: yup
     .string()
     .trim()
     .required(EVENTS_MESSAGES.INVALID_EVENT_ID)
-    .matches(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-      EVENTS_MESSAGES.INVALID_EVENT_ID
-    )
+    .matches(UUID_V4_REGEX, EVENTS_MESSAGES.INVALID_EVENT_ID)
+    .transform((value) => value.toLowerCase())
 })
 
+// Get / search my tickets
 export const getOrSearchMyTickets = yup.object({
   limit: yup
     .number()
-    .integer()
-    .min(LIMIT_MIN_MAX.EVENT_PER_PAGE_MIN, EVENTS_MESSAGES.EVENTS_LENGTH_PER_PAGE_IS_BETWEEN_1_AND_50)
-    .max(LIMIT_MIN_MAX.EVENT_PER_PAGE_MAX, EVENTS_MESSAGES.EVENTS_LENGTH_PER_PAGE_IS_BETWEEN_1_AND_50)
+    .integer(EVENTS_MESSAGES.EVENTS_LENGTH_PER_PAGE_IS_BETWEEN_1_AND_50)
+    .min(
+      LIMIT_MIN_MAX.EVENT_PER_PAGE_MIN,
+      EVENTS_MESSAGES.EVENTS_LENGTH_PER_PAGE_IS_BETWEEN_1_AND_50
+    )
+    .max(
+      LIMIT_MIN_MAX.EVENT_PER_PAGE_MAX,
+      EVENTS_MESSAGES.EVENTS_LENGTH_PER_PAGE_IS_BETWEEN_1_AND_50
+    )
     .optional(),
-  page: yup.number().integer().min(1, EVENTS_MESSAGES.NUMBER_OF_PAGE_MUST_BE_GREATER_THAN_0).optional(),
+
+  page: yup
+    .number()
+    .integer(EVENTS_MESSAGES.NUMBER_OF_PAGE_MUST_BE_GREATER_THAN_0)
+    .min(1, EVENTS_MESSAGES.NUMBER_OF_PAGE_MUST_BE_GREATER_THAN_0)
+    .optional(),
+
   status: yup
     .string()
-    .oneOf(['booked', 'checked_in', 'canceled'], TICKETS_MESSAGES.TICKET_STATUS_MUST_BE_BOOKED_CHECKED_IN)
+    // message nói rõ "must be booked or checked in" -> không cho 'canceled' ở đây
+    .oneOf(
+      ['booked', 'checked_in'],
+      TICKETS_MESSAGES.TICKET_STATUS_MUST_BE_BOOKED_CHECKED_IN
+    )
     .optional(),
+
   q: yup
     .string()
     .trim()
-    .min(3, EVENTS_MESSAGES.MAXIMUM_SEARCH_LENGTH_MUST_BE_BETWEEN_3_AND_20)
-    .max(20, EVENTS_MESSAGES.MAXIMUM_SEARCH_LENGTH_MUST_BE_BETWEEN_3_AND_20)
+    .min(
+      3,
+      EVENTS_MESSAGES.MAXIMUM_SEARCH_LENGTH_MUST_BE_BETWEEN_3_AND_20
+    )
+    .max(
+      20,
+      EVENTS_MESSAGES.MAXIMUM_SEARCH_LENGTH_MUST_BE_BETWEEN_3_AND_20
+    )
     .optional()
 })
 
+// Get ticket details
 export const getTicketDetails = yup.object({
+  ticket_id: yup
+    .string()
+    .trim()
+    .required(TICKETS_MESSAGES.TICKET_NOT_FOUND)
+    .matches(UUID_V4_REGEX, TICKETS_MESSAGES.TICKET_NOT_FOUND)
+    .transform((value) => value.toLowerCase())
+})
+
+// Scan ticket (QR)
+export const scanTicket = yup.object({
+  qr_code_token: yup
+    .string()
+    .trim()
+    .required(TICKETS_MESSAGES.QR_CODE_TOKEN_REQUIRED)
+    .min(1, TICKETS_MESSAGES.QR_CODE_TOKEN_REQUIRED)
+})
+
+// Cancel ticket
+export const cancelTicket = yup.object({
   ticket_id: yup
     .string()
     .trim()
@@ -334,11 +506,6 @@ export const getTicketDetails = yup.object({
       TICKETS_MESSAGES.TICKET_NOT_FOUND
     )
     .transform((value) => value.toLowerCase())
-})
-
-export const scanTicket = yup.object({
-  qr_code_token: yup.string().required(TICKETS_MESSAGES.QR_CODE_TOKEN_REQUIRED)
-  .trim()
 })
 
 // --- TYPES ---
@@ -354,6 +521,10 @@ export type UpdateEventSchema = yup.InferType<typeof updateEvent>
 export type UpdateEventPosterSchema = yup.InferType<typeof updateEventPoster>
 export type PublishEventSchema = yup.InferType<typeof publishEvent>
 export type CancelEventSchema = yup.InferType<typeof cancelEvent>
+export type DraftEventSchema = yup.InferType<typeof draftEvent>
 
 export type BookTicketSchema = Required<yup.InferType<typeof bookTicket>>
 export type GetOrSearchMyTicketsSchema = yup.InferType<typeof getOrSearchMyTickets>
+export type GetTicketDetailsSchema = Required<yup.InferType<typeof getTicketDetails>>
+export type ScanTicketSchema = Required<yup.InferType<typeof scanTicket>>
+export type CancelTicketSchema = Required<yup.InferType<typeof cancelTicket>>

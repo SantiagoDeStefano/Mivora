@@ -16,11 +16,10 @@ const getLastName = (fullName: string) => {
   return fullName.trim().split(/\s+/).pop() || ''
 }
 
-export default function NavHeader() {
+export default function ChatHeader() {
   const { setIsAuthenticated, setProfile, profile, isAuthenticated } = useContext(AppContext)
   const [imgError, setImgError] = useState(false)
   const [searchValue, setSearchValue] = useState('')
-  const [isChatOpen, setIsChatOpen] = useState(false)
 
   const navigate = useNavigate()
 
@@ -56,27 +55,6 @@ export default function NavHeader() {
     return String(r).toLowerCase() === 'organizer'
   })()
 
-  // Mock data – replace with real API data later
-  const conversations = [
-    {
-      id: '1',
-      name: 'Nguyen Van A',
-      lastMessage: 'Okay, see you tomorrow.',
-      time: '2m'
-    },
-    {
-      id: '2',
-      name: 'Event Support',
-      lastMessage: 'Do you need any more help?',
-      time: '1h'
-    },
-    {
-      id: '3',
-      name: 'Team Organizers',
-      lastMessage: 'Remember to verify ticket count.',
-      time: '3h'
-    }
-  ]
 
   return (
     <header className='sticky top-0 z-40 border-b border-gray-800 bg-gray-950 text-gray-200'>
@@ -139,98 +117,6 @@ export default function NavHeader() {
               >
                 My Tickets
               </NavLink>
-
-              {/* Chat trigger + popup */}
-              <div className='relative'>
-                <button
-                  type='button'
-                  onClick={() => setIsChatOpen((prev) => !prev)}
-                  className='flex items-center justify-center size-9 rounded-xl border border-gray-800 bg-gray-900 hover:bg-gray-800'
-                  aria-label='Open chat'
-                >
-                  <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    viewBox='0 0 24 24'
-                    className='w-5 h-5 text-gray-300'
-                    fill='none'
-                    stroke='currentColor'
-                    strokeWidth='1.8'
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                  >
-                    <path d='M5 20l2.5-2H18a3 3 0 0 0 3-3v-6a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3' />
-                  </svg>
-                </button>
-
-                {isChatOpen && (
-                  <div className='absolute right-0 mt-2 w-80 max-h-[26rem] rounded-xl border border-gray-800 bg-gray-900 shadow-2xl flex flex-col overflow-hidden'>
-                    {/* Header */}
-                    <div className='flex items-center justify-between px-3 py-2 border-b border-gray-800'>
-                      <span className='text-sm font-semibold text-gray-100'>Chat</span>
-                      <button
-                        type='button'
-                        onClick={() => setIsChatOpen(false)}
-                        className='text-xs text-gray-400 hover:text-gray-200'
-                      >
-                        Close
-                      </button>
-                    </div>
-
-                    {/* Conversation list */}
-                    <div className='flex-1 overflow-y-auto'>
-                      {conversations.map((c) => (
-                        <button
-                          key={c.id}
-                          type='button'
-                          className='w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-800/80 text-left'
-                          onClick={() => {
-                            // TODO: open a specific chat thread
-                            // navigate(`/messages/${c.id}`)
-                          }}
-                        >
-                          <div className='flex-shrink-0'>
-                            <div className='w-9 h-9 rounded-full bg-gray-700 ring-1 ring-gray-700 grid place-items-center text-xs font-semibold text-gray-200'>
-                              {getInitials(c.name)}
-                            </div>
-                          </div>
-
-                          <div className='flex-1 min-w-0'>
-                            <div className='flex items-center justify-between gap-2'>
-                              <span className='text-sm font-medium text-gray-100 truncate'>
-                                {c.name}
-                              </span>
-                              <span className='text-[11px] text-gray-500 flex-shrink-0'>
-                                {c.time}
-                              </span>
-                            </div>
-                            <p className='text-xs text-gray-400 truncate'>
-                              {c.lastMessage}
-                            </p>
-                          </div>
-                        </button>
-                      ))}
-
-                      {conversations.length === 0 && (
-                        <div className='px-3 py-4 text-center text-xs text-gray-500'>
-                          No conversations yet.
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Footer: see all */}
-                    <button
-                      type='button'
-                      onClick={() => {
-                        setIsChatOpen(false)
-                        navigate('/messages') // adjust this route to your real "all chats" page
-                      }}
-                      className='w-full px-3 py-2 text-xs font-medium text-pink-400 hover:bg-gray-800 border-t border-gray-800 text-center'
-                    >
-                      See all messages
-                    </button>
-                  </div>
-                )}
-              </div>
 
               {/* Profile dropdown */}
               <details className='relative group'>

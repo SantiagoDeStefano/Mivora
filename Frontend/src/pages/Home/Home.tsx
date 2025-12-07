@@ -225,12 +225,20 @@ export default function Home() {
                         <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold drop-shadow-lg line-clamp-2">
                           {e.title}
                         </h3>
+
                         <p className="mt-2 text-sm sm:text-base text-gray-200 line-clamp-1">
                           {formatDate(e.start_at)} • {e.location_text}
                         </p>
+
+                        {/* Organizer name in trending card */}
+                        <p className="mt-1 text-sl sm:text-sm text-gray-200 line-clamp-1">
+                          By {e.organizer_name}
+                        </p>
+
                         <p className="mt-1 text-xs sm:text-sm text-gray-200">
                           {e.price_cents ? `From ${formatPrice(e.price_cents)}` : 'Free entry'}
                         </p>
+
                         <button
                           onClick={(event) => {
                             event.stopPropagation()
@@ -304,7 +312,11 @@ export default function Home() {
 
                     <h3 className="mt-1 text-base font-semibold">{e.title}</h3>
 
-                    <p className="mt-1 text-sm text-gray-200">{e.location_text}</p>
+
+                    {/* Organizer name in grid card */}
+                    <p className="mt-1 text-sm text-gray-200 line-clamp-1">
+                      Organizer: {e.organizer_name}
+                    </p>
 
                     <p className="mt-1 text-sm text-gray-200">
                       Price: {formatPrice(e.price_cents)}

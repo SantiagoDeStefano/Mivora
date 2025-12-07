@@ -1,4 +1,3 @@
-// src/pages/SearchEvents/SearchEvents.tsx
 
 import { useEffect, useRef } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'

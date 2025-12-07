@@ -13,6 +13,7 @@ interface OrganizerEvent {
   title: string
   start_at: string
   status: EventStatus
+  revenue?: number
 }
 
 export default function ManageEventPage() {
@@ -22,14 +23,11 @@ export default function ManageEventPage() {
   const [loading, setLoading] = useState(true)
   const [isRefetching, setIsRefetching] = useState(false)
 
-  // input người dùng đang gõ
   const [searchInput, setSearchInput] = useState('')
-  // term thực sự dùng để query API (đã debounce)
   const [searchTerm, setSearchTerm] = useState('')
 
   const [statusFilter, setStatusFilter] = useState<EventStatus | 'all'>('all')
 
-  // Debounce searchInput -> searchTerm (vd 400ms)
   useEffect(() => {
     const id = window.setTimeout(() => {
       setSearchTerm(searchInput.trim())
@@ -65,7 +63,11 @@ export default function ManageEventPage() {
           id: ev.id,
           title: ev.title,
           start_at: ev.start_at,
-          status: ev.status as EventStatus
+          status: ev.status as EventStatus,
+          // Sửa chỗ này theo đúng field backend của mày
+          // ví dụ nếu backend trả revenue_cents:
+          // revenue: ev.revenue_cents != null ? ev.revenue_cents / 100 : 0
+          revenue: ev.revenue ?? 0
         }))
 
         allEvents = [...allEvents, ...mapped]
@@ -84,7 +86,6 @@ export default function ManageEventPage() {
     }
   }
 
-  // Fetch khi mount + khi searchTerm đổi (đã debounce)
   useEffect(() => {
     fetchOrganizerEvents(searchTerm)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -143,7 +144,9 @@ export default function ManageEventPage() {
                 onChange={(e) => setSearchInput(e.target.value)}
               />
               {isRefetching && (
-                <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400'>Searching…</span>
+                <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400'>
+                  Searching…
+                </span>
               )}
             </div>
           </div>
@@ -176,7 +179,7 @@ export default function ManageEventPage() {
           </div>
         </div>
 
-        {/* Loading skeleton – chỉ show khi chưa có data */}
+        {/* Loading skeleton */}
         {loading && events.length === 0 && (
           <div className='mt-4 grid gap-2'>
             {Array.from({ length: 5 }).map((_, i) => (
@@ -201,6 +204,7 @@ export default function ManageEventPage() {
                   <th className='px-3 py-2 font-medium'>Name</th>
                   <th className='px-3 py-2 font-medium'>Date</th>
                   <th className='px-3 py-2 font-medium'>Status</th>
+                  <th className='px-3 py-2 font-medium text-right'>Revenue</th>
                   <th className='px-3 py-2 font-medium text-right'>Actions</th>
                 </tr>
               </thead>
@@ -208,7 +212,9 @@ export default function ManageEventPage() {
                 {filtered.map((event) => (
                   <tr key={event.id} className='border-t border-gray-800'>
                     <td className='px-3 py-3 font-medium'>{event.title}</td>
-                    <td className='px-3 py-3 text-gray-300'>{new Date(event.start_at).toLocaleDateString()}</td>
+                    <td className='px-3 py-3 text-gray-300'>
+                      {new Date(event.start_at).toLocaleDateString()}
+                    </td>
                     <td className='px-3 py-3'>
                       {event.status === 'published' ? (
                         <Badge tone='success'>Published</Badge>
@@ -218,13 +224,23 @@ export default function ManageEventPage() {
                         <Badge tone='neutral'>Draft</Badge>
                       )}
                     </td>
+                    <td className='px-3 py-3 text-right text-gray-300'>
+                      {event.revenue != null
+                        ? event.revenue.toLocaleString('en-US', {
+                            style: 'currency',
+                            currency: 'USD' // đổi sang VND hoặc cái mày đang dùng
+                          })
+                        : '—'}
+                    </td>
                     <td className='px-3 py-3'>
                       <div className='flex items-center justify-end gap-2'>
                         <button
                           type='button'
                           className='inline-flex items-center gap-1 rounded-full bg-gray-800 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-1 focus:ring-offset-gray-900'
                           onClick={() => {
-                            navigate(path.organizer_created_event_details.replace(':id', event.id))
+                            navigate(
+                              path.organizer_created_event_details.replace(':id', event.id)
+                            )
                           }}
                         >
                           <Eye className='h-3.5 w-3.5' />

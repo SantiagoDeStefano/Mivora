@@ -11,6 +11,7 @@ const path = {
   
   profile: '/users/me',
   update_profile: '/users/me',
+  chat: '/messages',
 
   event_details: '/events/:event_id',
   email_verification: '/users/verify-email',
@@ -23,6 +24,7 @@ const path = {
   organizer_update_event: '/events/organizer/:id/edit',
   organizer_publish_event: '/events/organizer/:id/publish',
   organizer_cancel_event: '/events/organizer/:id/cancel',
+  organizer_draft_event: '/events/organizer/:id/draft',
 
   my_tickets: '/tickets',
   my_ticket_details: '/tickets/:id',

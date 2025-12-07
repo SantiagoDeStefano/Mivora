@@ -23,7 +23,7 @@ export interface BookTicketResult {
 }
 
 export interface GetMyTicketsResponse {
-  tickets: Ticket[]
+  tickets: TicketApi[]
   limit: number
   page: number
   total_page: number

@@ -24,7 +24,7 @@ type EventFormErrors = Partial<
     | 'end_at'
     | 'price_cents'
     | 'capacity'
-    | 'image', // lỗi từ uploadEventPoster schema
+    | 'image',
     string
   >
 >
@@ -64,18 +64,18 @@ export default function CreateEventPage() {
     const rawPrice = price.trim()
     const rawCapacity = capacity.trim()
 
-    const startDate = startAt ? new Date(startAt) : (undefined as unknown as Date)
-    const endDate = endAt ? new Date(endAt) : (undefined as unknown as Date)
+    const startDate = startAt ? new Date(startAt).toISOString() : undefined
+    const endDate = endAt ? new Date(endAt).toISOString() : undefined
 
     const priceCents =
       rawPrice === ''
-        ? (undefined as unknown as number)
+        ? undefined
         : Math.round(Number(rawPrice) * 100)
 
     const capacityNumber =
       rawCapacity === ''
-        ? (undefined as unknown as number)
-        : (Number(rawCapacity) as number)
+        ? undefined
+        : Number(rawCapacity)
 
     const payload: CreateEventSchema = {
       title: title.trim(),
@@ -84,8 +84,8 @@ export default function CreateEventPage() {
       location_text: locationText.trim(),
       start_at: startDate,
       end_at: endDate,
-      price_cents: priceCents,
-      capacity: capacityNumber
+      price_cents: priceCents as any,
+      capacity: capacityNumber as any
     }
 
     return payload
@@ -172,14 +172,16 @@ export default function CreateEventPage() {
     }
   }
 
-    const handlePosterChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePosterChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null
+
     clearError('image')
     clearError('poster_url')
 
-    const posterPayload: UploadEventPosterSchema = { image: file as any }
+    const posterPayload: UploadEventPosterSchema = {
+      image: file as File
+    }
 
-    // Validate bằng uploadEventPoster: required + type + size
     try {
       await uploadEventPoster.validate(posterPayload, {
         abortEarly: false,
@@ -188,8 +190,10 @@ export default function CreateEventPage() {
     } catch (err) {
       if (err instanceof yup.ValidationError) {
         const message =
-          err.inner.map((e) => e.message).filter(Boolean).join(' | ') ||
-          err.message
+          err.inner
+            .map((e) => e.message)
+            .filter(Boolean)
+            .join(' | ') || err.message
 
         setError('image', message)
         return
@@ -200,7 +204,6 @@ export default function CreateEventPage() {
       return
     }
 
-    // Nếu tới đây thì file hợp lệ: không null, đúng type, đúng size
     if (!file) {
       setError('image', 'File is required')
       return
@@ -210,14 +213,14 @@ export default function CreateEventPage() {
       setUploadingPoster(true)
 
       const res = await eventsApi.uploadEventPoster(file)
-      const result = res?.data?.result
-      const url =
-        Array.isArray(result) && result[0]?.url ? result[0].url : result?.url
+      const url = res?.data?.result?.url
 
       if (url) {
         setPosterUrl(url)
+        clearError('poster_url')
       } else {
         const msg = 'Upload failed: invalid response'
+        console.warn(msg, res)
         setError('image', msg)
       }
     } catch (err) {
@@ -227,7 +230,6 @@ export default function CreateEventPage() {
       setUploadingPoster(false)
     }
   }
-
 
   return (
     <section className="py-10 sm:py-14">
@@ -318,7 +320,14 @@ export default function CreateEventPage() {
                 accept="image/*"
                 className="mt-1 block w-full text-sm text-gray-300"
                 onChange={handlePosterChange}
+                disabled={uploadingPoster}
               />
+
+              {uploadingPoster && (
+                <p className="mt-1 text-xs text-gray-400">
+                  Uploading poster...
+                </p>
+              )}
 
               {errors.image && (
                 <p className="mt-1 text-xs text-red-500">{errors.image}</p>

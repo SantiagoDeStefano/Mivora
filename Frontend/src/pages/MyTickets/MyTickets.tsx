@@ -79,8 +79,8 @@ export default function MyTicketsPage() {
           params.q = term
         }
 
-        // filter status server-side
-        if (status !== 'all') {
+        // filter status server-side (schema chỉ cho booked / checked_in)
+        if (status !== 'all' && status !== 'canceled') {
           params.status = status
         }
 
@@ -129,6 +129,7 @@ export default function MyTicketsPage() {
   const total = tickets.length
   const totalBooked = tickets.filter((t) => t.status === 'booked').length
   const totalCheckedIn = tickets.filter((t) => t.status === 'checked_in').length
+  const totalCanceled = tickets.filter((t) => t.status === 'canceled').length
 
   return (
     <section className='py-10 sm:py-14'>
@@ -141,6 +142,7 @@ export default function MyTicketsPage() {
               <Badge tone='pink'>Total: {total}</Badge>
               <Badge tone='neutral'>Booked: {totalBooked}</Badge>
               <Badge tone='success'>Checked in: {totalCheckedIn}</Badge>
+              <Badge tone='warn'>Canceled: {totalCanceled}</Badge>
             </div>
           </div>
 
@@ -170,7 +172,9 @@ export default function MyTicketsPage() {
                 <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400'>Searching…</span>
               )}
             </div>
-            <p className='mt-1 text-[11px] text-gray-400'>Search applies when length is between 3 and 20 characters.</p>
+            <p className='mt-1 text-[11px] text-gray-400'>
+              Search applies when length is between 3 and 20 characters.
+            </p>
           </div>
 
           <div className='mt-3 flex items-center gap-2'>
@@ -179,7 +183,8 @@ export default function MyTicketsPage() {
               {[
                 { label: 'All', value: 'all' as const },
                 { label: 'Booked', value: 'booked' as const },
-                { label: 'Checked-in', value: 'checked_in' as const }
+                { label: 'Checked-in', value: 'checked_in' as const },
+                { label: 'Canceled', value: 'canceled' as const }
               ].map((opt) => {
                 const active = statusFilter === opt.value
                 return (
@@ -239,6 +244,8 @@ export default function MyTicketsPage() {
                     <td className='px-3 py-3'>
                       {ticket.status === 'checked_in' ? (
                         <Badge tone='success'>Checked-in</Badge>
+                      ) : ticket.status === 'canceled' ? (
+                        <Badge tone='warn'>Canceled</Badge>
                       ) : (
                         <Badge tone='neutral'>Booked</Badge>
                       )}
