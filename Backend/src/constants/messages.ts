@@ -166,6 +166,7 @@ export const TICKETS_MESSAGES = {
 
   EVENT_STATUS_NOT_PUBLISHED: "Event's status is not published",
   EVENT_CREATOR_CANNOT_BOOK_TICKET: "Event's creator cannot book ticket",
+  EVENT_CAPACITY_REACHED: "Event's capacity has been reached",
 
   GET_TICKETS_SUCCESSFULLY: 'Get tickets successfully',
   GET_TICKETS_DETAILS_SUCCESSFULLY: 'Get ticket details successfully',

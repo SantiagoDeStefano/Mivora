@@ -339,21 +339,21 @@ class UserService {
     )
     user.rows[0].role = parsePgArray(user.rows[0].role)
 
-    if (user.rows[0].role.includes('organizer')) {
-      const revenueRes = await databaseService.users(
-        `
-          SELECT 
-            SUM(tickets.price_cents) AS total_revenue_cents
-          FROM tickets
-          JOIN events ON tickets.event_id = events.id
-          WHERE events.organizer_id = $1
-        `,
-        [user_id]
-      )
-      const totalRevenueCents = Number(revenueRes.rows[0]?.total_revenue_cents ?? 0)
-      const userRow = user.rows[0]
-      userRow.revenue_cents = totalRevenueCents
-    }
+    // if (user.rows[0].role.includes('organizer')) {
+    //   const revenueRes = await databaseService.users(
+    //     `
+    //       SELECT 
+    //         SUM(tickets.price_cents) AS total_revenue_cents
+    //       FROM tickets
+    //       JOIN events ON tickets.event_id = events.id
+    //       WHERE events.organizer_id = $1
+    //     `,
+    //     [user_id]
+    //   )
+    //   const totalRevenueCents = Number(revenueRes.rows[0]?.total_revenue_cents ?? 0)
+    //   const userRow = user.rows[0]
+    //   userRow.revenue_cents = totalRevenueCents
+    // }
 
     return user.rows[0]
   }

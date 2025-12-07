@@ -18,6 +18,7 @@ type EventDetails = {
   checked_in?: number
   capacity?: number
   status?: string
+  revenue_cents?: number
 }
 
 type Props = {
@@ -165,7 +166,8 @@ export default function CreatedEventDetailsPage({ event }: Props) {
           price_cents: data.price_cents,
           checked_in: data.checked_in,
           capacity: data.capacity,
-          status: data.status
+          status: data.status, 
+          revenue_cents: data.revenue_cents
         }
 
         setEv(mapped)

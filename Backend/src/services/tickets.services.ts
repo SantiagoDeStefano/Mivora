@@ -95,13 +95,7 @@ class TicketsService {
         WHERE tickets.id = $3
         AND tickets.event_id = events.id
         RETURNING
-          tickets.id, 
-          events.title as event_title, 
-          events.status as event_status,
-          tickets.status as ticket_status, 
-          tickets.checked_in_at, 
-          tickets.price_cents, 
-          tickets.qr_code_token
+          events.id AS event_id
       `,
       ['checked_in', new Date(), ticket_id]
     )
@@ -114,7 +108,6 @@ class TicketsService {
       `,
       [ticket.event_id]
     )
-    return { ticket }
   }
 
   /**

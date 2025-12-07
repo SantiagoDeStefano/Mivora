@@ -154,26 +154,35 @@ class EventService {
     const searchParam = search ?? null // null = "no search"
     const eventsResult = await databaseService.events(
       `
+        SELECT
+          events.id,
+          events.title,
+          events.description,
+          events.poster_url,
+          events.location_text,
+          events.start_at,
+          events.end_at,
+          events.price_cents,
+          events.checked_in,
+          events.capacity,
+          events.status,
+          COUNT(*) OVER() AS total_count,
+          COALESCE(revenue.revenue_cents, 0) AS revenue_cents
+        FROM events
+        LEFT JOIN (
           SELECT
-            id,
-            title,
-            description,
-            poster_url,
-            location_text,
-            start_at,
-            end_at,
-            price_cents,
-            checked_in,
-            capacity,
-            status,
-            COUNT(*) OVER() AS total_count
-          FROM events
-          WHERE organizer_id = $1
-            AND status = COALESCE($2::event_status, status)
-            AND title ILIKE COALESCE('%' || $3::text || '%', title)
-          ORDER BY created_at DESC, id DESC
-          LIMIT $4 OFFSET $5
-        `,
+            event_id,
+            SUM(price_cents) AS revenue_cents
+          FROM tickets
+          WHERE status = 'checked_in'
+          GROUP BY event_id
+        ) revenue ON revenue.event_id = events.id
+        WHERE organizer_id = $1
+          AND status = COALESCE($2::event_status, status)
+          AND title ILIKE COALESCE('%' || $3::text || '%', title)
+        ORDER BY created_at DESC, id DESC
+        LIMIT $4 OFFSET $5;
+      `,
       [organizer_id, statusParam, searchParam, limit, limit * (page - 1)]
     )
 
@@ -193,23 +202,32 @@ class EventService {
   async getCreatedEventDetails(organizer_id: UUIDv4, event_id: UUIDv4) {
     const eventsResult = await databaseService.events(
       `
+        SELECT
+          events.id,
+          events.title,
+          events.description,
+          events.poster_url,
+          events.location_text,
+          events.start_at,
+          events.end_at,
+          events.price_cents,
+          events.checked_in,
+          events.capacity,
+          events.status,
+          COALESCE(revenue.revenue_cents, 0) AS revenue_cents
+        FROM events
+        LEFT JOIN (
           SELECT
-            id,
-            title,
-            description,
-            poster_url,
-            location_text,
-            start_at,
-            end_at,
-            price_cents,
-            checked_in,
-            capacity,
-            status
-          FROM events
-          WHERE organizer_id = $1
-          AND id = $2
-          LIMIT 1
-        `,
+            event_id,
+            SUM(price_cents) AS revenue_cents
+          FROM tickets
+          WHERE status = 'checked_in'
+          GROUP BY event_id
+        ) revenue ON revenue.event_id = events.id
+        WHERE organizer_id = $1
+          AND events.id = $2
+        LIMIT 1;
+      `,
       [organizer_id, event_id]
     )
 

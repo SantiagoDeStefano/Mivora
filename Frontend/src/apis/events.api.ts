@@ -14,6 +14,7 @@ export interface Event {
   checked_in?: number
   capacity: number
   status: 'draft' | 'published' | 'canceled'
+  revenue_cents: number
 }
 
 export interface CreateEventPayload {
@@ -67,13 +68,13 @@ const eventsApi = {
     return http.patch<SuccessResponse<Event>>(`/events/${event_id}`, body)
   },
   publishEvent: (event_id: string) => {
-    return http.patch<SuccessResponse<Event>>(`/events/${event_id}`, { status: 'published' })
+    return http.patch<SuccessResponse<Event>>(`/events/${event_id}/status`, { status: 'published' })
   },
   cancelEvent: (event_id: string) => {
-    return http.patch<SuccessResponse<Event>>(`/events/${event_id}`, { status: 'canceled' })
+    return http.patch<SuccessResponse<Event>>(`/events/${event_id}/status`, { status: 'canceled' })
   },
   draftEvent: (event_id: string) => {
-    return http.patch<SuccessResponse<Event>>(`/events/${event_id}`, { status: 'draft' })
+    return http.patch<SuccessResponse<Event>>(`/events/${event_id}/status`, { status: 'draft' })
   }
 }
 

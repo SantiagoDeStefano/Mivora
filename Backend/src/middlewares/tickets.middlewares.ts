@@ -30,24 +30,31 @@ const ticket_status: TicketStatus[] = ['booked', 'checked_in', 'canceled']
 export const bookTicketValidator = async (req: Request, res: Response, next: NextFunction) => {
   const { user_id } = req.decoded_authorization as TokenPayload
   const event_id = (req.event as Event[])[0].id
-  console.log(event_id, user_id)
   const userEventCount = await databaseService.tickets(
     `
       SELECT
         events.status,
         events.organizer_id,
+        events.capacity,
         (
           SELECT COUNT(*)
           FROM tickets
           WHERE tickets.user_id = $1
             AND tickets.event_id = $2
-        ) AS ticket_count
+        ) AS ticket_count,
+        (
+          SELECT COUNT(*)
+          FROM tickets
+          WHERE tickets.event_id = $2
+            -- optionally filter by status if you have cancelled/etc
+            -- AND tickets.status IN ('booked', 'checked_in')
+        ) AS event_ticket_count
       FROM events
       WHERE events.id = $2
     `,
     [user_id, event_id]
   )
-  if(user_id === userEventCount.rows[0].organizer_id) {
+  if (user_id === userEventCount.rows[0].organizer_id) {
     return next(
       new ErrorWithStatus({
         message: TICKETS_MESSAGES.EVENT_CREATOR_CANNOT_BOOK_TICKET,
@@ -55,7 +62,7 @@ export const bookTicketValidator = async (req: Request, res: Response, next: Nex
       })
     )
   }
-  if(userEventCount.rows[0].status != 'published') {
+  if (userEventCount.rows[0].status != 'published') {
     return next(
       new ErrorWithStatus({
         message: TICKETS_MESSAGES.EVENT_STATUS_NOT_PUBLISHED,
@@ -68,6 +75,15 @@ export const bookTicketValidator = async (req: Request, res: Response, next: Nex
     return next(
       new ErrorWithStatus({
         message: TICKETS_MESSAGES.ONE_USER_PER_EVENT_ONLY,
+        status: HTTP_STATUS.CONFLICT
+      })
+    )
+  }
+  const eventTicketCount = Number(userEventCount.rows[0].event_ticket_count)
+  if (eventTicketCount >= userEventCount.rows[0].capacity) {
+    return next(
+      new ErrorWithStatus({
+        message: TICKETS_MESSAGES.EVENT_CAPACITY_REACHED,
         status: HTTP_STATUS.CONFLICT
       })
     )
@@ -127,7 +143,7 @@ export const scanTicketValidator = validate(
               if (ticket.rows[0].ticket_status == 'checked_in') {
                 throw new ErrorWithStatus({
                   message: TICKETS_MESSAGES.TICKET_ALREADY_CHECKED_IN,
-                  status: HTTP_STATUS.NOT_FOUND
+                  status: HTTP_STATUS.CONFLICT
                 })
               }
               req.ticket = ticket.rows

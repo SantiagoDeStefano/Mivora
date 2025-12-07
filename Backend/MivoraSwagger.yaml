@@ -653,6 +653,7 @@ paths:
                           capacity: 83
                           status: draft
                           total_count: '108'
+                          revenue_cents: 0
 
                         - id: d1f9bf07-3758-4b07-b655-87adeb8efccc
                           title: Sustainable regional intranet
@@ -668,6 +669,7 @@ paths:
                           capacity: 436
                           status: published
                           total_count: '108'
+                          revenue_cents: 125008
 
                         - id: a8d29ecd-03ae-4b61-a98b-31bcc2f44c17
                           title: Organic heuristic moderator
@@ -684,6 +686,8 @@ paths:
                           capacity: 365
                           status: published
                           total_count: '108'
+                          revenue_cents: 0
+
 
         '403':
           description: Must be organizer
@@ -724,7 +728,48 @@ paths:
                     type: string
                     example: Event retrieved successfully
                   result:
-                    $ref: '#/components/schemas/Event'
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        example: 9a83ec0c-c4aa-4b4c-9d7a-b7a42dd163c8
+                      title:
+                        type: string
+                        example: Persevering value-added array
+                      description:
+                        type: string
+                        example: Creptio tantillus capitulus cena calco...
+                      poster_url:
+                        type: string
+                        format: uri
+                        example: https://picsum.photos/seed/lZqP2FB9PU/800/600?blur=8
+                      location_text:
+                        type: string
+                        example: Osbornemouth, Gabon
+                      start_at:
+                        type: string
+                        format: date-time
+                        example: 2026-01-04T11:29:51.442Z
+                      end_at:
+                        type: string
+                        format: date-time
+                        example: 2026-01-04T16:29:51.442Z
+                      price_cents:
+                        type: integer
+                        example: 45616
+                      checked_in:
+                        type: integer
+                        example: 6
+                      capacity:
+                        type: integer
+                        example: 368
+                      status:
+                        type: string
+                        example: published
+                      revenue_cents:
+                        type: integer
+                        example: 45616
         '403':
           description: Must be organizer
           content:
@@ -1748,6 +1793,66 @@ paths:
                   message:
                     type: string
                     example: Only booked tickets can be canceled
+  /tickets/check-ins:
+    post:
+      tags:
+        - ticket
+      summary: Scan (check-in) a ticket by qr_code_token
+      operationId: scanTicket
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                qr_code_token:
+                  type: string
+                  format: uuid
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJldmVudF9pZCI6ImE4ZDI5ZWNkLTAzYWUtNGI2MS1hOThiLTMxYmNjMmY0NGMxNyIsInVzZXJfaWQiOiIwNzk2NWI3Mi0xZDU3LTRkM2EtOWZjYy01MmRjNWRjZGFhMzkiLCJ0b2tlblR5cGUiOjQsImlhdCI6MTc2NDgzMTkyMX0.vPLtSgO0tlyFAzQ_wmsSUudb5M7d9pznYtwKxjYB60I
+      responses:
+        '200':
+          description: Ticket scanned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Ticket scanned successfully
+        '404':
+          description: Ticket not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Ticket not found
+        '403':
+          description: Ticket has been checked in already
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Ticket has been checked in already
+        '409':
+          description: Ticket already checked in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Ticket already checked in
 
 components:
   schemas:
