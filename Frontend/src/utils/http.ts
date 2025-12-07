@@ -63,11 +63,6 @@ class Http {
           error.config?.url,
           error.response?.data
         )
-        if (error.response?.status == HttpStatusCode.Unauthorized) {
-          clearLocalStorage()
-          window.location.reload()
-        }
-        return Promise.reject(error)
       }
     )
 
@@ -87,21 +82,23 @@ class Http {
             return Promise.reject(error)
           }  
 
-          const res = await usersApi.refreshToken({ refresh_token: refreshToken })
+          try {
+            const res = await usersApi.refreshToken({ refresh_token: refreshToken })
 
-          console.log(res)
+            this.accessToken = res.data.result.access_token
+            this.refreshToken = res.data.result.refresh_token
+            setAccessTokenToLocalStorage(this.accessToken)
+            setRefreshTokenToLocalStorage(this.refreshToken)
 
-          this.accessToken = res.data.result.access_token
-          this.refreshToken = res.data.result.refresh_token
-          setAccessTokenToLocalStorage(this.accessToken)
-          setRefreshTokenToLocalStorage(this.refreshToken)
+            originalRequest.headers.Authorization = `Bearer ${this.accessToken}`
 
-          // Retry original request
-
-          originalRequest.headers.Authorization = `Bearer ${this.accessToken}`
-          return this.instance(originalRequest)
+            return this.instance(originalRequest)
+          } catch (err) {
+            clearLocalStorage()
+            window.location.reload()
+            return Promise.reject(err)
+          }
         }
-
         return Promise.reject(error)
       }
     )
