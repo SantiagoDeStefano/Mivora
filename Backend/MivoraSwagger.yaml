@@ -1,6 +1,6 @@
 openapi: 3.0.4
 info:
-  title: Twitter clone TypeScript - 2025
+  title: Mivora - 2025
   description: |-
     This OpenAPI spec describes the backend API for Mivora, a platform that handles users, events, tickets, and real-time event messaging. It includes full user account flows such as registration, login, logout, token refresh, profile updates, avatar uploads, email verification, and password-reset procedures. Event organizers can create, update, publish, cancel, and manage event posters, while both organizers and attendees can send and fetch event messages. Users can browse published events, view details, and book tickets. The ticketing system supports booking, listing with filters, retrieving individual tickets, canceling or checking in tickets, and QR-code-based scanning. All sensitive and user-specific operations use JWT bearer authentication, and list endpoints follow a consistent pagination pattern.
     some useful links:
