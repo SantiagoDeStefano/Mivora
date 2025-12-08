@@ -132,6 +132,24 @@ export default function AboutPage() {
                   mivora@gmail.com
                 </a>
               </div>
+
+              {/* API Docs */}
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 sm:p-6">
+                <h2 className="text-base font-semibold text-slate-50">
+                  API Documentation
+                </h2>
+                <p className="mt-3 text-sm text-slate-300">
+                  Explore our API documentation for developers who want to integrate with our platform.
+                </p>
+                <a
+                  href="/mivora/api-docs"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-flex items-center justify-center rounded-xl border border-pink-500/70 bg-pink-500/10 px-4 py-2 text-sm font-medium text-pink-200 hover:bg-pink-500/20 transition"
+                >
+                  View API Docs
+                </a>
+              </div>
             </aside>
           </div>
         </div>

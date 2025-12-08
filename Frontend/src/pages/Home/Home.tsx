@@ -297,7 +297,7 @@ export default function Home() {
               {events.map((e) => (
                 <Surface
                   key={e.id}
-                  className="overflow-hidden border border-gray-800 bg-gray-900 text-gray-100 transition hover:shadow-xl focus-within:ring-2 focus-within:ring-pink-500"
+                  className="overflow-hidden border border-gray-800 bg-gray-900 text-gray-100 transition hover:shadow-xl focus-within:ring-2 focus-within:ring-pink-500 flex flex-col h-full"
                 >
                   <div
                     className="aspect-[4/3] w-full bg-cover bg-center"
@@ -305,7 +305,7 @@ export default function Home() {
                       backgroundImage: e.poster_url ? `url(${e.poster_url})` : undefined
                     }}
                   />
-                  <div className="p-5">
+                  <div className="p-5 flex flex-col h-full">
                     <div className="text-xs font-medium uppercase tracking-wide text-pink-400">
                       {formatDate(e.start_at)}
                     </div>
@@ -323,12 +323,12 @@ export default function Home() {
                     </p>
 
                     {e.description && (
-                      <p className="mt-2 text-sm text-gray-300 line-clamp-3">
+                      <p className="mt-2 text-sm text-gray-300 line-clamp-3 flex-grow">
                         {e.description}
                       </p>
                     )}
 
-                    <div className="mt-3 flex items-center justify-between">
+                    <div className="mt-3 flex items-center justify-between pt-3 border-t border-gray-800">
                       <div className="flex items-center gap-2">
                         <button
                           type="button"

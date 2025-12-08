@@ -5,7 +5,8 @@ import path from '../../constants/path'
 import ticketsApi, {
   Ticket,
   TicketApi,
-  GetMyTicketsResponse
+  GetMyTicketsResponse,
+mapTicketApiToTicket
 } from '../../apis/tickets.api'
 import { GetOrSearchMyTicketsSchema } from '../../utils/rules'
 import { socket } from '../../utils/socket'
@@ -42,12 +43,18 @@ export default function MyTicketDetails() {
   const [tickets, setTickets] = useState<Ticket[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
   const [cancelingId, setCancelingId] = useState<string | null>(null)
   const [popupOpen, setPopupOpen] = useState(false)
   const [popupMessage, setPopupMessage] = useState('')
-  const [popupVariant, setPopupVariant] = useState<'success' | 'error' | 'info'>('info')
+  const [popupVariant, setPopupVariant] = useState<'success' | 'error' | 'info'>(
+    'info'
+  )
+
   const [confirmOpen, setConfirmOpen] = useState(false)
-  const [confirmingTicketId, setConfirmingTicketId] = useState<string | null>(null)
+  const [confirmingTicketId, setConfirmingTicketId] = useState<string | null>(
+    null
+  )
 
   // Fetch toàn bộ ticket của user (như MyTicketsPage)
   useEffect(() => {
@@ -66,14 +73,11 @@ export default function MyTicketDetails() {
           }
 
           const res = await ticketsApi.searchMyTickets(params)
-          // res.data là SuccessResponse<GetMyTicketsResponse>
           const result: GetMyTicketsResponse = res.data.result
 
-          const mapped: Ticket[] = result.tickets.map((raw: TicketApi) => ({
-            ...raw,
-            // backend trả ticket_status, mình map sang status cho UI
-            status: raw.ticket_status // 'booked' | 'checked_in' | 'canceled'
-          }))
+          const mapped: Ticket[] = result.tickets.map((raw: TicketApi) =>
+            mapTicketApiToTicket(raw)
+          )
 
           all = all.concat(mapped)
 
@@ -105,7 +109,6 @@ export default function MyTicketDetails() {
     let currentId = id?.trim().toLowerCase()
 
     if (!currentId || !TICKET_ID_REGEX.test(currentId)) {
-      // nếu không có id hoặc id sai → nhảy về ticket đầu tiên
       const firstId = tickets[0]?.id
       if (firstId) {
         navigate(path.my_ticket_details.replace(':id', firstId), {
@@ -165,42 +168,41 @@ export default function MyTicketDetails() {
   }
 
   const handleConfirmCancel = async () => {
-  if (!confirmingTicketId) return
+    if (!confirmingTicketId) return
 
-  try {
-    setCancelingId(confirmingTicketId)
-    await ticketsApi.cancelTicket(confirmingTicketId)
-    // backend đã check: ONLY_BOOKED_TICKETS_CAN_BE_CANCELED, CURRENT_USER_IS_NOT_TICKET_OWNER, v.v.
-    setTickets((prev) =>
-      prev.map((t) =>
-        t.id === confirmingTicketId
-          ? ({ ...t, status: 'canceled' } as Ticket)
-          : t
+    try {
+      setCancelingId(confirmingTicketId)
+      await ticketsApi.cancelTicket(confirmingTicketId)
+
+      setTickets((prev) =>
+        prev.map((t) =>
+          t.id === confirmingTicketId
+            ? ({ ...t, status: 'canceled' } as Ticket)
+            : t
+        )
       )
-    )
 
-    setPopupMessage('Ticket canceled successfully.')
-    setPopupVariant('success')
-    setPopupOpen(true)
+      setPopupMessage('Ticket canceled successfully.')
+      setPopupVariant('success')
+      setPopupOpen(true)
 
-    // ➜ Sau khi hủy xong, quay về trang danh sách vé
-    navigate(path.my_tickets)
-  } catch (err: any) {
-    console.error('Failed to cancel ticket:', err)
-    const msg =
-      err?.response?.data?.message ||
-      err?.response?.data?.error ||
-      'Failed to cancel ticket.'
-    setPopupMessage(msg)
-    setPopupVariant('error')
-    setPopupOpen(true)
-  } finally {
-    setCancelingId(null)
-    setConfirmOpen(false)
-    setConfirmingTicketId(null)
+      // Sau khi hủy xong, quay về trang danh sách vé
+      navigate(path.my_tickets)
+    } catch (err: any) {
+      console.error('Failed to cancel ticket:', err)
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        'Failed to cancel ticket.'
+      setPopupMessage(msg)
+      setPopupVariant('error')
+      setPopupOpen(true)
+    } finally {
+      setCancelingId(null)
+      setConfirmOpen(false)
+      setConfirmingTicketId(null)
+    }
   }
-}
-
 
   const handleCancelConfirm = () => {
     setConfirmOpen(false)
@@ -210,13 +212,13 @@ export default function MyTicketDetails() {
   // Loading UI
   if (loading) {
     return (
-      <section className='min-h-screen bg-slate-950 py-8 sm:py-10'>
+      <section className="min-h-screen bg-slate-950 py-8 sm:py-10">
         <Container>
-          <div className='max-w-2xl mx-auto flex items-center justify-center min-h-[70vh]'>
-            <div className='w-full rounded-3xl border border-slate-800 bg-slate-900/70 px-6 py-8 shadow-xl'>
-              <div className='h-4 w-32 bg-slate-800 rounded-md animate-pulse mb-3' />
-              <div className='h-7 w-40 bg-slate-800 rounded-md animate-pulse mb-6' />
-              <div className='h-40 w-full bg-slate-800 rounded-2xl animate-pulse' />
+          <div className="max-w-2xl mx-auto flex items-center justify-center min-h-[70vh]">
+            <div className="w-full rounded-3xl border border-slate-800 bg-slate-900/70 px-6 py-8 shadow-xl">
+              <div className="h-4 w-32 bg-slate-800 rounded-md animate-pulse mb-3" />
+              <div className="h-7 w-40 bg-slate-800 rounded-md animate-pulse mb-6" />
+              <div className="h-40 w-full bg-slate-800 rounded-2xl animate-pulse" />
             </div>
           </div>
         </Container>
@@ -226,26 +228,26 @@ export default function MyTicketDetails() {
 
   if (error || !tickets.length) {
     return (
-      <section className='min-h-screen bg-slate-950 py-8 sm:py-10'>
+      <section className="min-h-screen bg-slate-950 py-8 sm:py-10">
         <Container>
-          <div className='max-w-2xl mx-auto flex items-center justify-center min-h-[70vh]'>
-            <div className='w-full rounded-3xl border border-red-700/70 bg-red-900/40 px-6 py-8 text-center shadow-xl'>
-              <h1 className='text-xl sm:text-2xl font-semibold text-red-100'>
+          <div className="max-w-2xl mx-auto flex items-center justify-center min-h-[70vh]">
+            <div className="w-full rounded-3xl border border-red-700/70 bg-red-900/40 px-6 py-8 text-center shadow-xl">
+              <h1 className="text-xl sm:text-2xl font-semibold text-red-100">
                 Ticket not found
               </h1>
-              <p className='mt-2 text-sm text-red-200'>
+              <p className="mt-2 text-sm text-red-200">
                 {error || 'We could not find your tickets.'}
               </p>
-              <div className='mt-5 flex flex-wrap justify-center gap-3'>
+              <div className="mt-5 flex flex-wrap justify-center gap-3">
                 <button
                   onClick={() => navigate(path.my_tickets)}
-                  className='rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-800 border border-slate-600'
+                  className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-800 border border-slate-600"
                 >
                   Back to my tickets
                 </button>
                 <button
                   onClick={() => navigate(path.home)}
-                  className='rounded-full bg-pink-600 px-4 py-2 text-sm font-medium text-white hover:bg-pink-700 shadow'
+                  className="rounded-full bg-pink-600 px-4 py-2 text-sm font-medium text-white hover:bg-pink-700 shadow"
                 >
                   Discover events
                 </button>
@@ -260,9 +262,9 @@ export default function MyTicketDetails() {
   const activeId = id?.trim().toLowerCase() || tickets[0].id
 
   return (
-    <section className='min-h-screen bg-slate-950 py-4 sm:py-6'>
+    <section className="min-h-screen bg-slate-950 py-4 sm:py-6">
       <Container>
-        <div className='max-w-2xl mx-auto'>
+        <div className="max-w-2xl mx-auto">
           {tickets.map((ticket) => {
             const isActive = ticket.id === activeId
             const isBooked = ticket.status === 'booked'
@@ -277,7 +279,8 @@ export default function MyTicketDetails() {
               statusLabel = 'Checked-in'
             } else if (isCanceled) {
               statusLabel = 'Canceled'
-              statusClass = 'inline-flex items-center rounded-full bg-red-600 px-3 py-1 text-[11px] font-medium text-white'
+              statusClass =
+                'inline-flex items-center rounded-full bg-red-600 px-3 py-1 text-[11px] font-medium text-white'
             }
 
             return (
@@ -297,14 +300,14 @@ export default function MyTicketDetails() {
                       ? 'scale-100 border-slate-700 ring-4 ring-pink-500/30'
                       : 'scale-95 border-slate-800'
                   ].join(' ')}
-                >
+              >
                   {/* Header strip */}
-                  <div className='mb-5 rounded-2xl bg-gradient-to-r from-pink-500 via-fuchsia-500 to-indigo-500 px-4 py-3 flex items-center justify-between'>
+                  <div className="mb-5 rounded-2xl bg-gradient-to-r from-pink-500 via-fuchsia-500 to-indigo-500 px-4 py-3 flex items-center justify-between">
                     <div>
-                      <p className='text-[11px] font-medium uppercase tracking-[0.16em] text-pink-50/80'>
+                      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-pink-50/80">
                         Ticket
                       </p>
-                      <p className='text-sm font-semibold text-white line-clamp-1'>
+                      <p className="text-sm font-semibold text-white line-clamp-1">
                         {ticket.event_title}
                       </p>
                     </div>
@@ -312,64 +315,64 @@ export default function MyTicketDetails() {
                   </div>
 
                   {/* Body */}
-                  <div className='flex flex-col gap-6 sm:flex-row sm:items-start'>
+                  <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
                     {/* Left info */}
-                    <div className='flex-1 space-y-3'>
+                    <div className="flex-1 space-y-3">
                       <div>
-                        <p className='text-[11px] uppercase tracking-wide text-slate-400'>
+                        <p className="text-[11px] uppercase tracking-wide text-slate-400">
                           Event
                         </p>
-                        <p className='mt-1 text-xl sm:text-2xl font-semibold text-slate-50'>
+                        <p className="mt-1 text-xl sm:text-2xl font-semibold text-slate-50">
                           {ticket.event_title}
                         </p>
                         {ticket.event_status && (
-                          <p className='mt-1 text-xs text-slate-400'>
+                          <p className="mt-1 text-xs text-slate-400">
                             Status:{' '}
-                            <span className='font-medium text-slate-200'>
+                            <span className="font-medium text-slate-200">
                               {ticket.event_status}
                             </span>
                           </p>
                         )}
                       </div>
 
-                      <div className='pt-2 space-y-1'>
-                        <p className='text-xs text-slate-400'>Price</p>
-                        <p className='text-2xl font-semibold text-slate-50'>
+                      <div className="pt-2 space-y-1">
+                        <p className="text-xs text-slate-400">Price</p>
+                        <p className="text-2xl font-semibold text-slate-50">
                           {formatPrice(ticket.price_cents)}
                         </p>
                       </div>
 
-                      <div className='pt-2 space-y-1'>
-                        <p className='text-xs text-slate-400'>Checked in</p>
-                        <p className='text-sm font-medium text-slate-100'>
+                      <div className="pt-2 space-y-1">
+                        <p className="text-xs text-slate-400">Checked in</p>
+                        <p className="text-sm font-medium text-slate-100">
                           {formatCheckedIn(ticket.checked_in_at)}
                         </p>
                       </div>
 
-                      <div className='pt-2 space-y-1'>
-                        <p className='text-xs text-slate-400'>Ticket ID</p>
-                        <p className='text-[11px] font-mono text-slate-300 break-all'>
+                      <div className="pt-2 space-y-1">
+                        <p className="text-xs text-slate-400">Ticket ID</p>
+                        <p className="text-[11px] font-mono text-slate-300 break-all">
                           {ticket.id}
                         </p>
                       </div>
                     </div>
 
                     {/* QR side */}
-                    <div className='w-full sm:w-60 flex flex-col items-center sm:items-stretch gap-2'>
-                      <div className='w-full rounded-3xl bg-slate-900/80 border border-slate-700 px-4 py-4 flex items-center justify-center'>
+                    <div className="w-full sm:w-60 flex flex-col items-center sm:items-stretch gap-2">
+                      <div className="w-full rounded-3xl bg-slate-900/80 border border-slate-700 px-4 py-4 flex items-center justify-center">
                         {ticket.qr_code && !isCanceled ? (
                           <img
                             src={ticket.qr_code}
-                            alt='Ticket QR'
-                            className='w-40 h-40 sm:w-44 sm:h-44 object-contain'
+                            alt="Ticket QR"
+                            className="w-40 h-40 sm:w-44 sm:h-44 object-contain"
                           />
                         ) : (
-                          <div className='w-40 h-40 sm:w-44 sm:h-44 bg-slate-800 rounded-2xl flex items-center justify-center text-xs text-slate-400'>
+                          <div className="w-40 h-40 sm:w-44 sm:h-44 bg-slate-800 rounded-2xl flex items-center justify-center text-xs text-slate-400">
                             {isCanceled ? 'Ticket canceled' : ''}
                           </div>
                         )}
                       </div>
-                      <p className='text-[11px] text-slate-400 text-center'>
+                      <p className="text-[11px] text-slate-400 text-center">
                         Show this QR at the venue to check in. Do not share it
                         publicly.
                       </p>
@@ -377,11 +380,11 @@ export default function MyTicketDetails() {
                   </div>
 
                   {/* Footer actions */}
-                  <div className='mt-6 flex flex-wrap items-center justify-between gap-3'>
-                    <div className='flex items-center gap-3'>
+                  <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
                       <button
                         onClick={() => navigate(path.my_tickets)}
-                        className='inline-flex items-center justify-center rounded-full border border-slate-600 bg-slate-900 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-800'
+                        className="inline-flex items-center justify-center rounded-full border border-slate-600 bg-slate-900 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-800"
                       >
                         Back to my tickets
                       </button>
@@ -391,7 +394,7 @@ export default function MyTicketDetails() {
                         <button
                           onClick={() => handleOpenCancelConfirm(ticket.id)}
                           disabled={cancelingId === ticket.id}
-                          className='inline-flex items-center justify-center rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed'
+                          className="inline-flex items-center justify-center rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                           {cancelingId === ticket.id
                             ? 'Canceling…'
@@ -399,34 +402,38 @@ export default function MyTicketDetails() {
                         </button>
                       )}
                     </div>
-                    <p className='text-[11px] text-slate-400'>
+                    <p className="text-[11px] text-slate-400">
                       Use ↑ / ↓ or PageUp / PageDown to switch tickets
                     </p>
                   </div>
 
                   {/* Confirmation Popup - Inside the card */}
                   {confirmOpen && confirmingTicketId === ticket.id && (
-                    <div className='fixed inset-0 z-40 flex items-center justify-center bg-black/40 backdrop-blur-sm'>
-                      <div className='absolute inset-0' onClick={handleCancelConfirm} />
-                      <div className='relative w-[92%] max-w-sm rounded-2xl border border-gray-700 bg-gradient-to-b from-gray-900 via-gray-900/95 to-black p-6 shadow-2xl'>
-                        <h2 className='mb-3 text-lg font-semibold text-white tracking-wide'>
+                    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+                      <div
+                        className="absolute inset-0"
+                        onClick={handleCancelConfirm}
+                      />
+                      <div className="relative w-[92%] max-w-sm rounded-2xl border border-gray-700 bg-gradient-to-b from-gray-900 via-gray-900/95 to-black p-6 shadow-2xl">
+                        <h2 className="mb-3 text-lg font-semibold text-white tracking-wide">
                           Confirm Cancel
                         </h2>
-                        <p className='text-sm text-gray-300 leading-relaxed'>
-                          Are you sure you want to cancel this ticket? This action cannot be undone.
+                        <p className="text-sm text-gray-300 leading-relaxed">
+                          Are you sure you want to cancel this ticket? This
+                          action cannot be undone.
                         </p>
-                        <div className='mt-6 flex justify-end gap-3'>
+                        <div className="mt-6 flex justify-end gap-3">
                           <button
                             onClick={handleCancelConfirm}
                             disabled={cancelingId !== null}
-                            className='inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium text-gray-200 bg-gray-700 hover:bg-gray-600 disabled:opacity-60 transition'
+                            className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium text-gray-200 bg-gray-700 hover:bg-gray-600 disabled:opacity-60 transition"
                           >
                             No, keep it
                           </button>
                           <button
                             onClick={handleConfirmCancel}
                             disabled={cancelingId !== null}
-                            className='inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 disabled:opacity-60 transition'
+                            className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 disabled:opacity-60 transition"
                           >
                             {cancelingId ? 'Canceling…' : 'Yes, cancel'}
                           </button>
@@ -444,7 +451,13 @@ export default function MyTicketDetails() {
       {/* Notification Popup */}
       <Popup
         open={popupOpen}
-        title={popupVariant === 'success' ? 'Success' : popupVariant === 'error' ? 'Error' : 'Notification'}
+        title={
+          popupVariant === 'success'
+            ? 'Success'
+            : popupVariant === 'error'
+            ? 'Error'
+            : 'Notification'
+        }
         message={popupMessage}
         variant={popupVariant}
         onClose={() => setPopupOpen(false)}

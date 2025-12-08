@@ -20,19 +20,15 @@ type EventDetails = {
   checked_in?: number
   capacity?: number
   status?: EventStatus
-  revenue_cents?: number
+  revenue_cents?: number | string
 }
 
-type Props = {
-  event?: EventDetails | null
-}
-
-export default function CreatedEventDetailsPage({ event }: Props) {
+export default function CreatedEventDetailsPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
-  const [ev, setEv] = useState<EventDetails | null>(event ?? null)
-  const [loading, setLoading] = useState(!event)
+  const [ev, setEv] = useState<EventDetails | null>(null)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const [notification, setNotification] = useState<{
@@ -76,8 +72,14 @@ export default function CreatedEventDetailsPage({ event }: Props) {
   }
 
   const formatPrice = (cents?: number) => {
-    if (!cents || cents <= 0) return 'Free'
-    return `$${(cents / 100).toFixed(2)}`
+    if (!cents || +cents <= 0) return 'Free'
+    return `$${(Number(cents) / 100).toFixed(2)}`
+  }
+
+  const formatRevenue = (cents?: number | string) => {
+    const n = Number(cents ?? 0)
+    if (!n || n <= 0) return '$0.00'
+    return `$${(n / 100).toFixed(2)}`
   }
 
   const NotificationToast = () => {
@@ -135,10 +137,8 @@ export default function CreatedEventDetailsPage({ event }: Props) {
     )
   }
 
-  // Fetch event details nếu không truyền qua props
+  // ALWAYS fetch event details by id
   useEffect(() => {
-    if (event) return
-
     if (!id) {
       setError('Missing event id.')
       setLoading(false)
@@ -155,14 +155,14 @@ export default function CreatedEventDetailsPage({ event }: Props) {
         const res = await usersApi.getCreatedEventDetails(id)
         const data = res.data.result
 
-        if (cancelled) return
+        console.log('raw event detail:', data)
 
         const mapped: EventDetails = {
           id: data.id,
           organizer_id: (data as any).organizer_id,
           title: data.title,
           description: data.description,
-          poster_url: data.poster_url,
+          poster_url: data.poster_url ?? null,
           location_text: data.location_text,
           start_at: data.start_at,
           end_at: data.end_at,
@@ -173,7 +173,9 @@ export default function CreatedEventDetailsPage({ event }: Props) {
           revenue_cents: data.revenue_cents
         }
 
-        setEv(mapped)
+        console.log('mapped event:', mapped)
+
+        if (!cancelled) setEv(mapped)
       } catch (err) {
         console.error('Failed to load event details:', err)
         if (!cancelled) setError('Failed to load event details.')
@@ -187,7 +189,7 @@ export default function CreatedEventDetailsPage({ event }: Props) {
     return () => {
       cancelled = true
     }
-  }, [id, event])
+  }, [id])
 
   // Loading skeleton
   if (loading) {
@@ -230,6 +232,8 @@ export default function CreatedEventDetailsPage({ event }: Props) {
       </section>
     )
   }
+
+  console.log('rendering event with poster_url:', ev.poster_url)
 
   return (
     <section id='event-details' className='py-10 sm:py-14'>
@@ -318,29 +322,26 @@ export default function CreatedEventDetailsPage({ event }: Props) {
           <span className='text-gray-100 font-medium'>{ev.title}</span>
         </nav>
 
-        {/* Header / Cover + Revenue overlay */}
+        {/* Header / poster + revenue */}
         <div className='relative overflow-hidden rounded-2xl border border-gray-800 bg-gray-900'>
-          <div className='relative'>
+          <div className='relative w-full aspect-video overflow-hidden rounded-xl'>
             {ev.poster_url ? (
               <img
                 src={ev.poster_url}
                 alt={`${ev.title} poster`}
-                className='aspect-[16/9] w-full object-cover'
+                className='absolute inset-0 w-full h-full object-coverr'
                 loading='lazy'
               />
             ) : (
               <div className='aspect-[16/9] w-full bg-gradient-to-br from-gray-800 to-gray-900' />
             )}
 
-            {/* Revenue KPI overlay – góc phải trên */}
             <div className='absolute top-4 right-4 z-20 rounded-xl border border-emerald-500/60 bg-emerald-900/50 backdrop-blur-md px-4 py-3 shadow-lg'>
               <p className='text-emerald-300 font-semibold text-[11px] uppercase tracking-wide'>
                 Revenue
               </p>
               <p className='text-2xl sm:text-3xl font-bold text-emerald-100'>
-                {ev.revenue_cents != null
-                  ? formatPrice(ev.revenue_cents)
-                  : '—'}
+                {formatRevenue(ev.revenue_cents)}
               </p>
             </div>
           </div>
@@ -362,7 +363,6 @@ export default function CreatedEventDetailsPage({ event }: Props) {
 
             {/* Actions */}
             <div className='mt-4 flex flex-wrap items-center gap-2'>
-              {/* Publish & Update when draft */}
               {ev.status === 'draft' && (
                 <>
                   <button
@@ -388,7 +388,6 @@ export default function CreatedEventDetailsPage({ event }: Props) {
                 </>
               )}
 
-              {/* Cancel when published */}
               {ev.status === 'published' && (
                 <button
                   type='button'
@@ -400,7 +399,6 @@ export default function CreatedEventDetailsPage({ event }: Props) {
                 </button>
               )}
 
-              {/* Set draft only when canceled */}
               {ev.status === 'canceled' && (
                 <button
                   type='button'
@@ -411,7 +409,9 @@ export default function CreatedEventDetailsPage({ event }: Props) {
                       setSettingDraft(true)
                       const res = await eventsApi.draftEvent(ev.id)
                       const updated = res.data.result
-                      setEv((prev) => (prev ? { ...prev, ...updated } : updated))
+                      setEv((prev) =>
+                        prev ? { ...prev, ...updated } : updated
+                      )
                       showNotification('Set draft successfully', 'success')
                     } catch (err) {
                       const msg = axios.isAxiosError(err)

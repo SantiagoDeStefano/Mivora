@@ -9,17 +9,18 @@ export interface TicketApi {
   ticket_status: 'booked' | 'checked_in' | 'canceled'
   checked_in_at: string | null
   price_cents: number
-  qr_code: string
+  qr_code: string | null
   total_count?: string
   event_id: string
 }
 
+// Shape cho UI: dùng `status` thay vì `ticket_status`
 export interface Ticket extends Omit<TicketApi, 'ticket_status'> {
   status: 'booked' | 'checked_in' | 'canceled'
 }
 
 export interface BookTicketResult {
-  ticket: Ticket
+  ticket: TicketApi
 }
 
 export interface GetMyTicketsResponse {
@@ -40,24 +41,52 @@ export interface ScanTicketResult {
   ticket: TicketApi
 }
 
+// Helper: map từ backend shape sang UI shape
+export const mapTicketApiToTicket = (raw: TicketApi): Ticket => ({
+  ...raw,
+  status: raw.ticket_status
+})
+
 const ticketsApi = {
-  bookTicket: (event_id: string) => {
-    return http.post<SuccessResponse<BookTicketResult>>('/tickets', { event_id })
+  bookTicket: async (event_id: string) => {
+    const res = await http.post<SuccessResponse<BookTicketResult>>(
+      '/tickets',
+      { event_id }
+    )
+    return res.data
   },
+
+  // lấy danh sách ticket (có thể là default list)
   getMyTickets: (limit: number = 20, page: number = 1) => {
-    return http.get<SuccessResponse<GetMyTicketsResponse>>('/tickets', { params: { limit, page } })
+    return http.get<SuccessResponse<GetMyTicketsResponse>>('/tickets', {
+      params: { limit, page }
+    })
   },
-  searchMyTickets: (body: GetOrSearchMyTicketsSchema) => {
-    return http.get<SuccessResponse<GetMyTicketsResponse>>('/tickets', { params: body })
+
+  // search/filter ticket theo query / status / paging
+  searchMyTickets: (params: GetOrSearchMyTicketsSchema) => {
+    return http.get<SuccessResponse<GetMyTicketsResponse>>('/tickets', {
+      params
+    })
   },
+
+  // chi tiết 1 ticket
   getTicketDetails: (ticket_id: string) => {
     return http.get<SuccessResponse<TicketApi>>(`/tickets/${ticket_id}`)
   },
+
+  // scan QR check-in
   scanTicket: (qr_code_token: string) => {
-    return http.post<SuccessResponse<ScanTicketResult>>('/tickets/check-ins', { qr_code_token })
+    return http.post<SuccessResponse<ScanTicketResult>>('/tickets/check-ins', {
+      qr_code_token
+    })
   },
+
+  // cancel ticket (PATCH status = 'canceled')
   cancelTicket: (ticket_id: string) => {
-    return http.patch<SuccessResponse<null>>(`/tickets/${ticket_id}/status`, { status: 'canceled' })
+    return http.patch<SuccessResponse<null>>(`/tickets/${ticket_id}/status`, {
+      status: 'canceled'
+    })
   }
 }
 

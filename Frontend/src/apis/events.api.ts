@@ -50,6 +50,10 @@ export interface GetEventsResponse {
   total_page: number
 }
 
+export interface UploadMediaResult {
+  url: string
+}
+
 // Constants để match với messages
 const MIN_LIMIT = 1
 const MAX_LIMIT = 50
@@ -98,16 +102,22 @@ const eventsApi = {
       params: { q, limit, page }
     })
   },
-
   createEvent: (payload: CreateEventPayload) => {
     return http.post<SuccessResponse<Event>>('/events', payload)
   },
 
-  uploadEventPoster(file: File) {
-    const formData = new FormData()
-    formData.append('image', file)
+  uploadEventPoster: (eventId: string, formData: FormData) => {
+    return http.put<SuccessResponse<UploadMediaResult>>(
+      `/events/${eventId}/poster`,
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      }
+    )
+  },
 
-    return http.post<SuccessResponse<{ url: string }>>('/medias/image', formData)
+  getCreatedEventDetails: (event_id: string) => {
+    return http.get<SuccessResponse<Event>>(`/users/me/events/${event_id}`)
   },
 
   updateEvent: (event_id: string, body: UpdateEventPayload) => {

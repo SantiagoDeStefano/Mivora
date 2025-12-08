@@ -99,20 +99,20 @@ export default function ScanTicketPage() {
 
   return (
     <div className='min-h-[calc(100vh-80px)] flex items-center justify-center px-4'>
-      <div className='w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-800 p-6 space-y-6'>
+      <div className='w-full max-w-lg bg-slate-900 rounded-2xl shadow-lg border border-slate-800 p-6 space-y-6'>
         {/* Header */}
         <div className='space-y-1'>
-          <h1 className='text-xl font-semibold text-slate-900 dark:text-slate-50'>
+          <h1 className='text-xl font-semibold text-slate-50'>
             Scan QR Ticket
           </h1>
-          <p className='text-sm text-slate-500 dark:text-slate-400'>
+          <p className='text-sm text-slate-400'>
             Point the camera at a valid QR ticket to verify it. You can also upload a QR
             image if needed.
           </p>
         </div>
 
         {/* Scanner */}
-        <div className='rounded-xl overflow-hidden border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/40 p-3'>
+        <div className='rounded-xl overflow-hidden border border-dashed border-slate-700 bg-slate-950/40 p-3'>
           <QRScanner
             onScan={handleScan}
             onError={handleScannerError}
@@ -124,7 +124,7 @@ export default function ScanTicketPage() {
         {/* Status / Errors / Hints */}
         <div className='space-y-2'>
           {loading && (
-            <div className='text-sm text-slate-600 dark:text-slate-300'>
+            <div className='text-sm text-slate-300'>
               <span className='inline-flex items-center gap-2'>
                 <span className='h-3 w-3 rounded-full border-2 border-slate-400 border-t-transparent animate-spin' />
                 Checking ticket...
@@ -133,13 +133,13 @@ export default function ScanTicketPage() {
           )}
 
           {status && !loading && !error && (
-            <p className='text-sm text-emerald-600 dark:text-emerald-400'>
+            <p className='text-sm text-emerald-400'>
               {status}
             </p>
           )}
 
           {error && (
-            <div className='text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900 rounded-lg px-3 py-2'>
+            <div className='text-sm text-red-400 bg-red-950/40 border border-red-900 rounded-lg px-3 py-2'>
               {error}
             </div>
           )}

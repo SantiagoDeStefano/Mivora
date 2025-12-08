@@ -86,9 +86,7 @@ export default function UpdateEventPage() {
             : ''
         )
         setEndAt(
-          data.end_at
-            ? new Date(data.end_at).toISOString().slice(0, 16)
-            : ''
+          data.end_at ? new Date(data.end_at).toISOString().slice(0, 16) : ''
         )
 
         setPrice(
@@ -151,7 +149,6 @@ export default function UpdateEventPage() {
 
     const priceTrimmed = price.trim()
     if (priceTrimmed !== '') {
-      // price input là tiền (VD 15.00), API dùng cents
       const priceNumber = Number(priceTrimmed)
       payload.price_cents = Number.isNaN(priceNumber)
         ? NaN
@@ -199,13 +196,11 @@ export default function UpdateEventPage() {
     const payload = buildUpdatePayload()
 
     try {
-      // FE validate payload bằng yup schema updateEvent
       const validated = await updateEvent.validate(payload, {
         abortEarly: false,
         stripUnknown: true
       })
 
-      // Ở đây validated.* đã là đúng type theo schema (string, number,...)
       const apiPayload = validated
 
       setSubmitting(true)
@@ -276,9 +271,21 @@ export default function UpdateEventPage() {
     }
   }
 
-  const handlePosterChange = async (ev: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePosterChange = async (
+    ev: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (!id) {
+      setPosterError('Missing event id.')
+      return
+    }
+
     const file = ev.target.files?.[0] ?? null
     setPosterError(null)
+
+    if (!file) {
+      setPosterError('Image is required')
+      return
+    }
 
     const payload: UpdateEventPosterSchema = { image: file as any }
 
@@ -301,53 +308,66 @@ export default function UpdateEventPage() {
       return
     }
 
-    if (!file) {
-      setPosterError('Image is required')
-      return
-    }
-
     try {
       setUploadingPoster(true)
 
-      const res = await eventsApi.uploadEventPoster(file)
-      const result = res?.data?.result
+      const formData = new FormData()
+      // key 'image' phải khớp backend
+      formData.append('image', file)
 
-      if (Array.isArray(result) && result[0]?.url) {
-        setPosterUrl(result[0].url)
-      } else if (result?.url) {
-        setPosterUrl(result.url)
+      // NOTE: eventsApi.uploadEventPoster phải có dạng (eventId, formData) và dùng PUT
+      const res = await eventsApi.uploadEventPoster(id, formData)
+      const result: any = res?.data?.result
+
+      // Tùy backend, nó có thể trả { poster_url } hoặc cả Event
+      const newUrl =
+        result?.poster_url ??
+        result?.url ??
+        (Array.isArray(result) && result[0]?.url)
+
+      if (typeof newUrl === 'string' && newUrl.trim() !== '') {
+        setPosterUrl(newUrl)
       } else {
+        console.warn('Upload poster: unexpected response', res.data)
         setPosterError('Upload failed: unexpected response')
       }
     } catch (err: any) {
       console.error('Poster upload error', err)
-      setPosterError(err?.message || 'Upload failed')
+      if (axios.isAxiosError(err)) {
+        setPosterError(
+          err.response?.data?.message ||
+            err.response?.data?.error ||
+            'Upload failed'
+        )
+      } else {
+        setPosterError(err?.message || 'Upload failed')
+      }
     } finally {
       setUploadingPoster(false)
     }
   }
 
   return (
-    <section className="py-10 sm:py-14">
+    <section className='py-10 sm:py-14'>
       <Container>
-        <header className="mb-8 max-w-2xl mx-auto">
-          <h2 className="text-3xl font-semibold text-gray-100">Update Event</h2>
-          <p className="mt-1 text-sm text-gray-400">
+        <header className='mb-8 max-w-2xl mx-auto'>
+          <h2 className='text-3xl font-semibold text-gray-100'>Update Event</h2>
+          <p className='mt-1 text-sm text-gray-400'>
             Edit your event details and save the changes.
           </p>
         </header>
 
-        <Card className="bg-gray-950 border-gray-800 p-6 sm:p-8 rounded-2xl shadow-xl max-w-2xl mx-auto">
+        <Card className='bg-gray-950 border-gray-800 p-6 sm:p-8 rounded-2xl shadow-xl max-w-2xl mx-auto'>
           {loading ? (
-            <div className="space-y-4">
-              <div className="h-6 w-40 bg-gray-800 rounded-md animate-pulse" />
-              <div className="h-10 w-full bg-gray-800 rounded-md animate-pulse" />
-              <div className="h-24 w-full bg-gray-800 rounded-md animate-pulse" />
+            <div className='space-y-4'>
+              <div className='h-6 w-40 bg-gray-800 rounded-md animate-pulse' />
+              <div className='h-10 w-full bg-gray-800 rounded-md animate-pulse' />
+              <div className='h-24 w-full bg-gray-800 rounded-md animate-pulse' />
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className='space-y-6'>
               {error && (
-                <div className="mb-2 rounded-lg border border-red-700 bg-red-900/40 p-3 text-red-300 text-sm space-y-1">
+                <div className='mb-2 rounded-lg border border-red-700 bg-red-900/40 p-3 text-red-300 text-sm space-y-1'>
                   {error.map((msg, i) => (
                     <div key={i}>• {msg}</div>
                   ))}
@@ -355,12 +375,12 @@ export default function UpdateEventPage() {
               )}
 
               <div>
-                <label htmlFor="title" className={labelBase}>
+                <label htmlFor='title' className={labelBase}>
                   Event Title
                 </label>
                 <input
-                  type="text"
-                  id="title"
+                  type='text'
+                  id='title'
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className={inputBase}
@@ -368,11 +388,11 @@ export default function UpdateEventPage() {
               </div>
 
               <div>
-                <label htmlFor="description" className={labelBase}>
+                <label htmlFor='description' className={labelBase}>
                   Description
                 </label>
                 <textarea
-                  id="description"
+                  id='description'
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={4}
@@ -381,12 +401,12 @@ export default function UpdateEventPage() {
               </div>
 
               <div>
-                <label htmlFor="location" className={labelBase}>
+                <label htmlFor='location' className={labelBase}>
                   Location
                 </label>
                 <input
-                  type="text"
-                  id="location"
+                  type='text'
+                  id='location'
                   value={locationText}
                   onChange={(e) => setLocationText(e.target.value)}
                   className={inputBase}
@@ -394,44 +414,46 @@ export default function UpdateEventPage() {
               </div>
 
               <div>
-                <label htmlFor="poster" className={labelBase}>
+                <label htmlFor='poster' className={labelBase}>
                   Poster Image
                 </label>
                 <input
-                  type="file"
-                  id="poster"
-                  accept="image/*"
-                  className="mt-1 block w-full text-sm text-gray-300"
+                  type='file'
+                  id='poster'
+                  accept='image/*'
+                  className='mt-1 block w-full text-sm text-gray-300'
                   onChange={handlePosterChange}
                 />
 
                 {uploadingPoster && (
-                  <div className="mt-2 text-xs text-gray-400">
+                  <div className='mt-2 text-xs text-gray-400'>
                     Uploading poster…
                   </div>
                 )}
                 {posterError && (
-                  <div className="mt-2 text-xs text-red-500">{posterError}</div>
+                  <div className='mt-2 text-xs text-red-500'>
+                    {posterError}
+                  </div>
                 )}
                 {posterUrl && (
-                  <div className="mt-3">
+                  <div className='mt-3'>
                     <img
                       src={posterUrl}
-                      alt="poster"
-                      className="h-40 w-full rounded-xl object-cover border border-gray-800"
+                      alt='poster'
+                      className='h-40 w-full rounded-xl object-cover border border-gray-800'
                     />
                   </div>
                 )}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
                 <div>
-                  <label htmlFor="startAt" className={labelBase}>
+                  <label htmlFor='startAt' className={labelBase}>
                     Start at
                   </label>
                   <input
-                    type="datetime-local"
-                    id="startAt"
+                    type='datetime-local'
+                    id='startAt'
                     value={startAt}
                     onChange={(e) => setStartAt(e.target.value)}
                     className={inputBase}
@@ -439,12 +461,12 @@ export default function UpdateEventPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="endAt" className={labelBase}>
+                  <label htmlFor='endAt' className={labelBase}>
                     End at
                   </label>
                   <input
-                    type="datetime-local"
-                    id="endAt"
+                    type='datetime-local'
+                    id='endAt'
                     value={endAt}
                     onChange={(e) => setEndAt(e.target.value)}
                     className={inputBase}
@@ -452,43 +474,43 @@ export default function UpdateEventPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
                 <div>
-                  <label htmlFor="price" className={labelBase}>
+                  <label htmlFor='price' className={labelBase}>
                     Price (currency)
                   </label>
                   <input
-                    type="number"
-                    id="price"
+                    type='number'
+                    id='price'
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
-                    min="0"
-                    step="0.01"
-                    placeholder="e.g. 15.00"
+                    min='0'
+                    step='0.01'
+                    placeholder='e.g. 15.00'
                     className={inputBase}
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="capacity" className={labelBase}>
+                  <label htmlFor='capacity' className={labelBase}>
                     Capacity
                   </label>
                   <input
-                    type="number"
-                    id="capacity"
+                    type='number'
+                    id='capacity'
                     value={capacity}
                     onChange={(e) => setCapacity(e.target.value)}
-                    min="0"
+                    min='0'
                     className={inputBase}
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end pt-2">
+              <div className='flex justify-end pt-2'>
                 <Button
-                  type="submit"
+                  type='submit'
                   disabled={submitting}
-                  className="rounded-xl bg-pink-600 px-6 py-2 text-sm font-medium text-white shadow hover:bg-pink-700 focus:ring-2 focus:ring-pink-500"
+                  className='rounded-xl bg-pink-600 px-6 py-2 text-sm font-medium text-white shadow hover:bg-pink-700 focus:ring-2 focus:ring-pink-500'
                 >
                   {submitting ? 'Updating…' : 'Update Event'}
                 </Button>

@@ -13,7 +13,7 @@ interface OrganizerEvent {
   title: string
   start_at: string
   status: EventStatus
-  revenue?: number
+  revenue_cents: number
 }
 
 export default function ManageEventPage() {
@@ -37,6 +37,14 @@ export default function ManageEventPage() {
       window.clearTimeout(id)
     }
   }, [searchInput])
+
+  const formatRevenue = (cents: number) => {
+    const value = cents > 0 ? cents / 100 : 0
+    return value.toLocaleString('en-US', {
+      style: 'currency',
+      currency: 'USD' // đổi sang VND hoặc cái mày đang dùng
+    })
+  }
 
   const fetchOrganizerEvents = async (term: string) => {
     const firstLoad = events.length === 0
@@ -64,10 +72,8 @@ export default function ManageEventPage() {
           title: ev.title,
           start_at: ev.start_at,
           status: ev.status as EventStatus,
-          // Sửa chỗ này theo đúng field backend của mày
-          // ví dụ nếu backend trả revenue_cents:
-          // revenue: ev.revenue_cents != null ? ev.revenue_cents / 100 : 0
-          revenue: ev.revenue ?? 0
+          // API trả revenue_cents -> giữ nguyên cent cho khớp
+          revenue_cents: ev.revenue_cents != null ? ev.revenue_cents : 0
         }))
 
         allEvents = [...allEvents, ...mapped]
@@ -225,12 +231,7 @@ export default function ManageEventPage() {
                       )}
                     </td>
                     <td className='px-3 py-3 text-right text-gray-300'>
-                      {event.revenue != null
-                        ? event.revenue.toLocaleString('en-US', {
-                            style: 'currency',
-                            currency: 'USD' // đổi sang VND hoặc cái mày đang dùng
-                          })
-                        : '—'}
+                      {formatRevenue(event.revenue_cents)}
                     </td>
                     <td className='px-3 py-3'>
                       <div className='flex items-center justify-end gap-2'>

@@ -21,7 +21,6 @@ import ManageEventPage from './pages/Organzier/ManageEvent/ManageEvent'
 import CreatedEventDetailsPage from './pages/Organzier/CreatedEventDetails/CreatedEventDetails'
 import UpdateEventPage from './pages/Organzier/UpdateEvent/UpdateEvent'
 
-import BookTicketPage from './pages/BookTickets/BookTickets'
 import MyTicketsPage from './pages/MyTickets/MyTickets'
 import MyTicketDetailsPage from './pages/MyTicketDetails/MyTicketDetails'
 import ScanTicketPage from './pages/ScanTicket/ScanTicket'
@@ -183,14 +182,6 @@ export default function useRouteElements() {
           element: (
             <UserLayout>
               <UpdateEventPage />
-            </UserLayout>
-          )
-        },
-        {
-          path: path.book_ticket,
-          element: (
-            <UserLayout>
-              <BookTicketPage />
             </UserLayout>
           )
         },
