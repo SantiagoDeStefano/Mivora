@@ -28,7 +28,8 @@ app.use(
       'http://26.35.82.76:4000',
       'http://26.73.34.56:5173',
       'http://khoinguyenpham.name.vn',
-      'https://khoinguyenpham.name.vn'
+      'https://khoinguyenpham.name.vn',
+      'https://mivora.vercel.app'
     ],
     credentials: true
   })

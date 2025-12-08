@@ -11,10 +11,11 @@ export const initSocket = (httpServer: ServerHttp) => {
       origin: [
         'http://localhost:4000',
         'http://localhost:5173',
-        'http://26.35.82.76:4000',
+        'http://47.129.118.52:4000',
         'http://26.73.34.56:5173',
         'http://khoinguyenpham.name.vn',
-        'https://khoinguyenpham.name.vn'
+        'https://khoinguyenpham.name.vn',
+        'https://mivora.vercel.app'
       ],
       methods: ['GET', 'POST'],
       credentials: true
