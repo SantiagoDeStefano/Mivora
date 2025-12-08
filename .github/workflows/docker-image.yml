@@ -2,7 +2,7 @@ name: Deploy Backend via Docker
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build-and-deploy:
@@ -21,6 +21,7 @@ jobs:
 
       # Build + push latest image
       - name: Build and push Docker image
+        working-directory: ./Backend
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/mivora-backend:latest .
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/mivora-backend:latest
