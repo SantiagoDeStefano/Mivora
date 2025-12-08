@@ -142,14 +142,14 @@ export default function useRouteElements() {
           path: path.email_verification,
           element: <EmailVerification />
         },
-        
+
         // Chat
         {
           path: path.chat,
           element: (
             <ChatLayout>
               <Chat />
-              </ChatLayout>
+            </ChatLayout>
           )
         },
         // "/profile"

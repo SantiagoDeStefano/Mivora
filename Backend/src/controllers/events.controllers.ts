@@ -3,6 +3,7 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { EVENTS_MESSAGES } from '~/constants/messages'
 import {
   CreateEventRequestBody,
+  EventMessagesBody,
   GetCreatedEventDetailsParams,
   SearchEvents,
   SearchEventWithStatus,
@@ -183,5 +184,32 @@ export const changeEventStatusController = async (req: Request, res: Response): 
   res.json({
     message: EVENTS_MESSAGES.CHANGE_EVENT_STATUS_SUCCESS,
     result
+  })
+}
+
+export const getEventMessagesController = async (req: Request, res: Response): Promise<void> => {
+  const event_id = (req.event as Event[])[0].id
+  const limit = Number(req.query.limit)
+  const page = Number(req.query.page)
+  const result = await eventService.getEventMessages(event_id, limit, page)
+  res.json({
+    message: EVENTS_MESSAGES.GET_EVENT_MESSAGES_SUCCESS,
+    result: {
+      messages: result.messages,
+      limit,
+      page,
+      total_page: Math.ceil(result.totalMessages / limit)
+    }
+  })
+}
+
+export const createEventMessagesController = async (req: Request<ParamsDictionary, unknown, EventMessagesBody>, res: Response): Promise<void> => {
+  const event_id = (req.event as Event[])[0].id
+  const user_id = req.decoded_authorization?.user_id as UUIDv4
+  const content = req.body.content
+  const result = await eventService.createEventMessages(event_id, user_id, content)
+  res.json({
+    message: EVENTS_MESSAGES.CREATE_EVENT_MESSAGES_SUCCESS,
+    result   
   })
 }

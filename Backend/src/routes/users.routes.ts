@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { getCreatedEventDetailsController, getOrSearchEventsWithStatusController } from '~/controllers/events.controllers'
+import { getOrSearchTicketWithStatusController } from '~/controllers/tickets.controllers'
 import {
   forgotPasswordController,
   getMeController,
@@ -15,6 +16,7 @@ import {
   verifyForgotPasswordController
 } from '~/controllers/users.controllers'
 import { eventIdValidator, getEventStatusValidator, paginationValidator, searchValidator } from '~/middlewares/events.middlewares'
+import { getTicketStatusValidator } from '~/middlewares/tickets.middlewares'
 import {
   accessTokenValidator,
   emailVerifyTokenValidator,
@@ -204,5 +206,25 @@ usersRouter.post(
  * - Success: 200 with a message confirming password reset
  */
 usersRouter.post('/reset-password', resetPasswordValidator, wrapRequestHandler(resetPasswordController))
+
+
+/**
+ * List or search tickets for the authenticated user
+ * - Method: GET
+ * - Path: /
+ * - Protected: requires `Authorization: Bearer <access_token>`
+ * - Query: `{ limit, page, status?, q? }`
+ * - Validations: `getTicketStatusValidator`, `paginationValidator`
+ * - Action: returns paginated tickets (filtered by status/search)
+ * - Success: 200 with `{ tickets, limit, page, total_page }`
+ */
+usersRouter.get(
+  '/me/tickets',
+  accessTokenValidator,
+  getTicketStatusValidator,
+  paginationValidator,
+  wrapRequestHandler(getOrSearchTicketWithStatusController)
+)
+
 
 export default usersRouter

@@ -59,24 +59,6 @@ ticketsRouter.post(
 )
 
 /**
- * List or search tickets for the authenticated user
- * - Method: GET
- * - Path: /
- * - Protected: requires `Authorization: Bearer <access_token>`
- * - Query: `{ limit, page, status?, q? }`
- * - Validations: `getTicketStatusValidator`, `paginationValidator`
- * - Action: returns paginated tickets (filtered by status/search)
- * - Success: 200 with `{ tickets, limit, page, total_page }`
- */
-ticketsRouter.get(
-  '/',
-  accessTokenValidator,
-  getTicketStatusValidator,
-  paginationValidator,
-  wrapRequestHandler(getOrSearchTicketWithStatusController)
-)
-
-/**
  * Get ticket details
  * - Method: GET
  * - Path: /:ticket_id

@@ -1,4 +1,4 @@
-import { checkSchema } from 'express-validator'
+import { check, checkSchema } from 'express-validator'
 import { validate } from '~/utils/validation'
 import { EVENTS_MESSAGES } from '~/constants/messages'
 import { EventStatus } from '~/types/domain'
@@ -478,4 +478,25 @@ export const validateEventStatus = validate(
     },
     ['body']
   )
+)
+
+export const messagesContentValidator = validate(
+  checkSchema({
+    content: {
+      notEmpty: {
+        errorMessage: EVENTS_MESSAGES.MESSAGE_CONTENT_MUST_NOT_BE_EMPTY
+      },
+      isString: {
+        errorMessage: EVENTS_MESSAGES.MESSAGE_CONTENT_MUST_BE_STRING
+      },
+      isLength: {
+        options: {
+          min: LIMIT_MIN_MAX.MESSAGE_CONTENT_MIN,
+          max: LIMIT_MIN_MAX.MESSAGE_CONTENT_MAX
+        },
+        errorMessage: EVENTS_MESSAGES.MESSAGE_CONTENT_MUST_BETWEEN_1_AND_200
+      },
+      trim: true
+    }
+  })
 )

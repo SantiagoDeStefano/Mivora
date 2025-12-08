@@ -130,6 +130,9 @@ class TicketsService {
       `
         SELECT 
           tickets.id, 
+          tickets.event_id,
+          tickets.user_id,
+          events.poster_url,
           events.title as event_title, 
           events.status as event_status,
           tickets.status as ticket_status, 
@@ -175,6 +178,7 @@ class TicketsService {
           tickets.id,
           tickets.event_id,
           tickets.user_id,
+          events.poster_url,
           events.title AS event_title,
           events.status AS event_status,
           tickets.status AS ticket_status,

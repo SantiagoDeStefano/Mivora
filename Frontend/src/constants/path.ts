@@ -11,7 +11,7 @@ const path = {
   
   profile: '/users/me',
   update_profile: '/users/me',
-  chat: '/messages',
+  chat: '/events/:event_id/messages',
 
   event_details: '/events/:event_id',
   email_verification: '/users/verify-email',

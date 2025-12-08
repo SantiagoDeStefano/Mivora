@@ -29,6 +29,7 @@ class DatabaseService {
   refresh_tokens = (sqlQuery: string, params?: any[]) => this.pool.query(sqlQuery, params)
   events = (sqlQuery: string, params?: any[]) => this.pool.query(sqlQuery, params)
   tickets = (sqlQuery: string, params?: any[]) => this.pool.query(sqlQuery, params)
+  messages = (sqlQuery: string, params?: any[]) => this.pool.query(sqlQuery, params)
 }
 
 const databaseService = new DatabaseService()

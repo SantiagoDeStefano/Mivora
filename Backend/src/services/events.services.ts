@@ -3,6 +3,7 @@ import databaseService from './database.services'
 import Event from '~/models/schemas/Event.schema'
 import { UUIDv4 } from '~/types/common'
 import { EventStatus } from '~/types/domain'
+import Message from '~/models/schemas/Message.schema'
 
 class EventService {
   /**
@@ -408,6 +409,59 @@ class EventService {
       [poster_url, event_id]
     )
     return event.rows[0]
+  }
+
+  async getEventMessages(event_id: UUIDv4, limit: number, page: number) {
+    const messagesResult = await databaseService.messages(
+      `
+        SELECT 
+          messages.id,
+          messages.content,
+          messages.created_at,
+          messages.user_id,
+          users.name as user_name,
+          users.avatar_url as user_avatar_url,
+          COUNT(*) OVER() AS total_count
+        FROM messages
+        JOIN users as users ON messages.user_id = users.id
+        WHERE event_id = $1
+        ORDER BY created_at ASC
+        LIMIT $2 OFFSET $3
+      `,
+      [event_id, limit, limit * (page - 1)]
+    )
+    const messages = messagesResult.rows
+    const totalMessages = messages.length > 0 ? Number(messages[0].total_count) : 0
+    return {
+      messages,
+      totalMessages
+    }
+  }
+
+  async createEventMessages(event_id: UUIDv4, user_id: UUIDv4, content: string) {
+    const newMessage = new Message({
+      event_id,
+      user_id,
+      content
+    })
+    const messageResult = await databaseService.messages(
+      `
+        INSERT INTO messages (
+          id,
+          event_id,
+          user_id,
+          content
+        )
+        VALUES (
+          $1, $2, $3, $4
+        )
+        RETURNING
+          content,
+          created_at
+      `,
+      [newMessage.id, newMessage.event_id, newMessage.user_id, newMessage.content]
+    )
+    return messageResult.rows[0]
   }
 }
 

@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import Logo from '../Logo/Logo'
 import { useContext, useState } from 'react'
 import { AppContext } from '../../contexts/app.context'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { clearLocalStorage, getRefreshTokenFromLocalStorage } from '../../utils/auth'
 import usersApi from '../../apis/users.api'
 import path from '../../constants/path'
@@ -37,6 +37,16 @@ export default function NavHeader() {
     logoutMutation.mutate()
   }
 
+  const { data: ticketsData } = useQuery({
+    queryKey: ['my-tickets', 'for-chat'],
+    queryFn: () =>
+      usersApi.searchMyTickets({
+        limit: 20,
+        page: 1
+      }),
+    enabled: isAuthenticated
+  })
+
   const handleSearchSubmit = (value: string) => {
     const q = value.trim()
     if (!q) return
@@ -46,8 +56,7 @@ export default function NavHeader() {
     })
   }
 
-  const navLink =
-    'text-sm font-medium text-gray-400 hover:text-pink-400 px-3 py-1.5 rounded-lg'
+  const navLink = 'text-sm font-medium text-gray-400 hover:text-pink-400 px-3 py-1.5 rounded-lg'
 
   const isOrganizer = (() => {
     const r = (profile as any)?.role
@@ -57,26 +66,18 @@ export default function NavHeader() {
   })()
 
   // Mock data – replace with real API data later
-  const conversations = [
-    {
-      id: '1',
-      name: 'Nguyen Van A',
-      lastMessage: 'Okay, see you tomorrow.',
-      time: '2m'
-    },
-    {
-      id: '2',
-      name: 'Event Support',
-      lastMessage: 'Do you need any more help?',
-      time: '1h'
-    },
-    {
-      id: '3',
-      name: 'Team Organizers',
-      lastMessage: 'Remember to verify ticket count.',
-      time: '3h'
-    }
-  ]
+  const conversations = (() => {
+    const tickets = ticketsData?.data?.result?.tickets ?? ([] as any)
+
+    return tickets.map((t) => ({
+      id: t.event_id, // Chat event_id
+      ticketId: t.id, // Ticket id (if needed)
+      name: t.event_title, // Chat name in sidebar
+      poster: t.poster_url, // NEW: event poster image
+      lastMessage: '', // You will fill later when you have last message
+      time: '' // You will fill later
+    }))
+  })()
 
   return (
     <header className='sticky top-0 z-40 border-b border-gray-800 bg-gray-950 text-gray-200'>
@@ -87,12 +88,7 @@ export default function NavHeader() {
 
         {/* Desktop nav + search */}
         <nav className='hidden items-center gap-1 md:flex'>
-          <NavLink
-            to='/'
-            className={navLink}
-            end
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          >
+          <NavLink to='/' className={navLink} end onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             Home
           </NavLink>
 
@@ -186,34 +182,27 @@ export default function NavHeader() {
                           onClick={() => {
                             // TODO: open a specific chat thread
                             // navigate(`/messages/${c.id}`)
+                          navigate(`/events/${c.id}/messages`)
                           }}
                         >
                           <div className='flex-shrink-0'>
                             <div className='w-9 h-9 rounded-full bg-gray-700 ring-1 ring-gray-700 grid place-items-center text-xs font-semibold text-gray-200'>
-                              {getInitials(c.name)}
+                              <img src={c.poster} alt={c.name} className='w-full h-full object-cover' />
                             </div>
                           </div>
 
                           <div className='flex-1 min-w-0'>
                             <div className='flex items-center justify-between gap-2'>
-                              <span className='text-sm font-medium text-gray-100 truncate'>
-                                {c.name}
-                              </span>
-                              <span className='text-[11px] text-gray-500 flex-shrink-0'>
-                                {c.time}
-                              </span>
+                              <span className='text-sm font-medium text-gray-100 truncate'>{c.name}</span>
+                              <span className='text-[11px] text-gray-500 flex-shrink-0'>{c.time}</span>
                             </div>
-                            <p className='text-xs text-gray-400 truncate'>
-                              {c.lastMessage}
-                            </p>
+                            <p className='text-xs text-gray-400 truncate'>{c.lastMessage}</p>
                           </div>
                         </button>
                       ))}
 
                       {conversations.length === 0 && (
-                        <div className='px-3 py-4 text-center text-xs text-gray-500'>
-                          No conversations yet.
-                        </div>
+                        <div className='px-3 py-4 text-center text-xs text-gray-500'>No conversations yet.</div>
                       )}
                     </div>
 

@@ -1,13 +1,14 @@
 // src/pages/Tickets/MyTicketsPage.tsx
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Container from '../../components/Container/Container'
-import Badge from '../../components/Badge/Badge'
 import { Eye } from 'lucide-react'
-import path from '../../constants/path'
-import ticketsApi, { Ticket, TicketApi } from '../../apis/tickets.api'
+import { Ticket, TicketApi } from '../../apis/tickets.api'
 import { SuccessResponse } from '../../types/response.types'
 import { GetOrSearchMyTicketsSchema } from '../../utils/rules'
+import Container from '../../components/Container/Container'
+import Badge from '../../components/Badge/Badge'
+import path from '../../constants/path'
+import usersApi from '../../apis/users.api'
 
 type TicketStatus = 'booked' | 'checked_in' | 'canceled'
 
@@ -84,7 +85,7 @@ export default function MyTicketsPage() {
           params.status = status
         }
 
-        const res = await ticketsApi.searchMyTickets(params)
+        const res = await usersApi.searchMyTickets(params)
         const data = res.data as GetMyTicketsResponse
         const result = data.result
 

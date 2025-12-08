@@ -47,9 +47,6 @@ const ticketsApi = {
   getMyTickets: (limit: number = 20, page: number = 1) => {
     return http.get<SuccessResponse<GetMyTicketsResponse>>('/tickets', { params: { limit, page } })
   },
-  searchMyTickets: (body: GetOrSearchMyTicketsSchema) => {
-    return http.get<SuccessResponse<GetMyTicketsResponse>>('/tickets', { params: body })
-  },
   getTicketDetails: (ticket_id: string) => {
     return http.get<SuccessResponse<TicketApi>>(`/tickets/${ticket_id}`)
   },
