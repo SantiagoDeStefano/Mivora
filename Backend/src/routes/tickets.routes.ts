@@ -24,7 +24,7 @@ const ticketsRouter = Router()
 /**
  * Book a ticket for an event
  * - Method: POST
- * - Path: /book
+ * - Path: /
  * - Protected: requires `Authorization: Bearer <access_token>`
  * - Body: `{ event_id: string }`
  * - Validations: `eventIdValidator` ensures the event exists; `bookTicketValidator` validates booking constraints
@@ -56,24 +56,6 @@ ticketsRouter.post(
   scanTicketValidator,
   ticketEventCreatorValidator,
   wrapRequestHandler(scanTicketController)
-)
-
-/**
- * List or search tickets for the authenticated user
- * - Method: GET
- * - Path: /
- * - Protected: requires `Authorization: Bearer <access_token>`
- * - Query: `{ limit, page, status?, q? }`
- * - Validations: `getTicketStatusValidator`, `paginationValidator`
- * - Action: returns paginated tickets (filtered by status/search)
- * - Success: 200 with `{ tickets, limit, page, total_page }`
- */
-ticketsRouter.get(
-  '/',
-  accessTokenValidator,
-  getTicketStatusValidator,
-  paginationValidator,
-  wrapRequestHandler(getOrSearchTicketWithStatusController)
 )
 
 /**

@@ -147,6 +147,12 @@ export const scanTicketValidator = validate(
                   status: HTTP_STATUS.CONFLICT
                 })
               }
+              if (ticket.rows[0].ticket_status == 'canceled') {
+                throw new ErrorWithStatus({
+                  message: TICKETS_MESSAGES.TICKET_IS_CANCELED,
+                  status: HTTP_STATUS.CONFLICT
+                })
+              }
               req.ticket = ticket.rows
             } catch (error) {
               throw new ErrorWithStatus({

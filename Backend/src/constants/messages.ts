@@ -97,6 +97,7 @@ export const EVENTS_MESSAGES = {
   CANCEL_EVENT_ONLY_ALLOWED_ON_PUBLISHED: 'Cancel event only allowed on published',
   CANCEL_EVENT_SUCCESS: 'Cancel event successfully',
   CHANGE_EVENT_STATUS_SUCCESS: 'Change event status successfully',
+  CREATE_EVENT_MESSAGES_SUCCESS: 'Create event message successfully',
 
   EVENT_TITLE_IS_REQUIRED: "Event's title is required",
   EVENT_TITLE_MUST_BE_STRING: "Event's title must be string",
@@ -127,18 +128,23 @@ export const EVENTS_MESSAGES = {
   EVENT_LOCATION_IS_REQUIRED: "Event's location is required",
   EVENT_PRICE_IS_REQUIRED: "Event's price is required",
   EVENT_CAPACITY_IS_REQUIRED: "Event's capacity is required",
+  EVENTS_LENGTH_PER_PAGE_IS_BETWEEN_1_AND_50: 'Maximum events per page is between 1 and 50',
 
   GET_EVENTS_SUCCESSFULLY: 'Get events successfully',
   GET_CREATED_EVENTS_SUCCESSFULLY: 'Get created events successfully',
   GET_EVENT_DETAILS_IS_ONLY_ON_PUBLISHED: "Get event's details is only on published",
   GET_CREATED_EVENTS_DETAILS_SUCCESSFULLY: "Get created event's details successfully",
+  GET_EVENT_MESSAGES_SUCCESS: 'Get event messages successfully',
 
   SEARCH_MUST_BE_STRING: 'Search values must be string',
 
   INVALID_EVENT_ID: 'Invalid EventID',
 
-  EVENTS_LENGTH_PER_PAGE_IS_BETWEEN_1_AND_50: 'Maximum events per page is between 1 and 50',
   MAXIMUM_SEARCH_LENGTH_MUST_BE_BETWEEN_3_AND_20: 'Search length must be between 3 and 20',
+  MESSAGE_CONTENT_MUST_NOT_BE_EMPTY: 'Message content must not be empty',
+  MESSAGE_CONTENT_MUST_BE_STRING: 'Message content must be string',
+  MESSAGE_CONTENT_MUST_BETWEEN_1_AND_200: 'Message content must be between 1 and 200',
+
   NUMBER_OF_PAGE_MUST_BE_GREATER_THAN_0: 'Number of page must be greater than 0',
 
   PUBLISH_EVENT_SUCCESS: 'Publish event successfully',
@@ -179,7 +185,9 @@ export const TICKETS_MESSAGES = {
 
   TICKET_SCANNED_SUCCESS: 'Ticket scanned successfully',
   TICKET_STATUS_MUST_BE_BOOKED_CHECKED_IN: 'Ticket status must be booked or checked in',
+  TICKET_IS_CANCELED: 'Ticket is canceled',
 
-  USER_IS_NOT_EVENT_ORGANIZER: "Current user is not event's organizer"
-
+  USER_IS_NOT_EVENT_ORGANIZER: "Current user is not event's organizer",
+  USER_IS_NOT_EVENT_ATTENDEE: "Current user is not event's attendee",
+  USER_IS_NOT_EVENT_ATTENDEE_OR_ORGANIZER: "Current user is not event's attendee or organizer"
 }

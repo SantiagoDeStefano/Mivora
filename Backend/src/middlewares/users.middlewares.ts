@@ -17,6 +17,7 @@ import databaseService from '~/services/database.services'
 import ErrorWithStatus from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpStatus'
 import LIMIT_MIN_MAX from '~/constants/limits'
+import Event from '~/models/schemas/Event.schema'
 
 // Allowed user roles
 const user_roles: UserRole[] = ['attendee', 'organizer']
@@ -551,6 +552,40 @@ export const eventEventCreatorValidator = async (req: Request, res: Response, ne
     return next(
       new ErrorWithStatus({
         message: TICKETS_MESSAGES.USER_IS_NOT_EVENT_ORGANIZER,
+        status: HTTP_STATUS.FORBIDDEN
+      })
+    )
+  }
+  next()
+}
+
+export const eventJoinValidator = async (req: Request, res: Response, next: NextFunction) => {
+  const event_id = (req.event as Event[])[0].id
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const attendee = await databaseService.tickets(
+    `
+      SELECT
+        1
+      FROM tickets
+      WHERE event_id = $1 AND user_id = $2
+      LIMIT 1
+    `,
+    [event_id, user_id]
+  )
+  const organizer = await databaseService.tickets(
+    `
+      SELECT
+        1
+      FROM events
+      WHERE id = $1 AND organizer_id = $2
+      LIMIT 1
+    `,
+    [event_id, user_id]
+  )
+  if (attendee.rows.length <= 0 && organizer.rows.length <= 0) {
+    return next(
+      new ErrorWithStatus({
+        message: TICKETS_MESSAGES.USER_IS_NOT_EVENT_ATTENDEE_OR_ORGANIZER,
         status: HTTP_STATUS.FORBIDDEN
       })
     )

@@ -37,7 +37,6 @@ export const scanTicketController = async (
   const ticketData = (req.ticket as Ticket[])[0]
   const ticket_id = ticketData.id
   const ticket_owner_id = ticketData.user_id
-  console.log(ticket_owner_id)
 
   await ticketsService.scanTicket(ticket_id)
 

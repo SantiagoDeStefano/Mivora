@@ -50,6 +50,28 @@ export interface GetEventsResponse {
   total_page: number
 }
 
+export interface EventMessageApi {
+  id: string
+  content: string
+  created_at: string
+  user_id: string
+  user_name: string
+  user_avatar_url: string | null
+  total_count: string
+}
+
+export interface GetEventMessagesResult {
+  messages: EventMessageApi[]
+  limit: number
+  page: number
+  total_page: number
+}
+
+export interface CreateEventMessageResult {
+  content: string
+  created_at: string
+}
+
 export interface UploadMediaResult {
   url: string
 }
@@ -140,6 +162,14 @@ const eventsApi = {
     return http.patch<SuccessResponse<Event>>(`/events/${event_id}/status`, {
       status: 'draft' as EventStatus
     })
+  },
+  getEventMessages: (event_id: string, limit: number = 20, page: number = 1) => {
+    return http.get<SuccessResponse<GetEventMessagesResult>>(`/events/${event_id}/messages`, {
+      params: { limit, page }
+    })
+  },
+  createEventMessage: (event_id: string, content: string) => {
+    return http.post<SuccessResponse<CreateEventMessageResult>>(`/events/${event_id}/messages`, { content })
   }
 }
 

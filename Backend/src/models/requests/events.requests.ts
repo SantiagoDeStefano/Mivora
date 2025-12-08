@@ -22,6 +22,10 @@ export interface UpdateEventDetailsBody {
   capacity?: number
 }
 
+export interface EventMessagesBody {
+  content: string
+}
+
 // Query
 export interface Pagination extends Query {
   limit: string

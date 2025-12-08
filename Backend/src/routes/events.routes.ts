@@ -2,17 +2,20 @@ import { Router } from 'express'
 import {
   changeEventStatusController,
   createEventController,
+  createEventMessagesController,
   getEventDetailsController,
+  getEventMessagesController,
   getOrSearchEventsController,
   updateEventDetailsController,
   uploadEventPosterController
 } from '~/controllers/events.controllers'
-import { accessTokenValidator, eventEventCreatorValidator, organizerValidator } from '~/middlewares/users.middlewares'
+import { accessTokenValidator, eventEventCreatorValidator, eventJoinValidator, organizerValidator } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
 import {
   createEventValidator,
   eventIdValidator,
   getPublishedEventStatusValidator,
+  messagesContentValidator,
   paginationValidator,
   searchValidator,
   updateEventStatusValidator,
@@ -124,6 +127,22 @@ eventsRouter.patch(
   eventEventCreatorValidator,
   validateEventStatus,
   wrapRequestHandler(changeEventStatusController)
+)
+
+eventsRouter.get('/:event_id/messages', 
+  accessTokenValidator,
+  eventIdValidator,
+  eventJoinValidator,
+  paginationValidator,
+  wrapRequestHandler(getEventMessagesController)
+)
+
+eventsRouter.post('/:event_id/messages',
+  accessTokenValidator,
+  eventIdValidator,
+  eventJoinValidator,
+  messagesContentValidator,
+  wrapRequestHandler(createEventMessagesController)
 )
 
 export default eventsRouter

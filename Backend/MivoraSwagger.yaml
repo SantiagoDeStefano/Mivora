@@ -2,19 +2,17 @@ openapi: 3.0.4
 info:
   title: Twitter clone TypeScript - 2025
   description: |-
-    This API provides the backend services for a social media platform similar to Twitter.  
-    It includes features for user authentication and profile management, media upload and streaming, 
-    tweet creation and interaction, search functionality, and real-time conversations.  
-    The system is built with scalability, security, and modern REST API design principles in mind.
-    Some useful links:
-    - [The Twitter's clone repository](https://github.com/SantiagoDeStefano/Twitter)
-    - [The source API definition for the Twitter's clone](https://github.com/SantiagoDeStefano/Twitter/blob/master/twitter-swagger.yaml)
-  contact:
-    email: ngpham.2807@gmail.com
+    This OpenAPI spec describes the backend API for Mivora, a platform that handles users, events, tickets, and real-time event messaging. It includes full user account flows such as registration, login, logout, token refresh, profile updates, avatar uploads, email verification, and password-reset procedures. Event organizers can create, update, publish, cancel, and manage event posters, while both organizers and attendees can send and fetch event messages. Users can browse published events, view details, and book tickets. The ticketing system supports booking, listing with filters, retrieving individual tickets, canceling or checking in tickets, and QR-code-based scanning. All sensitive and user-specific operations use JWT bearer authentication, and list endpoints follow a consistent pagination pattern.
+    some useful links:
+    - [The Mivora repository](https://github.com/SantiagoDeStefano/Mivora)
+    - [The source API definition for Mivora](https://github.com/SantiagoDeStefano/Mivora/blob/main/Backend/MivoraSwagger.yaml)
+
   version: 0.0.1
 servers:
   - url: http://26.35.82.76:4000
     description: Local server
+  - url: https://khoinguyenpham.name.vn/
+    description: Production api server
 tags:
   - name: users
     description: Everything about Users's requests
@@ -688,7 +686,6 @@ paths:
                           total_count: '108'
                           revenue_cents: 0
 
-
         '403':
           description: Must be organizer
           content:
@@ -703,7 +700,7 @@ paths:
     get:
       tags:
         - users
-      summary: Get current user's event by ID
+      summary: Get current user's event details by ID
       operationId: getMyEventById
       security:
         - BearerAuth: []
@@ -714,7 +711,7 @@ paths:
           schema:
             type: string
             format: uuid
-          description: The ID of the event to retrieve
+          description: The ID of the event to retrieve details for
           example: d36974fe-b895-47e4-a6d0-0d126fbaa604
       responses:
         '200':
@@ -790,6 +787,132 @@ paths:
                   message:
                     type: string
                     example: Event not found
+  /api/v1/users/me/tickets:
+    get:
+      tags:
+        - users
+      summary: Get all tickets of the current user
+      operationId: getMyTickets
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+            default: 20
+          description: Number of items per page
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: status
+          in: query
+          required: false
+          example: canceled
+          schema:
+            type: string
+          description: Filter tickets by status (booked, canceled, checked_in)
+        - name: q
+          in: query
+          required: false
+          example: Implemented
+          schema:
+            type: string
+          description: Search query for event title
+      responses:
+        '200':
+          description: Get tickets successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Get tickets successfully
+                  result:
+                    type: object
+                    properties:
+                      tickets:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              format: uuid
+                              example: d6de9a12-b3b1-4ea0-a1a3-d0823408a1ae
+                            event_title:
+                              type: string
+                              example: Implemented leading edge strategy
+                            event_status:
+                              type: string
+                              enum: [published, draft, canceled]
+                              example: published
+                            ticket_status:
+                              type: string
+                              enum: [booked, canceled, checked_in]
+                              example: canceled
+                            checked_in_at:
+                              type: string
+                              format: date-time
+                              nullable: true
+                              example: null
+                            price_cents:
+                              type: integer
+                              example: 16583
+                            total_count:
+                              type: string
+                              example: '1'
+                            qr_code:
+                              type: string
+                              description: Base64 QR code image (data URL)
+                              example: data:image/png;base64,<base64>
+                      limit:
+                        type: integer
+                        example: 20
+                      page:
+                        type: integer
+                        example: 1
+                      total_page:
+                        type: integer
+                        example: 1
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Validation error
+                  errors:
+                    type: object
+                    properties:
+                      status:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                            example: field
+                          value:
+                            type: string
+                            example: canceledasda
+                          msg:
+                            type: string
+                            example: Ticket status must be booked or checked in
+                          path:
+                            type: string
+                            example: status
+                          location:
+                            type: string
+                            example: query
 
   /api/v1/events:
     get:
@@ -1233,6 +1356,125 @@ paths:
                   message:
                     type: string
                     example: Event not found
+  /api/v1/events/{event_id}/messages:
+    post:
+      tags:
+        - events
+      summary: Send message to event attendees
+      operationId: sendMessageToEventAttendees
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the event to send message
+          example: 084bc4e5-8fe0-4394-a85d-1e65ed3dae16
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  example: Xin chao mng
+      responses:
+        '200':
+          description: Create event message successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Get event messages successfully
+                  result:
+                    $ref: '#/components/schemas/EventMessage'
+
+        '403':
+          description: Current user is not event's attendee or organizer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Current user is not event's attendee or organizer"
+    get:
+      tags:
+        - events
+      summary: Get event messages
+      operationId: getEventMessages
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the event to get messages
+          example: 084bc4e5-8fe0-4394-a85d-1e65ed3dae16
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+            default: 20
+          description: Number of items per page
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+      responses:
+        '200':
+          description: Get event messages successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Get event messages successfully
+                  result:
+                    type: object
+                    properties:
+                      messages:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/EventMessage'
+                      limit:
+                        type: integer
+                        example: 20
+                      page:
+                        type: integer
+                        example: 1
+                      total_page:
+                        type: integer
+                        example: 3
+
+        '403':
+          description: Current user is not event's attendee or organizer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Current user is not event's attendee or organizer"
   /api/v1/events/{event_id}/poster:
     put:
       tags:
@@ -1531,131 +1773,6 @@ paths:
                   message:
                     type: string
                     example: One user per event only
-    get:
-      tags:
-        - ticket
-      summary: Get all tickets of the current user
-      operationId: getMyTickets
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: limit
-          in: query
-          required: true
-          schema:
-            type: integer
-            default: 20
-          description: Number of items per page
-        - name: page
-          in: query
-          required: true
-          schema:
-            type: integer
-            default: 1
-          description: Page number
-        - name: status
-          in: query
-          required: false
-          example: canceled
-          schema:
-            type: string
-          description: Filter tickets by status (booked, canceled, checked_in)
-        - name: q
-          in: query
-          required: false
-          example: Implemented
-          schema:
-            type: string
-          description: Search query for event title
-      responses:
-        '200':
-          description: Get tickets successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Get tickets successfully
-                  result:
-                    type: object
-                    properties:
-                      tickets:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            id:
-                              type: string
-                              format: uuid
-                              example: d6de9a12-b3b1-4ea0-a1a3-d0823408a1ae
-                            event_title:
-                              type: string
-                              example: Implemented leading edge strategy
-                            event_status:
-                              type: string
-                              enum: [published, draft, canceled]
-                              example: published
-                            ticket_status:
-                              type: string
-                              enum: [booked, canceled, checked_in]
-                              example: canceled
-                            checked_in_at:
-                              type: string
-                              format: date-time
-                              nullable: true
-                              example: null
-                            price_cents:
-                              type: integer
-                              example: 16583
-                            total_count:
-                              type: string
-                              example: '1'
-                            qr_code:
-                              type: string
-                              description: Base64 QR code image (data URL)
-                              example: data:image/png;base64,<base64>
-                      limit:
-                        type: integer
-                        example: 20
-                      page:
-                        type: integer
-                        example: 1
-                      total_page:
-                        type: integer
-                        example: 1
-        '422':
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Validation error
-                  errors:
-                    type: object
-                    properties:
-                      status:
-                        type: object
-                        properties:
-                          type:
-                            type: string
-                            example: field
-                          value:
-                            type: string
-                            example: canceledasda
-                          msg:
-                            type: string
-                            example: Ticket status must be booked or checked in
-                          path:
-                            type: string
-                            example: status
-                          location:
-                            type: string
-                            example: query
   /api/v1/tickets/{ticket_id}:
     get:
       tags:
@@ -1895,6 +2012,10 @@ components:
     UserProfile:
       type: object
       properties:
+        id:
+          type: string
+          format: uuid
+          example: 9aaef5a6-f9ea-458b-8e31-58cd9fbd7fa4
         name:
           type: string
           example: Pham Khoi Nguyen
@@ -1964,6 +2085,54 @@ components:
         status:
           type: string
           example: draft
+    EventMessagesResult:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventMessage'
+        limit:
+          type: integer
+        page:
+          type: integer
+        total_page:
+          type: integer
+        total_count:
+          type: integer
+      required:
+        - messages
+        - limit
+        - page
+        - total_page
+        - total_count
+
+    EventMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        content:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        user_id:
+          type: string
+          format: uuid
+        user_name:
+          type: string
+        user_avatar_url:
+          type: string
+          format: uri
+      required:
+        - id
+        - content
+        - created_at
+        - user_id
+        - user_name
+        - user_avatar_url
   securitySchemes:
     BearerAuth:
       type: http

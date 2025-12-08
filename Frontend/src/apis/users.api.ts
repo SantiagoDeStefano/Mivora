@@ -18,6 +18,30 @@ export type ResetPasswordPayload = {
   confirm_password: string
   forgot_password_token: string
 }
+export interface TicketApi {
+  id: string
+  event_title: string
+  event_status: string
+  ticket_status: 'booked' | 'checked_in' | 'canceled'
+  checked_in_at: string | null
+  price_cents: number
+  qr_code: string
+  total_count?: string
+  event_id: string
+}
+export type GetOrSearchMyTicketsSchema = {
+  limit?: number
+  page?: number
+  status?: 'booked' | 'checked_in' | 'canceled'
+  q?: string
+}
+export interface GetMyTicketsResponse {
+  tickets: TicketApi[]
+  limit: number
+  page: number
+  total_page: number
+}
+
 const usersApi = {
   registerAccount: (body: RegisterSchema) => {
     return http.post<AuthResponse>('/users/register', body)
@@ -71,6 +95,9 @@ const usersApi = {
     return http.get<SuccessResponse<GetEventsResponse>>('/users/me/events', {
       params: { limit, page }
     })
+  },
+  searchMyTickets: (body: GetOrSearchMyTicketsSchema) => {
+    return http.get<SuccessResponse<GetMyTicketsResponse>>('/users/me/tickets', { params: body })
   }
 }
 

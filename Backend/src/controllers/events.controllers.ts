@@ -3,6 +3,7 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { EVENTS_MESSAGES } from '~/constants/messages'
 import {
   CreateEventRequestBody,
+  EventMessagesBody,
   GetCreatedEventDetailsParams,
   SearchEvents,
   SearchEventWithStatus,
@@ -15,6 +16,7 @@ import eventService from '~/services/events.services'
 import mediasService from '~/services/medias.services'
 import { UUIDv4 } from '~/types/common'
 import { EventStatus } from '~/types/domain'
+import { getIO } from '~/utils/socket'
 
 /**
  * Create event controller
@@ -157,10 +159,7 @@ export const updateEventDetailsController = async (
  * - Payload: multipart/form-data with a single `image` file field
  * - Action: uploads event poster and returns uploaded poster event
  */
-export const uploadEventPosterController = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const uploadEventPosterController = async (req: Request, res: Response): Promise<void> => {
   const event_id = (req.event as Event[])[0].id
   const poster_url = await mediasService.uploadImage(req)
   const result = await eventService.uploadEventPoster(event_id, poster_url[0].url)
@@ -182,6 +181,47 @@ export const changeEventStatusController = async (req: Request, res: Response): 
   const result = await eventService.changeEventStatus(event_id, status)
   res.json({
     message: EVENTS_MESSAGES.CHANGE_EVENT_STATUS_SUCCESS,
+    result
+  })
+}
+
+export const getEventMessagesController = async (req: Request, res: Response): Promise<void> => {
+  const event_id = (req.event as Event[])[0].id
+  const limit = Number(req.query.limit)
+  const page = Number(req.query.page)
+  const result = await eventService.getEventMessages(event_id, limit, page)
+  res.json({
+    message: EVENTS_MESSAGES.GET_EVENT_MESSAGES_SUCCESS,
+    result: {
+      messages: result.messages,
+      limit,
+      page,
+      total_page: Math.ceil(result.totalMessages / limit)
+    }
+  })
+}
+
+export const createEventMessagesController = async (
+  req: Request<ParamsDictionary, unknown, EventMessagesBody>,
+  res: Response
+): Promise<void> => {
+  const event_id = (req.event as Event[])[0].id
+  const user_id = req.decoded_authorization?.user_id as UUIDv4
+  const content = req.body.content
+  const result = await eventService.createEventMessages(event_id, user_id, content)
+  const io = getIO()
+
+  io.to(event_id).emit('new_message', {
+    id: result.id,
+    event_id: result.event_id,
+    user_id: result.user_id,
+    content: result.content,
+    created_at: result.created_at,
+    user_name: result.user_name, // make sure service returns these
+    user_avatar_url: result.user_avatar_url
+  })
+  res.json({
+    message: EVENTS_MESSAGES.CREATE_EVENT_MESSAGES_SUCCESS,
     result
   })
 }

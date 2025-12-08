@@ -62,15 +62,6 @@ const ticketsApi = {
       params: { limit, page }
     })
   },
-
-  // search/filter ticket theo query / status / paging
-  searchMyTickets: (params: GetOrSearchMyTicketsSchema) => {
-    return http.get<SuccessResponse<GetMyTicketsResponse>>('/tickets', {
-      params
-    })
-  },
-
-  // chi tiết 1 ticket
   getTicketDetails: (ticket_id: string) => {
     return http.get<SuccessResponse<TicketApi>>(`/tickets/${ticket_id}`)
   },

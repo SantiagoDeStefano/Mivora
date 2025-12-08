@@ -11,6 +11,7 @@ mapTicketApiToTicket
 import { GetOrSearchMyTicketsSchema } from '../../utils/rules'
 import { socket } from '../../utils/socket'
 import Popup from '../../components/Popup/Popup'
+import usersApi from '../../apis/users.api'
 
 // UUID v4 giống rule getTicketDetails / cancelTicket
 const TICKET_ID_REGEX =
@@ -72,7 +73,8 @@ export default function MyTicketDetails() {
             page
           }
 
-          const res = await ticketsApi.searchMyTickets(params)
+          const res = await usersApi.searchMyTickets(params)
+          // res.data là SuccessResponse<GetMyTicketsResponse>
           const result: GetMyTicketsResponse = res.data.result
 
           const mapped: Ticket[] = result.tickets.map((raw: TicketApi) =>
