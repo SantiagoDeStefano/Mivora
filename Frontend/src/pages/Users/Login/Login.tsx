@@ -101,7 +101,7 @@ export default function Login() {
               <Button type='submit' className='h-10'>
                 Log in
               </Button>
-            </form>
+            </form> 
 
             <p className='mt-4 text-sm text-gray-400'>
               New to Mivora?{' '}
