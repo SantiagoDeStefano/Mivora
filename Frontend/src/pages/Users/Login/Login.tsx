@@ -4,9 +4,7 @@ import { AppContext } from '../../../contexts/app.context'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useMutation } from '@tanstack/react-query'
-import {
-  getProfileFromLocalStorage
-} from '../../../utils/auth'
+import { getProfileFromLocalStorage } from '../../../utils/auth'
 import { isAxiosUnprocessableEntityError } from '../../../utils/format'
 import { ErrorResponse, ValidationErrorResponse } from '../../../types/response.types'
 import { loginSchema, LoginSchema } from '../../../utils/rules'
