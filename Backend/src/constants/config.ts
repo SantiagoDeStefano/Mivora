@@ -11,6 +11,7 @@ export const envConfig = {
   dbDataBase: process.env.PGDATABASE,
   dbUser: process.env.PGUSER,
   dbPassword: process.env.PGPASSWORD,
+  databaseURL: process.env.DATABASE_URL,
 
   // Secret
   jwtSecretAccessToken: process.env.JWT_SECRET_ACCESS_TOKEN,

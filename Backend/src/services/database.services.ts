@@ -8,11 +8,7 @@ class DatabaseService {
 
   constructor() {
     this.pool = new Pool({
-      host: envConfig.dbHost,
-      port: Number(envConfig.dbPort),
-      database: envConfig.dbDataBase,
-      user: envConfig.dbUser,
-      password: envConfig.dbPassword
+      connectionString: envConfig.databaseURL
     })
   }
   async verifyConnection() {
