@@ -179,6 +179,7 @@ export const TICKETS_MESSAGES = {
 
   TICKET_SCANNED_SUCCESS: 'Ticket scanned successfully',
   TICKET_STATUS_MUST_BE_BOOKED_CHECKED_IN: 'Ticket status must be booked or checked in',
+  TICKET_IS_CANCELED: 'Ticket is canceled',
 
   USER_IS_NOT_EVENT_ORGANIZER: "Current user is not event's organizer"
 

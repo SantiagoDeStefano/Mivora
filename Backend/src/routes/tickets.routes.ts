@@ -24,7 +24,7 @@ const ticketsRouter = Router()
 /**
  * Book a ticket for an event
  * - Method: POST
- * - Path: /book
+ * - Path: /
  * - Protected: requires `Authorization: Bearer <access_token>`
  * - Body: `{ event_id: string }`
  * - Validations: `eventIdValidator` ensures the event exists; `bookTicketValidator` validates booking constraints

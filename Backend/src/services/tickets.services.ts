@@ -173,6 +173,8 @@ class TicketsService {
       `
         SELECT
           tickets.id,
+          tickets.event_id,
+          tickets.user_id,
           events.title AS event_title,
           events.status AS event_status,
           tickets.status AS ticket_status,
