@@ -9,9 +9,15 @@ info:
 
   version: 0.0.1
 servers:
-  - url: http://26.35.82.76:4000
+  - url: /
+    description: Same host as Swagger
+  - url: http://47.129.118.52:4000
+    description: EC2 server
+  - url: http://localhost:4000
     description: Local server
-  - url: https://khoinguyenpham.name.vn/
+  - url: http://26.35.82.76:4000
+    description: LAN server
+  - url: https://khoinguyenpham.name.vn
     description: Production api server
 tags:
   - name: users
