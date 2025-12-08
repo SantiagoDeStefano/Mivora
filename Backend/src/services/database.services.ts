@@ -8,7 +8,10 @@ class DatabaseService {
 
   constructor() {
     this.pool = new Pool({
-      connectionString: envConfig.databaseURL
+      connectionString: envConfig.databaseURL,
+      ssl: {
+        rejectUnauthorized: false // dev shortcut; use proper CA in prod
+      }
     })
   }
   async verifyConnection() {
