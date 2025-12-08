@@ -62,7 +62,7 @@ export default function ManageEventPage() {
 
       while (true) {
         const res = term
-          ? await usersApi.searchEventsOrganizer(term, limit, page)
+          ? await usersApi.searchEventsOrganizer('published', undefined, limit, page)
           : await usersApi.getCreatedEvents(limit, page)
 
         const result = res.data.result

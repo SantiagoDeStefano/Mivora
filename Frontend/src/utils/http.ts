@@ -1,4 +1,9 @@
-import axios, { AxiosError, type AxiosInstance } from 'axios'
+import axios, {
+  AxiosError,
+  AxiosInstance,
+  InternalAxiosRequestConfig,
+  HttpStatusCode
+} from 'axios'
 import usersApi from '../apis/users.api'
 import {
   clearLocalStorage,
@@ -10,7 +15,10 @@ import {
 } from './auth'
 import path from '../constants/path'
 import { AuthResponse } from '../types/auth.types'
-import { HttpStatusCode } from 'axios'
+
+interface RequestConfigWithRetry extends InternalAxiosRequestConfig {
+  _retry?: boolean
+}
 
 class Http {
   instance: AxiosInstance
@@ -20,6 +28,7 @@ class Http {
   constructor() {
     this.accessToken = getAccessTokenFromLocalStorage()
     this.refreshToken = getRefreshTokenFromLocalStorage()
+
     this.instance = axios.create({
       baseURL: 'http://26.35.82.76:4000/api/v1',
       timeout: 10000,
@@ -27,82 +36,116 @@ class Http {
         'Content-Type': 'application/json'
       }
     })
-    // Add Authorization: Bearer <token> when authenticated
-    this.instance.interceptors.request.use((config) => {
-      if (this.accessToken && config.headers) {
-        config.headers.Authorization = `Bearer ${this.accessToken}`
-        return config
-      }
-      return config
-    })
 
-    // Handle login, logout, register
+    // REQUEST INTERCEPTOR – gắn Authorization header nếu có token
+    this.instance.interceptors.request.use(
+      (config) => {
+        if (this.accessToken && config.headers) {
+          config.headers.Authorization = `Bearer ${this.accessToken}`
+        }
+        return config
+      },
+      (error) => {
+        return Promise.reject(error)
+      }
+    )
+
+    // RESPONSE INTERCEPTOR – xử lý login/logout + refresh token + error
     this.instance.interceptors.response.use(
+      // On fulfilled
       async (response) => {
-        const { url } = response.config
+        const url = response.config.url
+
+        // LOGIN / REGISTER: lưu token + lấy profile
         if (url === path.login || url === path.register) {
           const data = response.data as AuthResponse
+
           this.accessToken = data.result.access_token
           this.refreshToken = data.result.refresh_token
+
           setAccessTokenToLocalStorage(this.accessToken)
           setRefreshTokenToLocalStorage(this.refreshToken)
-          const getMeResponse = await usersApi.getMe()
-          setProfileToLocalStorage(getMeResponse.data.result)
-        } else if (url === path.logout || url === path.email_verification || url === path.reset_password) {
+
+          try {
+            const getMeResponse = await usersApi.getMe()
+            setProfileToLocalStorage(getMeResponse.data.result)
+          } catch (error) {
+            console.error('Failed to fetch profile after login/register:', error)
+          }
+        }
+
+        // LOGOUT / VERIFY EMAIL / RESET PASSWORD: clear local
+        if (
+          url === path.logout ||
+          url === path.email_verification ||
+          url === path.reset_password
+        ) {
           this.accessToken = ''
           this.refreshToken = ''
           clearLocalStorage()
         }
+
         return response
       },
-      function onRejected(error: AxiosError) {
-        console.error(
-          'Axios error:',
-          error.response?.status,
-          error.config?.method,
-          error.config?.url,
-          error.response?.data
-        )
-      }
-    )
 
-    // Call /refresh-token to get new access_token and refresh_token
-    this.instance.interceptors.response.use(
-      (response) => response,
-      async (error) => {
-        const originalRequest = error.config
+      // On rejected
+      async (error: AxiosError) => {
+        const { response, config } = error
+        const originalRequest = config as RequestConfigWithRetry
 
-        if (error.response?.status === HttpStatusCode.Unauthorized && !originalRequest._retry) {
+        // Nếu 401 → thử refresh token 1 lần
+        if (response?.status === HttpStatusCode.Unauthorized && !originalRequest._retry) {
           originalRequest._retry = true
 
           const refreshToken = getRefreshTokenFromLocalStorage()
+
+          // Không có refresh token → xem như logout
           if (!refreshToken) {
             clearLocalStorage()
             window.location.reload()
             return Promise.reject(error)
-          }  
+          }
 
           try {
-            const res = await usersApi.refreshToken({ refresh_token: refreshToken })
+            const res = await usersApi.refreshToken({
+              refresh_token: refreshToken
+            })
 
             this.accessToken = res.data.result.access_token
             this.refreshToken = res.data.result.refresh_token
+
             setAccessTokenToLocalStorage(this.accessToken)
             setRefreshTokenToLocalStorage(this.refreshToken)
 
+            if (!originalRequest.headers) {
+              originalRequest.headers = {} as any
+            }
             originalRequest.headers.Authorization = `Bearer ${this.accessToken}`
 
+            // Replay request cũ với token mới
             return this.instance(originalRequest)
-          } catch (err) {
+          } catch (refreshError) {
+            // Refresh fail → logout toàn bộ
             clearLocalStorage()
             window.location.reload()
-            return Promise.reject(err)
+            return Promise.reject(refreshError)
           }
         }
+
+        // Các lỗi khác: log + ném ra cho chỗ gọi tự xử lý (KHÔNG nuốt lỗi)
+        console.error(
+          'Axios error:',
+          response?.status,
+          config?.method,
+          config?.url,
+          response?.data
+        )
+
         return Promise.reject(error)
       }
     )
   }
 }
+
 const http = new Http().instance
 export default http
