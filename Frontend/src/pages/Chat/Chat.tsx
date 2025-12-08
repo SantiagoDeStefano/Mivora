@@ -340,15 +340,6 @@ export default function ChatPage() {
           <div className='text-lg font-semibold'>Chats</div>
         </div>
 
-        <div className='px-3 py-2 border-b border-gray-800'>
-          <input
-            type='text'
-            placeholder='Search in chats'
-            className='w-full rounded-full bg-gray-900 px-3 py-1.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/60'
-            disabled
-          />
-        </div>
-
         <div className='flex-1 overflow-y-auto min-h-0'>
           {groups.map((g) => {
             const active = g.id === event_id

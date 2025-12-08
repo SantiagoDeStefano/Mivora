@@ -262,18 +262,6 @@ export default function NavHeader() {
                         <div className='px-3 py-4 text-center text-xs text-gray-500'>No conversations yet.</div>
                       )}
                     </div>
-
-                    {/* Footer: see all */}
-                    <button
-                      type='button'
-                      onClick={() => {
-                        setIsChatOpen(false)
-                        navigate('/messages') // adjust this route to your real "all chats" page
-                      }}
-                      className='w-full px-3 py-2 text-xs font-medium text-pink-400 hover:bg-gray-800 border-t border-gray-800 text-center'
-                    >
-                      See all messages
-                    </button>
                   </div>
                 )}
               </div>
