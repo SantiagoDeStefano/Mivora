@@ -31,9 +31,9 @@ function generateFakeEvent(): FakeEvent {
   return {
     id: uuidv4() as UUIDv4,
     organizer_id: faker.helpers.arrayElement([
-      '08d176d8-1f08-4be4-bafd-15829965f371',
-      '9aaef5a6-f9ea-458b-8e31-58cd9fbd7fa4',
-      'd4799870-60c3-42cb-99dc-d1abf6e9fe7f'
+      'c1f1b314-2ece-4460-81ee-b870408e2f8f',
+      '0f0b6f04-887f-4be9-9819-bb40781b214b',
+      'c6f2b676-7cf7-4384-8ebc-dd0f69b21be5'
     ]) as UUIDv4,
     title: faker.company.catchPhrase(),
     description: faker.lorem.paragraphs({ min: 1, max: 3 }),
@@ -56,7 +56,7 @@ function generateFakeEvents(count: number): FakeEvent[] {
 // ------------------
 // Seeder
 // ------------------
-const NUMBR_OF_FAKES_EVENTS = 60
+const NUMBR_OF_FAKES_EVENTS = 300
 async function seedFakeEvents(count = NUMBR_OF_FAKES_EVENTS) {
   const fakeEvents = generateFakeEvents(count)
 
