@@ -7,7 +7,6 @@ import eventsApi, { Event } from '../../apis/events.api'
 import Container from '../../components/Container/Container'
 import { Surface } from '../../components/Card/Card'
 import Badge from '../../components/Badge/Badge'
-import Loading from '../../components/Loading'
 
 const PAGE_SIZE = 20
 
@@ -110,7 +109,20 @@ export default function SearchEvents() {
           </div>
         )}
 
-        {q && isLoading && <Loading />}
+        {q && isLoading && (
+          <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Surface key={i} className='overflow-hidden border border-gray-800 bg-gray-900'>
+                <div className='aspect-[4/3] animate-pulse bg-gray-800' />
+                <div className='p-5 space-y-2'>
+                  <div className='h-3 w-28 animate-pulse rounded bg-gray-800' />
+                  <div className='h-4 w-48 animate-pulse rounded bg-gray-800' />
+                  <div className='h-3 w-36 animate-pulse rounded bg-gray-800' />
+                </div>
+              </Surface>
+            ))}
+          </div>
+        )}
 
         {q && !isLoading && events.length === 0 && (
           <div className='rounded-2xl border border-dashed border-gray-800 p-10 text-center text-sm text-gray-300 bg-gray-900'>
