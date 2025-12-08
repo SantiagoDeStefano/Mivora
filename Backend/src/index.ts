@@ -23,7 +23,14 @@ const app = express()
 const httpServer = createServer(app)
 app.use(
   cors({
-    origin: ['http://localhost:4000', 'http://localhost:5173', 'http://26.35.82.76:4000', 'http://26.73.34.56:5173'],
+    origin: [
+      'http://localhost:4000',
+      'http://localhost:5173',
+      'http://26.35.82.76:4000',
+      'http://26.73.34.56:5173',
+      'http://khoinguyenpham.name.vn',
+      'https://khoinguyenpham.name.vn'
+    ],
     credentials: true
   })
 )

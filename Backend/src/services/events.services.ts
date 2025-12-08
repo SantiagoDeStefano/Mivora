@@ -416,9 +416,10 @@ class EventService {
       `
         SELECT 
           messages.id,
+          messages.event_id,
+          messages.user_id,
           messages.content,
           messages.created_at,
-          messages.user_id,
           users.name as user_name,
           users.avatar_url as user_avatar_url,
           COUNT(*) OVER() AS total_count

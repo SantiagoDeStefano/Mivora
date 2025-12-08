@@ -2,19 +2,17 @@ openapi: 3.0.4
 info:
   title: Twitter clone TypeScript - 2025
   description: |-
-    This API provides the backend services for a social media platform similar to Twitter.  
-    It includes features for user authentication and profile management, media upload and streaming, 
-    tweet creation and interaction, search functionality, and real-time conversations.  
-    The system is built with scalability, security, and modern REST API design principles in mind.
-    Some useful links:
-    - [The Twitter's clone repository](https://github.com/SantiagoDeStefano/Twitter)
-    - [The source API definition for the Twitter's clone](https://github.com/SantiagoDeStefano/Twitter/blob/master/twitter-swagger.yaml)
-  contact:
-    email: ngpham.2807@gmail.com
+    This OpenAPI spec describes the backend API for Mivora, a platform that handles users, events, tickets, and real-time event messaging. It includes full user account flows such as registration, login, logout, token refresh, profile updates, avatar uploads, email verification, and password-reset procedures. Event organizers can create, update, publish, cancel, and manage event posters, while both organizers and attendees can send and fetch event messages. Users can browse published events, view details, and book tickets. The ticketing system supports booking, listing with filters, retrieving individual tickets, canceling or checking in tickets, and QR-code-based scanning. All sensitive and user-specific operations use JWT bearer authentication, and list endpoints follow a consistent pagination pattern.
+    some useful links:
+    - [The Mivora repository](https://github.com/SantiagoDeStefano/Mivora)
+    - [The source API definition for Mivora](https://github.com/SantiagoDeStefano/Mivora/blob/main/Backend/MivoraSwagger.yaml)
+
   version: 0.0.1
 servers:
   - url: http://26.35.82.76:4000
     description: Local server
+  - url: https://khoinguyenpham.name.vn/
+    description: Production api server
 tags:
   - name: users
     description: Everything about Users's requests
@@ -1374,7 +1372,7 @@ paths:
             type: string
             format: uuid
           description: The ID of the event to send message
-          example: a29a9e03-ba2a-4ed0-8262-ed9d32d89b3b
+          example: 084bc4e5-8fe0-4394-a85d-1e65ed3dae16
       requestBody:
         required: true
         content:
@@ -1382,18 +1380,12 @@ paths:
             schema:
               type: object
               properties:
-                subject:
+                content:
                   type: string
-                  example: Important Update for Tech Innovation Summit 2027
-                body:
-                  type: string
-                  example: >
-                    Dear Attendees,
-
-                    We are excited to share some important updates regarding the upcoming Tech Innovation Summit 2027...
+                  example: Xin chao mng
       responses:
         '200':
-          description: Message sent to event attendees successfully
+          description: Create event message successfully
           content:
             application/json:
               schema:
@@ -1401,10 +1393,12 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Message sent to event attendees successfully
+                    example: Get event messages successfully
+                  result:
+                    $ref: '#/components/schemas/EventMessage'
 
         '403':
-          description: Current user is not event's organizer
+          description: Current user is not event's attendee or organizer
           content:
             application/json:
               schema:
@@ -1412,9 +1406,40 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: "Current user is not event's organizer"
-        '404':
-          description: Event not found
+                    example: "Current user is not event's attendee or organizer"
+    get:
+      tags:
+        - events
+      summary: Get event messages
+      operationId: getEventMessages
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the event to get messages
+          example: 084bc4e5-8fe0-4394-a85d-1e65ed3dae16
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+            default: 20
+          description: Number of items per page
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+      responses:
+        '200':
+          description: Get event messages successfully
           content:
             application/json:
               schema:
@@ -1422,7 +1447,34 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Event not found
+                    example: Get event messages successfully
+                  result:
+                    type: object
+                    properties:
+                      messages:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/EventMessage'
+                      limit:
+                        type: integer
+                        example: 20
+                      page:
+                        type: integer
+                        example: 1
+                      total_page:
+                        type: integer
+                        example: 3
+
+        '403':
+          description: Current user is not event's attendee or organizer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Current user is not event's attendee or organizer"
   /api/v1/events/{event_id}/poster:
     put:
       tags:
@@ -2033,6 +2085,54 @@ components:
         status:
           type: string
           example: draft
+    EventMessagesResult:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventMessage'
+        limit:
+          type: integer
+        page:
+          type: integer
+        total_page:
+          type: integer
+        total_count:
+          type: integer
+      required:
+        - messages
+        - limit
+        - page
+        - total_page
+        - total_count
+
+    EventMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        content:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        user_id:
+          type: string
+          format: uuid
+        user_name:
+          type: string
+        user_avatar_url:
+          type: string
+          format: uri
+      required:
+        - id
+        - content
+        - created_at
+        - user_id
+        - user_name
+        - user_avatar_url
   securitySchemes:
     BearerAuth:
       type: http
