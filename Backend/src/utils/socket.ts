@@ -8,12 +8,7 @@ let io: Server
 export const initSocket = (httpServer: ServerHttp) => {
   io = new Server(httpServer, {
     cors: {
-      origin: [
-        'http://localhost:4000',
-        'http://localhost:5173',
-        'http://26.35.82.76:4000',
-        'http://26.73.34.56:5173'
-      ],
+      origin: ['http://localhost:4000', 'http://localhost:5173', 'http://26.35.82.76:4000', 'http://26.73.34.56:5173'],
       credentials: true
     }
   })
@@ -42,11 +37,25 @@ export const initSocket = (httpServer: ServerHttp) => {
 
     const user_id = (socket.handshake.auth.decoded_authorization as TokenPayload).user_id
 
+    socket.emit('me', user_id)
+
     // this is the ONLY thing you really need:
     socket.join(user_id)
 
-    socket.on('disconnect', () => {
-      console.log(`user ${socket.id} disconnected`)
+    socket.on('whoami', () => {
+      socket.emit('me', user_id)
+    })
+
+    socket.on('join_event', (event_id: string) => {
+      socket.join(event_id)
+    })
+
+    socket.on('leave_event', (event_id: string) => {
+      socket.leave(event_id)
+    })
+
+    socket.on('disconnect', (reason) => {
+      console.log(`user ${socket.id} disconnected: ${reason}`)
     })
   })
 

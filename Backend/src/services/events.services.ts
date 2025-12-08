@@ -446,18 +446,22 @@ class EventService {
     })
     const messageResult = await databaseService.messages(
       `
-        INSERT INTO messages (
-          id,
-          event_id,
-          user_id,
-          content
+        WITH inserted AS (
+          INSERT INTO messages (
+            id,
+            event_id,
+            user_id,
+            content
+          )
+          VALUES ($1, $2, $3, $4)
+          RETURNING id, event_id, user_id, content, created_at
         )
-        VALUES (
-          $1, $2, $3, $4
-        )
-        RETURNING
-          content,
-          created_at
+        SELECT
+          inserted.*,
+          users.name AS user_name,
+          users.avatar_url AS user_avatar_url
+        FROM inserted
+        JOIN users ON users.id = inserted.user_id;
       `,
       [newMessage.id, newMessage.event_id, newMessage.user_id, newMessage.content]
     )

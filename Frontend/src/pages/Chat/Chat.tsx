@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { getProfileFromLocalStorage } from '../../utils/auth'
-import eventsApi, { EventMessageApi, GetEventMessagesResult, CreateEventMessageResult } from '../../apis/events.api'
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import eventsApi, { EventMessageApi, GetEventMessagesResult } from '../../apis/events.api'
 import usersApi from '../../apis/users.api'
+import { socket } from '../../utils/socket'
+import { AppContext } from '../../contexts/app.context'
 
 type UiMessage = {
   id: string
@@ -42,47 +43,85 @@ function formatSidebarTime(iso: string) {
 }
 
 export default function ChatPage() {
+  const { profile } = useContext(AppContext)
   const { event_id } = useParams<{ event_id: string }>()
-
-  const profileLocalStorage = getProfileFromLocalStorage()
-  const CURRENT_USER_ID = profileLocalStorage?.id
-
-  const fetchMessagesPage = async (pageToLoad: number) => {
-    const res = await eventsApi.getEventMessages(event_id, PAGE_SIZE, pageToLoad)
-    const result: GetEventMessagesResult = res.data.result
-
-    const mapped: UiMessage[] = result.messages.map((m: EventMessageApi) => ({
-      id: m.id,
-      event_id: event_id,
-      user_id: m.user_id,
-      content: m.content,
-      created_at: m.created_at,
-      user: {
-        id: m.user_id,
-        name: m.user_name,
-        avatar_url: m.user_avatar_url ?? null
-      }
-    }))
-
-    return { mapped, total_page: result.total_page, page: result.page }
-  }
-
+  const navigate = useNavigate()
+  const currentUserId = profile?.id
   const [messages, setMessages] = useState<UiMessage[]>([])
-  const [page, setPage] = useState(1)
-  const [totalPage, setTotalPage] = useState(1)
   const [input, setInput] = useState('')
   const [isInitialLoading, setIsInitialLoading] = useState(true)
-  const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [groups, setGroups] = useState<UiGroup[]>([])
 
   const messagesRef = useRef<HTMLDivElement | null>(null)
-  const prevHeightRef = useRef<number | null>(null)
-  const initialLoadRef = useRef<boolean>(true)
+  // Scroll to bottom after initial load completes
+  useEffect(() => {
+    if (isInitialLoading) return
+    if (!messagesRef.current) return
+
+    requestAnimationFrame(() => {
+      const el = messagesRef.current
+      if (!el) return
+      el.scrollTop = el.scrollHeight
+    })
+  }, [isInitialLoading, event_id])
+
   const lastMessage = messages[messages.length - 1] ?? null
   const selectedGroup = useMemo(() => groups.find((g) => g.id === event_id) ?? null, [groups, event_id])
 
-  // ---------- LOAD MESSAGES FROM API ----------
+  // ---------- SOCKET.IO SETUP ----------
+  useEffect(() => {
+    const handleMe = (user_id: string) => {
+      console.log('me from socket:', user_id)
+    }
 
+    socket.on('me', handleMe)
+    socket.emit('whoami')
+
+    return () => {
+      socket.off('me', handleMe)
+    }
+  }, [])
+
+  // Join/leave event room
+  useEffect(() => {
+    if (!event_id) return
+    socket.emit('join_event', event_id)
+    return () => {
+      socket.emit('leave_event', event_id)
+    }
+  }, [event_id])
+
+  // Listen for new messages
+  useEffect(() => {
+    const handleNewMessage = (msg) => {
+      if (msg.event_id !== event_id) return
+
+      const uiMsg: UiMessage = {
+        id: msg.id,
+        event_id: msg.event_id,
+        user_id: msg.user_id,
+        content: msg.content,
+        created_at: msg.created_at,
+        user: {
+          id: msg.user_id,
+          name: msg.user_name,
+          avatar_url: msg.user_avatar_url
+        }
+      }
+
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === uiMsg.id)) return prev
+        return [...prev, uiMsg]
+      })
+    }
+
+    socket.on('new_message', handleNewMessage)
+    return () => {
+      socket.off('new_message', handleNewMessage)
+    }
+  }, [event_id])
+
+  // ---------- LOAD MESSAGES FROM API ----------
   useEffect(() => {
     let cancelled = false
 
@@ -117,89 +156,108 @@ export default function ChatPage() {
     }
   }, [])
 
-  // Scroll behavior
+  const fetchMessagesPage = async (pageToLoad: number) => {
+    const res = await eventsApi.getEventMessages(event_id, PAGE_SIZE, pageToLoad)
+    const result: GetEventMessagesResult = res.data.result
+
+    const mapped: UiMessage[] = result.messages.map((m: EventMessageApi) => ({
+      id: m.id,
+      event_id: event_id,
+      user_id: m.user_id,
+      content: m.content,
+      created_at: m.created_at,
+      user: {
+        id: m.user_id,
+        name: m.user_name,
+        avatar_url: m.user_avatar_url
+      }
+    }))
+
+    mapped.sort((a, b) => a.created_at.localeCompare(b.created_at))
+
+    return { mapped, total_page: result.total_page, page: result.page }
+  }
+
+  // ---------- RESET MESSAGES WHEN SWITCHING EVENT ----------
   useEffect(() => {
-    const el = messagesRef.current
-    if (!el) return
+    // when changing group chat, wipe old messages immediately
+    setMessages([])
+    setIsInitialLoading(true)
+  }, [event_id])
 
-    if (initialLoadRef.current) {
-      initialLoadRef.current = false
-      requestAnimationFrame(() => {
-        if (!messagesRef.current) return
-        messagesRef.current.scrollTop = messagesRef.current.scrollHeight
-        prevHeightRef.current = messagesRef.current.scrollHeight
-      })
-      return
+  // ---------- LOAD INITIAL MESSAGES ----------
+  useEffect(() => {
+    if (!event_id) return
+
+    let cancelled = false
+
+    async function loadInitial() {
+      setIsInitialLoading(true)
+
+      try {
+        // fetch first page
+        const first = await fetchMessagesPage(1)
+        if (cancelled) return
+
+        const total = first.total_page || 1
+        let all = first.mapped
+
+        // fetch remaining pages (2..total)
+        for (let p = 2; p <= total; p++) {
+          const res = await fetchMessagesPage(p)
+          if (cancelled) return
+          all = [...all, ...res.mapped]
+        }
+
+        // make sure messages are ordered by time (oldest -> newest)
+        all.sort((a, b) => a.created_at.localeCompare(b.created_at))
+
+        if (cancelled) return
+
+        setMessages(all)
+      } catch (e) {
+        if (!cancelled) console.error('loadInitial error', e)
+      } finally {
+        if (!cancelled) setIsInitialLoading(false)
+      }
     }
 
-    if (isLoadingMore && prevHeightRef.current != null) {
-      const diff = el.scrollHeight - prevHeightRef.current
-      el.scrollTop = el.scrollTop + diff
-      prevHeightRef.current = el.scrollHeight
-      setIsLoadingMore(false)
-      return
+    loadInitial()
+
+    return () => {
+      cancelled = true
     }
-
-    prevHeightRef.current = el.scrollHeight
-  }, [messages, isLoadingMore])
-
-  const handleScroll = () => {
-    if (!messagesRef.current) return
-    const el = messagesRef.current
-    if (el.scrollTop <= 24) {
-      loadOlder()
-    }
-  }
-
-  const loadOlder = async () => {
-    if (isLoadingMore) return
-    if (page >= totalPage) return
-
-    prevHeightRef.current = messagesRef.current?.scrollHeight ?? null
-    setIsLoadingMore(true)
-
-    try {
-      const nextPage = page + 1
-      const { mapped, total_page, page: loadedPage } = await fetchMessagesPage(nextPage)
-
-      // prepend older messages
-      setMessages((prev) => [...mapped, ...prev])
-      setPage(loadedPage)
-      setTotalPage(total_page)
-    } catch (e) {
-      console.error('loadOlder error', e)
-      setIsLoadingMore(false)
-    }
-  }
+  }, [event_id])
 
   // ---------- SEND MESSAGE (use eventsApi, not raw fetch) ----------
 
   const handleSend = async () => {
     const trimmed = input.trim()
     if (!trimmed) return
-    if (!CURRENT_USER_ID) {
-      console.error('No CURRENT_USER_ID, user not logged in?')
-      return
-    }
 
     try {
-      const res = await eventsApi.createEventMessage(event_id, trimmed)
-      const result: CreateEventMessageResult = res.data.result
+      const res = (await eventsApi.createEventMessage(event_id, trimmed)) as any
+      const result = res.data.result
 
       const newMsg: UiMessage = {
-        id: crypto.randomUUID(), // backend isn’t returning id; if you can, FIX backend to return id
-        event_id: event_id,
-        user_id: CURRENT_USER_ID,
+        id: result.id,
+        event_id: result.event_id,
+        user_id: result.user_id,
         content: result.content,
         created_at: result.created_at,
         user: {
-          id: CURRENT_USER_ID,
-          name: profileLocalStorage?.name || 'You',
-          avatar_url: profileLocalStorage?.avatar_url ?? null
+          id: result.user_id,
+          name: profile?.name || 'You',
+          avatar_url: profile?.avatar_url ?? null
         }
       }
 
-      setMessages((prev) => [...prev, newMsg])
+      // add locally
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === newMsg.id)) return prev
+        return [...prev, newMsg]
+      })
+
       setInput('')
 
       requestAnimationFrame(() => {
@@ -208,7 +266,7 @@ export default function ChatPage() {
         }
       })
     } catch (e) {
-      console.error('handleSend error', e)
+      console.error('[handleSend] ERROR', e)
     }
   }
 
@@ -245,6 +303,7 @@ export default function ChatPage() {
               <button
                 key={g.id}
                 type='button'
+                onClick={() => navigate(`/events/${g.id}/messages`)}
                 className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-800/70 ${
                   active ? 'bg-gray-800' : ''
                 }`}
@@ -270,7 +329,7 @@ export default function ChatPage() {
                   </div>
                   {last && (
                     <p className='text-xs text-gray-400 truncate'>
-                      {last.user_id === CURRENT_USER_ID ? 'You: ' : ''}
+                      {last.user_id === currentUserId ? 'You: ' : ''}
                       {last.content}
                     </p>
                   )}
@@ -305,32 +364,22 @@ export default function ChatPage() {
         </div>
 
         {/* Messages */}
-        <div
-          ref={messagesRef}
-          className='flex-1 overflow-y-auto px-4 py-3 space-y-2 bg-gray-950 min-h-0'
-          onScroll={handleScroll}
-        >
+        <div ref={messagesRef} className='flex-1 overflow-y-auto px-4 py-3 space-y-2 bg-gray-950 min-h-0'>
           {isInitialLoading && (
             <div className='h-full flex items-center justify-center'>
               <p className='text-xs text-gray-500'>Loading messages…</p>
             </div>
           )}
 
-          {!isInitialLoading && page < totalPage && (
-            <div className='flex justify-center py-1 text-[11px] text-gray-500'>
-              {isLoadingMore ? 'Loading older messages…' : 'Scroll up to load older messages'}
-            </div>
-          )}
-
           {!isInitialLoading &&
             messages.map((m) => {
-              const mine = m.user_id === CURRENT_USER_ID
+              const mine = m.user_id === currentUserId
               return (
                 <div key={m.id} className={`flex w-full gap-2 ${mine ? 'justify-end' : 'justify-start'}`}>
                   {!mine && (
                     <div className='flex-shrink-0 mt-0.5'>
                       <div className='w-8 h-8 rounded-full bg-gray-700 grid place-items-center text-[11px] font-semibold'>
-                        {getInitials(m.user.name)}
+                        <img src={m.user.avatar_url} alt={m.user.name} className='w-8 h-8 rounded-full object-cover' />
                       </div>
                     </div>
                   )}
