@@ -3,7 +3,6 @@ import { envConfig } from './constants/config'
 import { initFolder } from './utils/file'
 import { createServer } from 'http'
 
-// import '~/utils/fake'
 import databaseService from './services/database.services'
 import express from 'express'
 import usersRouter from './routes/users.routes'
