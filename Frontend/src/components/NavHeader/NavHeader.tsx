@@ -24,6 +24,13 @@ export default function NavHeader() {
 
   const navigate = useNavigate()
 
+  const isOrganizer = (() => {
+    const r = (profile as any)?.role
+    if (!r) return false
+    if (Array.isArray(r)) return r.map((x: string) => x.toLowerCase()).includes('organizer')
+    return String(r).toLowerCase() === 'organizer'
+  })()
+
   const logoutMutation = useMutation({
     mutationFn: () => usersApi.logout({ refresh_token: getRefreshTokenFromLocalStorage() }),
     onSuccess: () => {
@@ -37,14 +44,76 @@ export default function NavHeader() {
     logoutMutation.mutate()
   }
 
-  const { data: ticketsData } = useQuery({
-    queryKey: ['my-tickets', 'for-chat'],
-    queryFn: () =>
-      usersApi.searchMyTickets({
-        limit: 20,
-        page: 1
-      }),
-    enabled: isAuthenticated
+  async function fetchAllTickets() {
+    let page = 1
+    let allTickets: any[] = []
+    let totalPage = 1
+
+    do {
+      const res = await usersApi.searchMyTickets({ limit: 50, page })
+      const { tickets, total_page } = res.data.result
+
+      allTickets = allTickets.concat(tickets)
+      totalPage = total_page
+
+      page += 1
+    } while (page <= totalPage)
+
+    return allTickets
+  }
+
+  async function fetchAllEvents() {
+    let page = 1
+    let allEvents: any[] = []
+    let totalPage = 1
+
+    do {
+      const res = await usersApi.searchEventsOrganizer('published', undefined, 50, page)
+      const { events, total_page } = res.data.result
+
+      allEvents = allEvents.concat(events)
+      totalPage = total_page
+
+      page += 1
+    } while (page <= totalPage)
+
+    return allEvents
+  }
+
+  type ChatItem = {
+    eventId: string
+    name: string
+    poster: string | null
+  }
+
+  const { data: chatData = [] } = useQuery<ChatItem[]>({
+    queryKey: ['chat-list', { isOrganizer }],
+    enabled: isAuthenticated,
+    queryFn: async () => {
+      // 1. Fetch ALL tickets
+      const tickets = await fetchAllTickets()
+
+      // 2. Fetch ALL events for organizers
+      let events = []
+      if (isOrganizer) {
+        events = await fetchAllEvents()
+      }
+
+      const fromTickets = tickets.map((t) => ({
+        eventId: t.event_id,
+        name: t.event_title,
+        poster: t.poster_url
+      }))
+
+      const fromEvents = events.map((e) => ({
+        eventId: e.id,
+        name: e.title,
+        poster: e.poster_url
+      }))
+
+      // You said “use any”, so no dedupe here. If you want 1 per event, dedupe by eventId.
+      return [...fromTickets, ...fromEvents]
+    }
   })
 
   const handleSearchSubmit = (value: string) => {
@@ -58,26 +127,14 @@ export default function NavHeader() {
 
   const navLink = 'text-sm font-medium text-gray-400 hover:text-pink-400 px-3 py-1.5 rounded-lg'
 
-  const isOrganizer = (() => {
-    const r = (profile as any)?.role
-    if (!r) return false
-    if (Array.isArray(r)) return r.map((x: string) => x.toLowerCase()).includes('organizer')
-    return String(r).toLowerCase() === 'organizer'
-  })()
-
   // Mock data – replace with real API data later
-  const conversations = (() => {
-    const tickets = ticketsData?.data?.result?.tickets ?? ([] as any)
-
-    return tickets.map((t) => ({
-      id: t.event_id, // Chat event_id
-      ticketId: t.id, // Ticket id (if needed)
-      name: t.event_title, // Chat name in sidebar
-      poster: t.poster_url, // NEW: event poster image
-      lastMessage: '', // You will fill later when you have last message
-      time: '' // You will fill later
-    }))
-  })()
+  const conversations = chatData.map((c) => ({
+    id: c.eventId,
+    name: c.name,
+    poster: c.poster,
+    lastMessage: '',
+    time: ''
+  }))
 
   return (
     <header className='sticky top-0 z-40 border-b border-gray-800 bg-gray-950 text-gray-200'>
@@ -182,7 +239,7 @@ export default function NavHeader() {
                           onClick={() => {
                             // TODO: open a specific chat thread
                             // navigate(`/messages/${c.id}`)
-                          navigate(`/events/${c.id}/messages`)
+                            navigate(`/events/${c.id}/messages`)
                           }}
                         >
                           <div className='flex-shrink-0'>

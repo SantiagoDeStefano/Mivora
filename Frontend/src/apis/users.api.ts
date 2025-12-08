@@ -83,9 +83,9 @@ const usersApi = {
   resetPassword: (body: ResetPasswordPayload) => {
     return http.post<MessageOnly>('/users/reset-password', body)
   },
-  searchEventsOrganizer: (q: string, limit: number = 20, page: number = 1) => {
+  searchEventsOrganizer: (status: string, q?: string, limit: number = 20, page: number = 1) => {
     return http.get<SuccessResponse<GetEventsResponse>>('/users/me/events', {
-      params: { q, limit, page }
+      params: { status, q, limit, page }
     })
   },
   getCreatedEventDetails: (event_id: string) => {

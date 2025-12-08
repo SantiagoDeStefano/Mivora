@@ -52,6 +52,13 @@ export default function ChatPage() {
   const [isInitialLoading, setIsInitialLoading] = useState(true)
   const [groups, setGroups] = useState<UiGroup[]>([])
 
+  const isOrganizer = (() => {
+    const r = (profile as any)?.role
+    if (!r) return false
+    if (Array.isArray(r)) return r.map((x: string) => x.toLowerCase()).includes('organizer')
+    return String(r).toLowerCase() === 'organizer'
+  })()
+
   const messagesRef = useRef<HTMLDivElement | null>(null)
   // Scroll to bottom after initial load completes
   useEffect(() => {
@@ -122,30 +129,78 @@ export default function ChatPage() {
   }, [event_id])
 
   // ---------- LOAD MESSAGES FROM API ----------
+  // ---------- LOAD GROUPS (ALL TICKETS + EVENTS) ----------
   useEffect(() => {
     let cancelled = false
 
     async function loadGroups() {
       try {
-        const res = await usersApi.searchMyTickets({
-          limit: 20,
-          page: 1
-          // q is optional, not needed here
-        })
+        // 1) fetch ALL tickets (paginate)
+        let ticketPage = 1
+        let ticketTotalPage = 1
+        let allTickets: any[] = []
+
+        do {
+          const res = await usersApi.searchMyTickets({
+            limit: 50,
+            page: ticketPage
+          })
+
+          if (cancelled) return
+
+          const { tickets, total_page } = res.data.result
+          allTickets = allTickets.concat(tickets || [])
+          ticketTotalPage = total_page || 1
+          ticketPage += 1
+        } while (ticketPage <= ticketTotalPage)
+
+        // 2) fetch ALL organizer events if user is organizer
+        let allEvents: any[] = []
+        if (isOrganizer) {
+          let eventPage = 1
+          let eventTotalPage = 1
+
+          do {
+            const res = await usersApi.searchEventsOrganizer('published', undefined, 50, eventPage)
+            if (cancelled) return
+
+            const { events, total_page } = res.data.result
+            allEvents = allEvents.concat(events || [])
+            eventTotalPage = total_page || 1
+            eventPage += 1
+          } while (eventPage <= eventTotalPage)
+        }
 
         if (cancelled) return
 
-        const tickets = res.data.result.tickets as any[]
+        // 3) merge into UiGroup[], dedupe by event id
+        const map = new Map<string, UiGroup>()
 
-        const mapped: UiGroup[] = tickets.map((t) => ({
-          id: t.event_id,
-          eventTitle: t.event_title,
-          eventPoster: t.poster_url ?? null
-        }))
+        // attendee side
+        for (const t of allTickets) {
+          if (!map.has(t.event_id)) {
+            map.set(t.event_id, {
+              id: t.event_id,
+              eventTitle: t.event_title,
+              eventPoster: t.poster_url ?? null
+            })
+          }
+        }
 
-        setGroups(mapped)
+        // organizer side
+        for (const e of allEvents) {
+          if (!map.has(e.id)) {
+            map.set(e.id, {
+              id: e.id,
+              eventTitle: e.title,
+              eventPoster: e.poster_url ?? null
+            })
+          }
+        }
+
+        setGroups(Array.from(map.values()))
       } catch (e) {
-        console.error('loadGroups error', e)
+        if (!cancelled) console.error('loadGroups error', e)
       }
     }
 
@@ -154,7 +209,7 @@ export default function ChatPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [isOrganizer])
 
   const fetchMessagesPage = async (pageToLoad: number) => {
     const res = await eventsApi.getEventMessages(event_id, PAGE_SIZE, pageToLoad)

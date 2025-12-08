@@ -343,7 +343,7 @@ class UserService {
     // if (user.rows[0].role.includes('organizer')) {
     //   const revenueRes = await databaseService.users(
     //     `
-    //       SELECT 
+    //       SELECT
     //         SUM(tickets.price_cents) AS total_revenue_cents
     //       FROM tickets
     //       JOIN events ON tickets.event_id = events.id
