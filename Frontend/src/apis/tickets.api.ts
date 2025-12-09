@@ -57,11 +57,11 @@ const ticketsApi = {
   },
 
   // lấy danh sách ticket (có thể là default list)
-  getMyTickets: (limit: number = 20, page: number = 1) => {
-    return http.get<SuccessResponse<GetMyTicketsResponse>>('/tickets', {
-      params: { limit, page }
-    })
-  },
+  // getMyTickets: (limit: number = 20, page: number = 1) => {
+  //   return http.get<SuccessResponse<GetMyTicketsResponse>>('/tickets', {
+  //     params: { limit, page }
+  //   })
+  // },
   getTicketDetails: (ticket_id: string) => {
     return http.get<SuccessResponse<TicketApi>>(`/tickets/${ticket_id}`)
   },

@@ -5,9 +5,10 @@ import Container from '../../components/Container/Container'
 import Badge from '../../components/Badge/Badge'
 import { Eye } from 'lucide-react'
 import path from '../../constants/path'
-import ticketsApi, { Ticket, TicketApi } from '../../apis/tickets.api'
+import { Ticket, TicketApi } from '../../apis/tickets.api'
 import { SuccessResponse } from '../../types/response.types'
 import { GetOrSearchMyTicketsSchema } from '../../utils/rules'
+import usersApi from '../../apis/users.api'
 
 type TicketStatus = 'booked' | 'checked_in' | 'canceled'
 
@@ -84,7 +85,7 @@ export default function MyTicketsPage() {
           params.status = status
         }
 
-        const res = await ticketsApi.getMyTickets(params.limit, params.page)
+        const res = await usersApi.getMyTickets(params.limit, params.page)
         const data = res.data as GetMyTicketsResponse
         const result = data.result
 

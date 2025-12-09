@@ -98,6 +98,11 @@ const usersApi = {
   },
   searchMyTickets: (body: GetOrSearchMyTicketsSchema) => {
     return http.get<SuccessResponse<GetMyTicketsResponse>>('/users/me/tickets', { params: body })
+  },
+  getMyTickets: (limit: number = 20, page: number = 1) => {
+    return http.get<SuccessResponse<GetMyTicketsResponse>>('/users/me/tickets', {
+      params: { limit, page }
+    })
   }
 }
 
