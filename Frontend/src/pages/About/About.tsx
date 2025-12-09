@@ -142,7 +142,7 @@ export default function AboutPage() {
                   Explore our API documentation for developers who want to integrate with our platform.
                 </p>
                 <a
-                  href="/mivora/api-docs"
+                  href="https://khoinguyenpham.name.vn/mivora/api-docs/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-4 inline-flex items-center justify-center rounded-xl border border-pink-500/70 bg-pink-500/10 px-4 py-2 text-sm font-medium text-pink-200 hover:bg-pink-500/20 transition"
